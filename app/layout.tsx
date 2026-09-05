@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import SWRegister from "@/components/SWRegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,13 +19,20 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "Totoland" },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className={...lo que ya hubiera...}>
+    <html lang="es" className="h-full">
+      <head>
+        <meta name="theme-color" content="#059669" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
         <SWRegister />
         {children}
       </body>
