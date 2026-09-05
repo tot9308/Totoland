@@ -5,7 +5,7 @@ import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 import LoginForm from "@/components/LoginForm"
 import Home from "@/components/Home"
-
+export const dynamic = "force-dynamic"
 export default function Page() {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
