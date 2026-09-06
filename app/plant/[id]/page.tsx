@@ -268,7 +268,7 @@ export default function PlantDetail() {
       <body style="font-family:sans-serif;padding:24px">
         <h1>🪴 ${plant.name}</h1>
         <p>${plant.species ?? ""} ${plant.location ? "· " + plant.location : ""}</p>
-        ${plant.care_tips ? "<p><b>Cuidados clave:</b> " + plant.care_tips.split("\\n").join(" · ") + "</p>" : ""}
+        ${plant.care_tips ? "<p><b>Cuidados clave:</b> " + plant.care_tips.split("\n").join(" · ") + "</p>" : ""}
         <h2>Fotos</h2><div>${imgs || "Sin fotos"}</div>
         <h2>Historial</h2>
         <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%">
@@ -353,6 +353,12 @@ export default function PlantDetail() {
           {events.length === 0 && <p className="text-sm text-emerald-700">Sin eventos todavía.</p>}
         </ul>
       </section>
+      {showEdit && (
+        <PlantForm householdId={plant.household_id} plant={plant} onClose={() => setShowEdit(false)} onSaved={reload} />
+      )}
+    </main>
+  )
+}
     </main>
   )
 }
