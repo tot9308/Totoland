@@ -29,7 +29,6 @@ export async function POST(req: Request) {
   const summer = s <= e
     ? (month >= s && month <= e)
     : (month >= s || month <= e)
-  const summer = month >= 5 && month <= 9
   const due = (plants ?? []).filter(p => {
     const f = summer
       ? p.watering_frequency_days
