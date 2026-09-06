@@ -45,7 +45,9 @@ function fmt(iso: string) {
     day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
   })
 }
+
 export const dynamic = "force-dynamic"
+
 export default function PlantDetail() {
   const params = useParams<{ id: string }>()
   const plantId = params.id
@@ -110,6 +112,7 @@ export default function PlantDetail() {
     await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", plant.id)
     await reload()
   }
+
   async function saveTips() {
     if (!plant) return
     const { error } = await supabase
@@ -153,12 +156,14 @@ export default function PlantDetail() {
       setUploading(false)
     }
   }
+
   async function setMain(path: string) {
     if (!plant) return
     const { error } = await supabase.from("plants").update({ main_photo_path: path }).eq("id", plant.id)
     if (error) return alert(error.message)
     await reload()
   }
+
   async function undoBatch(batch: string) {
     if (!confirm("¿Eliminar esta acción/ronda completa del historial?")) return
     const { error } = await supabase.from("care_events").delete().eq("batch_id", batch)
@@ -174,6 +179,34 @@ export default function PlantDetail() {
     await reload()
   }
 
+  function exportPdf() {
+    if (!plant) return
+    const rows = events.map(ev =>
+      `<tr><td>${new Date(ev.occurred_at).toLocaleDateString("es-ES")}</td><td>${EVENT_LABELS[ev.type] ?? ev.type}</td><td>${names[ev.user_id] ?? ""}</td><td>${ev.notes ?? ""}</td></tr>`
+    ).join("")
+    const imgs = photos.map(ph =>
+      `<img src="${ph.fullUrl}" style="width:220px;margin:6px;border-radius:8px"/>`
+    ).join("")
+    const w = window.open("", "_blank")
+    if (!w) return
+    w.document.write(`
+      <html><head><title>${plant.name} · Totoland</title></head>
+      <body style="font-family:sans-serif;padding:24px">
+        <h1>🪴 ${plant.name}</h1>
+        <p>${plant.species ?? ""} ${plant.location ? "· " + plant.location : ""}</p>
+        ${plant.care_tips ? "<p><b>Cuidados clave:</b> " + plant.care_tips.split("\n").join(" · ") + "</p>" : ""}
+        <h2>Fotos</h2><div>${imgs || "Sin fotos"}</div>
+        <h2>Historial</h2>
+        <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%">
+          <tr><th>Fecha</th><th>Tipo</th><th>Quién</th><th>Notas</th></tr>
+          ${rows}
+        </table>
+        <script>window.print()</script>
+      </body></html>
+    `)
+    w.document.close()
+  }
+
   const batchCount: Record<string, number> = {}
   const firstEventOfBatch: Record<string, string> = {}
   for (const ev of events) {
@@ -184,7 +217,9 @@ export default function PlantDetail() {
   }
 
   if (!plant) return <main className="p-6">Cargando…</main>
+
   const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
+
   return (
     <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
       <header className="mb-6 flex items-start justify-between gap-3">
@@ -223,6 +258,7 @@ export default function PlantDetail() {
           </button>
         </div>
       </header>
+
       <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
@@ -253,33 +289,6 @@ export default function PlantDetail() {
                 className="rounded px-3 py-1.5 text-sm text-amber-800">
                 Cancelar
               </button>
-  function exportPdf() {
-    if (!plant) return
-    const rows = events.map(ev =>
-      `<tr><td>${new Date(ev.occurred_at).toLocaleDateString("es-ES")}</td><td>${EVENT_LABELS[ev.type] ?? ev.type}</td><td>${names[ev.user_id] ?? ""}</td><td>${ev.notes ?? ""}</td></tr>`
-    ).join("")
-    const imgs = photos.map(ph =>
-      `<img src="${ph.fullUrl}" style="width:220px;margin:6px;border-radius:8px"/>`
-    ).join("")
-    const w = window.open("", "_blank")
-    if (!w) return
-    w.document.write(`
-      <html><head><title>${plant.name} · Totoland</title></head>
-      <body style="font-family:sans-serif;padding:24px">
-        <h1>🪴 ${plant.name}</h1>
-        <p>${plant.species ?? ""} ${plant.location ? "· " + plant.location : ""}</p>
-        ${plant.care_tips ? "<p><b>Cuidados clave:</b> " + plant.care_tips.split("\n").join(" · ") + "</p>" : ""}
-        <h2>Fotos</h2><div>${imgs || "Sin fotos"}</div>
-        <h2>Historial</h2>
-        <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%">
-          <tr><th>Fecha</th><th>Tipo</th><th>Quién</th><th>Notas</th></tr>
-          ${rows}
-        </table>
-        <script>window.print()</script>
-      </body></html>
-    `)
-    w.document.close()
-  }
             </div>
           </>
         ) : plant.care_tips ? (
@@ -318,7 +327,8 @@ export default function PlantDetail() {
                 </button>
               </p>
             </div>
-          ))}          {photos.length === 0 && <p className="text-sm text-emerald-700">Aún no hay fotos.</p>}
+          ))}
+          {photos.length === 0 && <p className="text-sm text-emerald-700">Aún no hay fotos.</p>}
         </div>
       </section>
 
@@ -353,12 +363,10 @@ export default function PlantDetail() {
           {events.length === 0 && <p className="text-sm text-emerald-700">Sin eventos todavía.</p>}
         </ul>
       </section>
+
       {showEdit && (
         <PlantForm householdId={plant.household_id} plant={plant} onClose={() => setShowEdit(false)} onSaved={reload} />
       )}
-    </main>
-  )
-}
     </main>
   )
 }
