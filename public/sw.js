@@ -18,3 +18,18 @@ self.addEventListener("fetch", (event) => {
     })()
   );
 });
+
+self.addEventListener("push", (event) => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch {}
+  const title = data.title || "🌿 Totoland";
+  const body = data.body || "Toca revisar las plantas";
+  event.waitUntil(
+    self.registration.showNotification(title, { body, icon: "/icon.svg" })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.openWindow("/"));
+});

@@ -111,17 +111,53 @@ export default function Home({ session }: { session: Session }) {
     setToast(null)
     await reload()
   }
+  function urlBase64ToUint8Array(base64String: string) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/")
+    const rawData = window.atob(base64)
+    const outputArray = new Uint8Array(rawData.length)
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
+    return outputArray
+  }
+
+  async function enablePush() {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window))
+      return alert("Este navegador no soporta avisos")
+    const perm = await Notification.requestPermission()
+    if (perm !== "granted") return alert("Permiso de avisos denegado")
+    const reg = await navigator.serviceWorker.ready
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+    })
+    await supabase.from("push_subscriptions").delete().eq("user_id", userId)
+    const { error } = await supabase.from("push_subscriptions").insert({
+      user_id: userId,
+      endpoint: sub.endpoint,
+      subscription: sub.toJSON(),
+    })
+    if (error) return alert("Error al guardar el aviso: " + error.message)
+    alert("Avisos activados ✅")
+  }
 
   return (
     <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="rounded border border-emerald-300 px-2 py-1 text-sm text-emerald-800"
-        >
-          Salir
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={enablePush}
+            className="rounded border border-emerald-300 px-2 py-1 text-sm text-emerald-800"
+          >
+            🔔 Avisos
+          </button>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="rounded border border-emerald-300 px-2 py-1 text-sm text-emerald-800"
+          >
+            Salir
+          </button>
+        </div>
       </header>
 
       <section className="mb-6 grid gap-3 md:grid-cols-2">
