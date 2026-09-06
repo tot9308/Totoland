@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { daysSince, isDue, type Plant } from "@/lib/plants"
+import { daysSince, effectiveFreq, isDue, type Plant } from "@/lib/plants"
 
 export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUrl }: {
   plant: Plant
@@ -11,6 +11,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUr
   photoUrl?: string
 }) {
   const d = daysSince(plant.last_watered_at)
+  const f = effectiveFreq(plant)
   return (
     <div className="rounded-xl bg-white p-4 shadow">
       {photoUrl && (
@@ -29,9 +30,19 @@ export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUr
       <p className="mb-2 text-sm text-emerald-700">
         {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
       </p>
+      {plant.tags.length > 0 && (
+        <p className="mb-2 flex flex-wrap gap-1">
+          {plant.tags.map(t => (
+            <span key={t}
+              className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700">
+              {t}
+            </span>
+          ))}
+        </p>
+      )}
       <p className="mb-3 text-xs text-emerald-600">
         {d === null ? "Sin riegos registrados" : `Último riego hace ${d} días`}
-        {plant.watering_frequency_days ? ` · cada ${plant.watering_frequency_days} días` : ""}
+        {f ? ` · cada ${f} días` : ""}
       </p>
       <div className="flex gap-2">
         <button onClick={onWater}

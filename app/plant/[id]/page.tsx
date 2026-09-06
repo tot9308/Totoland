@@ -6,6 +6,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabase"
 import { EVENT_LABELS, type Plant } from "@/lib/plants"
 import { compressToJpeg } from "@/lib/photos"
+import PlantForm from "@/components/PlantForm"
 
 type EventRow = {
   id: string
@@ -57,6 +58,7 @@ export default function PlantDetail() {
   const [uploading, setUploading] = useState(false)
   const [editingTips, setEditingTips] = useState(false)
   const [tipsDraft, setTipsDraft] = useState("")
+  const [showEdit, setShowEdit] = useState(false)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -182,7 +184,7 @@ export default function PlantDetail() {
   }
 
   if (!plant) return <main className="p-6">Cargando…</main>
-
+  const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
   return (
     <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
       <header className="mb-6 flex items-start justify-between gap-3">
@@ -192,8 +194,15 @@ export default function PlantDetail() {
           <p className="text-sm text-emerald-700">
             {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
           </p>
+          <p className="text-xs text-emerald-600">
+            {events.filter(e => e.type === "watering" && e.occurred_at >= yearStart).length} riegos este año ·{" "}
+            {events.filter(e => e.type === "pest_detection" || e.type === "disease_detection").length} incidencias
+            {plant.acquired_at && (
+              <> · con nosotros desde {new Date(plant.acquired_at).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}</>
+            )}
+          </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <button onClick={() => quickWater(false)}
             className="rounded bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700">
             💧 Regar
@@ -204,6 +213,14 @@ export default function PlantDetail() {
               💧+🌫
             </button>
           )}
+          <button onClick={() => setShowEdit(true)}
+            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            ✏️ Editar
+          </button>
+          <button onClick={exportPdf}
+            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            🖨 PDF
+          </button>
         </div>
       </header>
       <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
@@ -236,6 +253,33 @@ export default function PlantDetail() {
                 className="rounded px-3 py-1.5 text-sm text-amber-800">
                 Cancelar
               </button>
+  function exportPdf() {
+    if (!plant) return
+    const rows = events.map(ev =>
+      `<tr><td>${new Date(ev.occurred_at).toLocaleDateString("es-ES")}</td><td>${EVENT_LABELS[ev.type] ?? ev.type}</td><td>${names[ev.user_id] ?? ""}</td><td>${ev.notes ?? ""}</td></tr>`
+    ).join("")
+    const imgs = photos.map(ph =>
+      `<img src="${ph.fullUrl}" style="width:220px;margin:6px;border-radius:8px"/>`
+    ).join("")
+    const w = window.open("", "_blank")
+    if (!w) return
+    w.document.write(`
+      <html><head><title>${plant.name} · Totoland</title></head>
+      <body style="font-family:sans-serif;padding:24px">
+        <h1>🪴 ${plant.name}</h1>
+        <p>${plant.species ?? ""} ${plant.location ? "· " + plant.location : ""}</p>
+        ${plant.care_tips ? "<p><b>Cuidados clave:</b> " + plant.care_tips.split("\\n").join(" · ") + "</p>" : ""}
+        <h2>Fotos</h2><div>${imgs || "Sin fotos"}</div>
+        <h2>Historial</h2>
+        <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%">
+          <tr><th>Fecha</th><th>Tipo</th><th>Quién</th><th>Notas</th></tr>
+          ${rows}
+        </table>
+        <script>window.print()</script>
+      </body></html>
+    `)
+    w.document.close()
+  }
             </div>
           </>
         ) : plant.care_tips ? (

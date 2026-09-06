@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, isDue, type Plant } from "@/lib/plants"
+import { EVENT_LABELS, TAG_OPTIONS, daysUntilDue, isDue, type Plant } from "@/lib/plants"
 import PlantCard from "./PlantCard"
 import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
@@ -15,6 +15,8 @@ export default function Home({ session }: { session: Session }) {
   const [householdId, setHouseholdId] = useState<string | null>(null)
   const [plants, setPlants] = useState<Plant[]>([])
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({})
+  const [sortBy, setSortBy] = useState<"due" | "name" | "location">("due")
+  const [tagFilter, setTagFilter] = useState("")
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<Toast | null>(null)
   const [showPlantForm, setShowPlantForm] = useState(false)
@@ -53,6 +55,18 @@ export default function Home({ session }: { session: Session }) {
 
   const active = plants.filter(p => p.status !== "dead")
   const due = active.filter(isDue)
+  const visible = active
+    .filter(p => !tagFilter || p.tags.includes(tagFilter))
+    .sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name)
+      if (sortBy === "location") return (a.location ?? "∅").localeCompare(b.location ?? "∅")
+      const da = daysUntilDue(a)
+      const db = daysUntilDue(b)
+      if (da === null && db === null) return a.name.localeCompare(b.name)
+      if (da === null) return 1
+      if (db === null) return -1
+      return da - db
+    })
 
   function showToast(message: string, batch: string, plantIds: string[]) {
     if (toastTimer.current) clearTimeout(toastTimer.current)
@@ -180,21 +194,40 @@ export default function Home({ session }: { session: Session }) {
         </button>
       </section>
 
-      <section className="mb-4 flex items-center justify-between">
+      <section className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-emerald-900">Mis plantas</h2>
-        <button
-          onClick={() => setShowPlantForm(true)}
-          className="rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700"
-        >
-          + Añadir planta
-        </button>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-emerald-800">
+          <label>
+            Ordenar:{" "}
+            <select value={sortBy} onChange={e => setSortBy(e.target.value as "due" | "name" | "location")}
+              className="rounded border border-emerald-300 px-2 py-1">
+              <option value="due">próximo riego</option>
+              <option value="name">nombre</option>
+              <option value="location">ubicación</option>
+            </select>
+          </label>
+          <label>
+            Filtrar:{" "}
+            <select value={tagFilter} onChange={e => setTagFilter(e.target.value)}
+              className="rounded border border-emerald-300 px-2 py-1">
+              <option value="">todas</option>
+              {TAG_OPTIONS.map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </label>
+          <button onClick={() => setShowPlantForm(true)}
+            className="rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
+            + Añadir planta
+          </button>
+        </div>
       </section>
 
       {loading ? (
         <p className="text-emerald-800">Cargando…</p>
       ) : (
         <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {active.map(p => (
+          {visible.map(p => (
             <PlantCard
               key={p.id}
               plant={p}

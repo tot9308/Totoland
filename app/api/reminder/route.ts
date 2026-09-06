@@ -15,14 +15,19 @@ export async function POST(req: Request) {
 
   const { data: plants } = await admin
     .from("plants")
-    .select("name, watering_frequency_days, last_watered_at, status")
+    .select("name, watering_frequency_days, watering_frequency_winter_days, last_watered_at, status")
     .neq("status", "dead")
-    .not("watering_frequency_days", "is", null)
 
+  const month = new Date().getMonth() + 1
+  const summer = month >= 5 && month <= 9
   const due = (plants ?? []).filter(p => {
+    const f = summer
+      ? p.watering_frequency_days
+      : (p.watering_frequency_winter_days ?? p.watering_frequency_days)
+    if (f == null) return false
     if (!p.last_watered_at) return true
     const days = (Date.now() - new Date(p.last_watered_at).getTime()) / 86400000
-    return days >= (p.watering_frequency_days ?? 999999)
+    return days >= f
   })
 
   if (due.length === 0) return NextResponse.json({ sent: 0 })
