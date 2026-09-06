@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, TAG_OPTIONS, daysUntilDue, isDue, type Plant } from "@/lib/plants"
+import { EVENT_LABELS, daysUntilDue, isDue, type Plant } from "@/lib/plants"
 import PlantCard from "./PlantCard"
 import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
@@ -20,7 +20,6 @@ export default function Home({ session }: { session: Session }) {
   const [summerStart, setSummerStart] = useState<number>(5)
   const [summerEnd, setSummerEnd] = useState<number>(9)
   const [showSeason, setShowSeason] = useState(false)
-  const [tagFilter, setTagFilter] = useState("")
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<Toast | null>(null)
   const [showPlantForm, setShowPlantForm] = useState(false)
@@ -69,7 +68,6 @@ export default function Home({ session }: { session: Session }) {
   const active = plants.filter(p => p.status !== "dead")
   const due = active.filter(p => isDue(p, summerStart, summerEnd))
   const visible = active
-    .filter(p => !tagFilter || p.tags.includes(tagFilter))
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
       if (sortBy === "location") return (a.location ?? "∅").localeCompare(b.location ?? "∅")
@@ -217,16 +215,6 @@ export default function Home({ session }: { session: Session }) {
               <option value="due">próximo riego</option>
               <option value="name">nombre</option>
               <option value="location">ubicación</option>
-            </select>
-          </label>
-          <label>
-            Filtrar:{" "}
-            <select value={tagFilter} onChange={e => setTagFilter(e.target.value)}
-              className="rounded border border-emerald-300 px-2 py-1">
-              <option value="">todas</option>
-              {TAG_OPTIONS.map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
             </select>
           </label>
           <button onClick={() => setShowPlantForm(true)}

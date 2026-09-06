@@ -13,7 +13,6 @@ export type Plant = {
   main_photo_path: string | null
   care_tips: string | null
   acquired_at: string | null
-  tags: string[]
 }
 
 export const EVENT_LABELS: Record<string, string> = {
@@ -29,10 +28,6 @@ export const EVENT_LABELS: Record<string, string> = {
   disease_detection: "Enfermedad detectada",
   location_change: "Cambio de ubicación",
 }
-
-export const TAG_OPTIONS = [
-  "interior", "exterior", "suculenta", "tropical", "aromática", "flor", "colgante", "grande",
-]
 
 export function daysSince(dateIso: string | null): number | null {
   if (!dateIso) return null

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { TAG_OPTIONS, type Plant } from "@/lib/plants"
+import { type Plant } from "@/lib/plants"
 
 export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   householdId: string
@@ -18,12 +18,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   const [misting, setMisting] = useState(plant?.misting_enabled ?? false)
   const [tips, setTips] = useState(plant?.care_tips ?? "")
   const [acquiredAt, setAcquiredAt] = useState(plant?.acquired_at ? plant.acquired_at.slice(0, 10) : "")
-  const [tags, setTags] = useState<string[]>(plant?.tags ?? [])
   const [busy, setBusy] = useState(false)
-
-  function toggleTag(t: string) {
-    setTags(prev => (prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]))
-  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -38,7 +33,6 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
       misting_enabled: misting,
       care_tips: tips.trim() || null,
       acquired_at: acquiredAt || null,
-      tags,
     }
     const { error } = plant
       ? await supabase.from("plants").update(payload).eq("id", plant.id)
@@ -91,21 +85,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
           <input type="checkbox" checked={misting} onChange={e => setMisting(e.target.checked)} />
           Le va bien la pulverización de hojas
         </label>
-        <div className="mb-3">
-          <p className="mb-1 text-sm text-emerald-900">Etiquetas</p>
-          <div className="flex flex-wrap gap-1">
-            {TAG_OPTIONS.map(t => (
-              <button key={t} type="button" onClick={() => toggleTag(t)}
-                className={`rounded-full px-2 py-1 text-xs ${
-                  tags.includes(t)
-                    ? "bg-emerald-600 text-white"
-                    : "border border-emerald-200 bg-emerald-50 text-emerald-800"
-                }`}>
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
+
         <label className="mb-4 block text-sm text-emerald-900">
           Cuidados clave (uno por línea)
           <textarea value={tips} onChange={e => setTips(e.target.value)} rows={3}

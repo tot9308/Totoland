@@ -34,16 +34,6 @@ export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUr
       <p className="mb-2 text-sm text-emerald-700">
         {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
       </p>
-      {plant.tags.length > 0 && (
-        <p className="mb-2 flex flex-wrap gap-1">
-          {plant.tags.map(t => (
-            <span key={t}
-              className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] text-emerald-700">
-              {t}
-            </span>
-          ))}
-        </p>
-      )}
       <p className="mb-3 text-xs text-emerald-600">
         {d === null ? "Sin riegos registrados" : `Último riego hace ${d} días`}
         {f ? ` · cada ${f} días` : ""}
