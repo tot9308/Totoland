@@ -9,6 +9,7 @@ export type Plant = {
   status: string
   misting_enabled: boolean
   notes: string | null
+  care_tips: string | null
   main_photo_path: string | null
 }
 

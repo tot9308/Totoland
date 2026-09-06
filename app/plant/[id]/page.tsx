@@ -44,7 +44,7 @@ function fmt(iso: string) {
     day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
   })
 }
-
+export const dynamic = "force-dynamic"
 export default function PlantDetail() {
   const params = useParams<{ id: string }>()
   const plantId = params.id
@@ -55,6 +55,8 @@ export default function PlantDetail() {
   const [photos, setPhotos] = useState<(PhotoRow & { thumbUrl: string; fullUrl: string })[]>([])
   const [names, setNames] = useState<Record<string, string>>({})
   const [uploading, setUploading] = useState(false)
+  const [editingTips, setEditingTips] = useState(false)
+  const [tipsDraft, setTipsDraft] = useState("")
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -104,6 +106,16 @@ export default function PlantDetail() {
     const { error } = await supabase.from("care_events").insert(rows)
     if (error) return alert(error.message)
     await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", plant.id)
+    await reload()
+  }
+  async function saveTips() {
+    if (!plant) return
+    const { error } = await supabase
+      .from("plants")
+      .update({ care_tips: tipsDraft.trim() || null })
+      .eq("id", plant.id)
+    if (error) return alert(error.message)
+    setEditingTips(false)
     await reload()
   }
 
@@ -194,6 +206,48 @@ export default function PlantDetail() {
           )}
         </div>
       </header>
+      <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
+          {!editingTips && (
+            <button
+              onClick={() => { setTipsDraft(plant.care_tips ?? ""); setEditingTips(true) }}
+              className="text-xs text-amber-800 hover:underline"
+            >
+              {plant.care_tips ? "editar" : "+ añadir"}
+            </button>
+          )}
+        </div>
+        {editingTips ? (
+          <>
+            <textarea
+              value={tipsDraft}
+              onChange={e => setTipsDraft(e.target.value)}
+              rows={3}
+              placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco"}
+              className="w-full rounded border border-amber-300 px-3 py-2 text-sm"
+            />
+            <div className="mt-2 flex gap-2">
+              <button onClick={saveTips}
+                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white">
+                Guardar
+              </button>
+              <button onClick={() => setEditingTips(false)}
+                className="rounded px-3 py-1.5 text-sm text-amber-800">
+                Cancelar
+              </button>
+            </div>
+          </>
+        ) : plant.care_tips ? (
+          <ul className="list-disc space-y-1 pl-5 text-sm text-amber-900">
+            {plant.care_tips.split("\n").filter(t => t.trim()).map((t, i) => (
+              <li key={i}>{t.trim()}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-amber-800">Aún no hay cuidados clave.</p>
+        )}
+      </section>
 
       <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">

@@ -13,6 +13,7 @@ export default function PlantForm({ householdId, onClose, onSaved }: {
   const [location, setLocation] = useState("")
   const [freq, setFreq] = useState("")
   const [misting, setMisting] = useState(false)
+  const [tips, setTips] = useState("")
   const [busy, setBusy] = useState(false)
 
   async function save(e: React.FormEvent) {
@@ -26,6 +27,7 @@ export default function PlantForm({ householdId, onClose, onSaved }: {
       location: location.trim() || null,
       watering_frequency_days: freq ? Number(freq) : null,
       misting_enabled: misting,
+      care_tips: tips.trim() || null,
     })
     setBusy(false)
     if (error) return alert("Error: " + error.message)
@@ -64,6 +66,12 @@ export default function PlantForm({ householdId, onClose, onSaved }: {
         <label className="mb-4 flex items-center gap-2 text-sm text-emerald-900">
           <input type="checkbox" checked={misting} onChange={e => setMisting(e.target.checked)} />
           Le va bien la pulverización de hojas
+        </label>
+<label className="mb-4 block text-sm text-emerald-900">
+          Cuidados clave (uno por línea)
+          <textarea value={tips} onChange={e => setTips(e.target.value)} rows={3}
+            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2"
+            placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco"} />
         </label>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose}
