@@ -131,7 +131,9 @@ export default function Home({ session }: { session: Session }) {
           className="rounded-xl bg-emerald-600 p-5 text-left text-white shadow hover:bg-emerald-700 disabled:opacity-40"
         >
           <div className="text-lg font-semibold">💧 Regar pendientes ({due.length})</div>
-          <div className="text-sm text-emerald-100">Solo las que toca hoy</div>
+          <div className="text-sm text-emerald-100">
+            {due.length > 0 ? due.map(p => p.name).join(" · ") : "Nada pendiente hoy 🎉"}
+          </div>
         </button>
         <button
           onClick={() => water(active, false)}
