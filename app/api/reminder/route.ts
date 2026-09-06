@@ -19,6 +19,16 @@ export async function POST(req: Request) {
     .neq("status", "dead")
 
   const month = new Date().getMonth() + 1
+  const { data: hh } = await admin
+    .from("households")
+    .select("summer_start_month, summer_end_month")
+    .limit(1)
+    .single()
+  const s = hh?.summer_start_month ?? 5
+  const e = hh?.summer_end_month ?? 9
+  const summer = s <= e
+    ? (month >= s && month <= e)
+    : (month >= s || month <= e)
   const summer = month >= 5 && month <= 9
   const due = (plants ?? []).filter(p => {
     const f = summer

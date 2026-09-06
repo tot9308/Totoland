@@ -40,22 +40,29 @@ export function daysSince(dateIso: string | null): number | null {
 }
 
 // Mayo–septiembre = verano; el resto, invierno
-export function effectiveFreq(p: Plant): number | null {
+export function effectiveFreq(
+  p: Plant,
+  summerStart: number,
+  summerEnd: number
+): number | null {
   const m = new Date().getMonth() + 1
-  if (m >= 5 && m <= 9) return p.watering_frequency_days
+  const inSummer = summerStart <= summerEnd
+    ? (m >= summerStart && m <= summerEnd)
+    : (m >= summerStart || m <= summerEnd)
+  if (inSummer) return p.watering_frequency_days
   return p.watering_frequency_winter_days ?? p.watering_frequency_days
 }
 
-export function isDue(p: Plant): boolean {
+export function isDue(p: Plant, summerStart: number, summerEnd: number): boolean {
   if (p.status === "dead") return false
-  const f = effectiveFreq(p)
+  const f = effectiveFreq(p, summerStart, summerEnd)
   if (f == null) return false
   const d = daysSince(p.last_watered_at)
   return d === null || d >= f
 }
 
-export function daysUntilDue(p: Plant): number | null {
-  const f = effectiveFreq(p)
+export function daysUntilDue(p: Plant, summerStart: number, summerEnd: number): number | null {
+  const f = effectiveFreq(p, summerStart, summerEnd)
   if (f == null) return null
   const d = daysSince(p.last_watered_at)
   if (d === null) return -1

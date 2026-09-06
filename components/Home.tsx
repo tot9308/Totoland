@@ -7,6 +7,7 @@ import { EVENT_LABELS, TAG_OPTIONS, daysUntilDue, isDue, type Plant } from "@/li
 import PlantCard from "./PlantCard"
 import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
+import SeasonModal from "./SeasonModal"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 
@@ -16,6 +17,9 @@ export default function Home({ session }: { session: Session }) {
   const [plants, setPlants] = useState<Plant[]>([])
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({})
   const [sortBy, setSortBy] = useState<"due" | "name" | "location">("due")
+  const [summerStart, setSummerStart] = useState<number>(5)
+  const [summerEnd, setSummerEnd] = useState<number>(9)
+  const [showSeason, setShowSeason] = useState(false)
   const [tagFilter, setTagFilter] = useState("")
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<Toast | null>(null)
@@ -32,6 +36,15 @@ export default function Home({ session }: { session: Session }) {
       .single()
     if (!mem) return
     setHouseholdId(mem.household_id)
+    const { data: hh } = await supabase
+      .from("households")
+      .select("summer_start_month, summer_end_month")
+      .eq("id", mem.household_id)
+      .single()
+    if (hh) {
+      setSummerStart(hh.summer_start_month)
+      setSummerEnd(hh.summer_end_month)
+    }
     const { data } = await supabase
       .from("plants")
       .select("*")
@@ -54,14 +67,14 @@ export default function Home({ session }: { session: Session }) {
   useEffect(() => { reload() }, [reload])
 
   const active = plants.filter(p => p.status !== "dead")
-  const due = active.filter(isDue)
+  const due = active.filter(p => isDue(p, summerStart, summerEnd))
   const visible = active
     .filter(p => !tagFilter || p.tags.includes(tagFilter))
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
       if (sortBy === "location") return (a.location ?? "∅").localeCompare(b.location ?? "∅")
-      const da = daysUntilDue(a)
-      const db = daysUntilDue(b)
+      const da = daysUntilDue(a, summerStart, summerEnd)
+      const db = daysUntilDue(b, summerStart, summerEnd)
       if (da === null && db === null) return a.name.localeCompare(b.name)
       if (da === null) return 1
       if (db === null) return -1
@@ -220,6 +233,10 @@ export default function Home({ session }: { session: Session }) {
             className="rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
             + Añadir planta
           </button>
+          <button onClick={() => setShowSeason(true)}
+            className="rounded border border-emerald-300 px-2 py-1 text-emerald-800">
+            ⚙️ Estación
+          </button>
         </div>
       </section>
 
@@ -232,6 +249,8 @@ export default function Home({ session }: { session: Session }) {
               key={p.id}
               plant={p}
               photoUrl={photoUrls[p.id]}
+              summerStart={summerStart}
+              summerEnd={summerEnd}
               onWater={() => quickEvent(p, "watering")}
               onWaterMist={() => water([p], true)}
               onMore={() => setEventPlant(p)}
@@ -255,6 +274,15 @@ export default function Home({ session }: { session: Session }) {
           <span>{toast.message}</span>
           <button onClick={undo} className="font-semibold underline">Deshacer</button>
         </div>
+      )}
+      {showSeason && householdId && (
+        <SeasonModal
+          householdId={householdId}
+          summerStart={summerStart}
+          summerEnd={summerEnd}
+          onClose={() => setShowSeason(false)}
+          onSaved={(s, e) => { setSummerStart(s); setSummerEnd(e); reload() }}
+        />
       )}
     </main>
   )

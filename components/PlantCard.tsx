@@ -3,25 +3,29 @@
 import Link from "next/link"
 import { daysSince, effectiveFreq, isDue, type Plant } from "@/lib/plants"
 
-export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUrl }: {
+export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUrl, summerStart, summerEnd }: {
   plant: Plant
   onWater: () => void
   onWaterMist: () => void
   onMore: () => void
   photoUrl?: string
+  summerStart: number
+  summerEnd: number
 }) {
   const d = daysSince(plant.last_watered_at)
-  const f = effectiveFreq(plant)
+  const f = effectiveFreq(plant, summerStart, summerEnd)
   return (
     <div className="rounded-xl bg-white p-4 shadow">
       {photoUrl && (
-        <img src={photoUrl} alt={plant.name} className="mb-2 aspect-video w-full rounded object-cover" />
+        <Link href={`/plant/${plant.id}`}>
+          <img src={photoUrl} alt={plant.name} className="mb-2 aspect-video w-full rounded object-cover hover:opacity-90" />
+        </Link>
       )}
       <div className="mb-1 flex items-start justify-between">
         <h3 className="font-semibold text-emerald-900">
           <Link href={`/plant/${plant.id}`} className="hover:underline">{plant.name}</Link>
         </h3>
-        {isDue(plant) && (
+        {isDue(plant, summerStart, summerEnd) && (
           <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
             le toca
           </span>
