@@ -70,3 +70,12 @@ export function waterAmountFor(diameterCm: number, style: string): { min: number
   const h = d * 0.9
   const vol = Math.PI * r * r * h
 const [a, b] = style === "A" ? [0.1, 0.15] : style === "C" ? [0.15, 0.2] : [0.12, 0.18]
+  const round10 = (x: number) => Math.max(50, Math.round(x / 10) * 10)
+  return { min: round10(vol * a), max: round10(vol * b) }
+}
+
+export function waterAmount(p: Plant): { min: number; max: number } | null {
+  if (!p.pot_diameter_cm) return null
+  const style = findSpecies(p.species ?? "")?.water ?? "B"
+  return waterAmountFor(p.pot_diameter_cm, style)
+}
