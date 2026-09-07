@@ -1,4 +1,4 @@
-exportimport { findSpecies } from "./species"
+import { findSpecies } from "./species"
 
 export type Plant = {
   id: string
