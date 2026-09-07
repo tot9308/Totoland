@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { searchSpecies, LIGHT_LABELS, WATER_LABELS, type SpeciesCard } from "@/lib/species"
 import { type Plant } from "@/lib/plants"
 
 export default function PlantForm({ householdId, plant, onClose, onSaved }: {
@@ -12,6 +13,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
 }) {
   const [name, setName] = useState(plant?.name ?? "")
   const [species, setSpecies] = useState(plant?.species ?? "")
+  const [showSug, setShowSug] = useState(false)
   const [location, setLocation] = useState(plant?.location ?? "")
   const [freqSummer, setFreqSummer] = useState(plant?.watering_frequency_days?.toString() ?? "")
   const [freqWinter, setFreqWinter] = useState(plant?.watering_frequency_winter_days?.toString() ?? "")
@@ -19,6 +21,18 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   const [tips, setTips] = useState(plant?.care_tips ?? "")
   const [acquiredAt, setAcquiredAt] = useState(plant?.acquired_at ? plant.acquired_at.slice(0, 10) : "")
   const [busy, setBusy] = useState(false)
+
+  const suggestions = searchSpecies(species)
+
+  function pick(s: SpeciesCard) {
+    setSpecies(s.sci)
+    setShowSug(false)
+    if (!freqSummer) setFreqSummer(String(s.ws))
+    if (!freqWinter) setFreqWinter(String(s.ww))
+    setMisting(s.mist === "Sí")
+    if (!tips)
+      setTips(`Luz: ${LIGHT_LABELS[s.light]}\nRiego: ${WATER_LABELS[s.water].label} (${WATER_LABELS[s.water].check})`)
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -54,10 +68,32 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
           <input value={name} onChange={e => setName(e.target.value)} required
             className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
         </label>
-        <label className="mb-3 block text-sm text-emerald-900">
-          Especie
-          <input value={species} onChange={e => setSpecies(e.target.value)}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+        <label className="relative mb-3 block text-sm text-emerald-900">
+          Especie (científico o nombre común)
+          <input
+            value={species}
+            onChange={e => { setSpecies(e.target.value); setShowSug(true) }}
+            onFocus={() => setShowSug(true)}
+            onBlur={() => setTimeout(() => setShowSug(false), 150)}
+            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2"
+            placeholder="Escribe: monstera, poto, hed…"
+          />
+          {showSug && suggestions.length > 0 && (
+            <ul className="absolute z-50 mt-1 w-full overflow-hidden rounded border border-emerald-200 bg-white shadow-lg">
+              {suggestions.map(s => (
+                <li key={s.sci}>
+                  <button
+                    type="button"
+                    onMouseDown={() => pick(s)}
+                    className="w-full px-3 py-2 text-left hover:bg-emerald-50"
+                  >
+                    <span className="font-medium">{s.sci}</span>
+                    <span className="ml-2 text-xs text-emerald-600">{s.common}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </label>
         <label className="mb-3 block text-sm text-emerald-900">
           Ubicación
@@ -85,7 +121,6 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
           <input type="checkbox" checked={misting} onChange={e => setMisting(e.target.checked)} />
           Le va bien la pulverización de hojas
         </label>
-
         <label className="mb-4 block text-sm text-emerald-900">
           Cuidados clave (uno por línea)
           <textarea value={tips} onChange={e => setTips(e.target.value)} rows={3}

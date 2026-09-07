@@ -7,6 +7,10 @@ import { supabase } from "@/lib/supabase"
 import { EVENT_LABELS, type Plant } from "@/lib/plants"
 import { compressToJpeg } from "@/lib/photos"
 import PlantForm from "@/components/PlantForm"
+import {
+  findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
+  SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
+} from "@/lib/species"
 
 type EventRow = {
   id: string
@@ -219,6 +223,7 @@ export default function PlantDetail() {
   if (!plant) return <main className="p-6">Cargando…</main>
 
   const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
+  const speciesCard = findSpecies(plant.species ?? "")
 
   return (
     <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
@@ -301,8 +306,33 @@ export default function PlantDetail() {
           <p className="text-sm text-amber-800">Aún no hay cuidados clave.</p>
         )}
       </section>
-
-      <section className="mb-6">
+      {speciesCard && (
+        <section className="mb-6 rounded-xl bg-sky-50 p-4 shadow-sm">
+          <h2 className="mb-2 text-lg font-semibold text-sky-900">
+            📖 {speciesCard.sci}{" "}
+            <span className="text-sm font-normal text-sky-700">({speciesCard.common})</span>
+          </h2>
+          <div className="grid grid-cols-1 gap-1 text-sm text-sky-900 md:grid-cols-2">
+            <p>{LIGHT_LABELS[speciesCard.light]}</p>
+            <p>
+              {WATER_LABELS[speciesCard.water].label} · {WATER_LABELS[speciesCard.water].check}
+            </p>
+            <p>🌡️ {speciesCard.temp} °C</p>
+            <p>{MIST_LABELS[speciesCard.mist]}</p>
+            <p>🪴 Sustrato: {SUBSTRATE_LABELS[speciesCard.substrate]}</p>
+            <p>🌾 Abono: {fertLabel(speciesCard.fert)}</p>
+            <p>🐶 Tóxica para mascotas: {speciesCard.toxic ? "sí" : "no"}</p>
+            <p>Dificultad: {DIFF_LABELS[speciesCard.difficulty]}</p>
+            <p>💧 Orientativo: {speciesCard.ws} d verano / {speciesCard.ww} d invierno</p>
+          </div>
+          {speciesCard.flags && FLAG_LABELS[speciesCard.flags] && (
+            <p className="mt-2 text-sm text-sky-800">{FLAG_LABELS[speciesCard.flags]}</p>
+          )}
+          <p className="mt-1 text-[11px] text-sky-600">
+            Orientativo: manda lo que observes en tu casa.
+          </p>
+        </section>
+      )}      <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-emerald-900">Fotos ({photos.length})</h2>
           <label className="cursor-pointer rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
