@@ -51,6 +51,7 @@ export default function Home({ session }: { session: Session }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [showAchievements, setShowAchievements] = useState(false)
   const [showHousehold, setShowHousehold] = useState(false)
+  const [recoverySchedule, setRecoverySchedule] = useState<"A" | "B">("B")
 
   function setSortBy(v: "due" | "name" | "location") {
     setSortByState(v)
@@ -77,14 +78,14 @@ export default function Home({ session }: { session: Session }) {
 
     const { data: hh } = await supabase
       .from("households")
-      .select("summer_start_month, summer_end_month")
+      .select("summer_start_month, summer_end_month, recovery_schedule")
       .eq("id", mem.household_id)
       .single()
     if (hh) {
       setSummerStart(hh.summer_start_month)
       setSummerEnd(hh.summer_end_month)
+      setRecoverySchedule((hh.recovery_schedule as "A" | "B") ?? "B")
     }
-
     const { data } = await supabase
       .from("plants")
       .select("*")
@@ -161,7 +162,8 @@ export default function Home({ session }: { session: Session }) {
     if (scheduleCheck) {
       const checkAt = new Date(Date.now() + 3 * 86400000).toISOString()
       for (const x of late)
-        await supabase.from("plants").update({ recovery_check_at: checkAt }).eq("id", x.p.id)
+        await supabase.from("plants")
+          .update({ recovery_check_at: checkAt, recovery_step: 1 }).eq("id", x.p.id)
     }
     await reload()
     showToast(`Riego registrado (${list.length})`, batch, list.map(p => p.id))
@@ -233,7 +235,7 @@ export default function Home({ session }: { session: Session }) {
         <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
       </header>
 
-      <RecoverySection plants={plants} userId={userId} onChanged={reload} />
+      <RecoverySection plants={plants} userId={userId} schedule={recoverySchedule} onChanged={reload} />
       {householdId && (
         <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
       )}
@@ -328,6 +330,8 @@ export default function Home({ session }: { session: Session }) {
           onShowPhotos={setShowPhotos}
           size={size}
           onSize={setSize}
+          recoverySchedule={recoverySchedule}
+          onRecoverySchedule={setRecoverySchedule}
           onClose={() => setShowSettings(false)}
         />
       )}

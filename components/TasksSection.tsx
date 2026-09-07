@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { MONTHLY_TASKS, SPECIES_MONTHLY_TASKS, TASK_ICONS, type Task } from "@/lib/tasks"
+import { ensureMonthlyTasks, TASK_ICONS, type Task } from "@/lib/tasks"
 import { type Plant } from "@/lib/plants"
 
 export default function TasksSection({ householdId, plants, onChanged }: {
@@ -12,78 +12,32 @@ export default function TasksSection({ householdId, plants, onChanged }: {
 }) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
-
   const now = new Date()
-  const currentMonth = now.getMonth() + 1
-  const currentYear = now.getFullYear()
+  const month = now.getMonth() + 1
+  const year = now.getFullYear()
 
   async function load() {
-    const { data } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("household_id", householdId)
-      .eq("year", currentYear)
-      .eq("month", currentMonth)
+    await ensureMonthlyTasks(householdId, plants, month, year)
+    const { data } = await supabase.from("tasks").select("*")
+      .eq("household_id", householdId).eq("month", month).eq("year", year)
       .order("created_at")
     setTasks((data as Task[]) ?? [])
     setLoading(false)
   }
 
-  useEffect(() => {
-    (async () => {
-      await load()
-      await maybeGenerate()
-      await load()
-    })()
-  }, [householdId])
+  useEffect(() => { load() }, [householdId])
 
-  async function maybeGenerate() {
-    const { data: existing } = await supabase
-      .from("tasks").select("id").eq("household_id", householdId)
-      .eq("year", currentYear).eq("month", currentMonth).limit(1)
-    if (existing && existing.length > 0) return
-
-    const toInsert: object[] = []
-    for (const t of MONTHLY_TASKS.filter(m => m.month === currentMonth)) {
-      toInsert.push({
-        household_id: householdId, plant_id: null, type: t.type,
-        title: t.title, description: t.description,
-        month: currentMonth, year: currentYear,
-      })
-    }
-    for (const p of plants) {
-      if (p.status === "dead" || !p.species) continue
-      const spec = SPECIES_MONTHLY_TASKS[p.species] ?? []
-      for (const t of spec.filter(s => s.month === currentMonth)) {
-        toInsert.push({
-          household_id: householdId, plant_id: p.id, type: t.type,
-          title: `${p.name}: ${t.title}`, description: t.description,
-          month: currentMonth, year: currentYear,
-        })
-      }
-    }
-    if (toInsert.length > 0)
-      await supabase.from("tasks").insert(toInsert)
-  }
-
-  async function complete(t: Task) {
-    await supabase.from("tasks")
-      .update({ status: "done", completed_at: new Date().toISOString() })
-      .eq("id", t.id)
+  async function setStatus(t: Task, status: "done" | "dismissed") {
+    await supabase.from("tasks").update({
+      status,
+      completed_at: status === "done" ? new Date().toISOString() : null,
+    }).eq("id", t.id)
     onChanged()
     await load()
   }
 
-  async function dismiss(t: Task) {
-    await supabase.from("tasks")
-      .update({ status: "dismissed" })
-      .eq("id", t.id)
-    await load()
-  }
-
   const pending = tasks.filter(t => t.status === "pending")
-  if (loading) return null
-  if (pending.length === 0) return null
+  if (loading || pending.length === 0) return null
 
   return (
     <section className="mb-6">
@@ -99,14 +53,10 @@ export default function TasksSection({ householdId, plants, onChanged }: {
                 {t.description && <p className="mt-1 text-xs text-emerald-700">{t.description}</p>}
               </div>
               <div className="flex flex-col gap-1">
-                <button onClick={() => complete(t)}
-                  className="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-700">
-                  ✓ Hecho
-                </button>
-                <button onClick={() => dismiss(t)}
-                  className="rounded bg-white px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-100">
-                  ✗ Saltar
-                </button>
+                <button onClick={() => setStatus(t, "done")}
+                  className="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-700">✓ Hecho</button>
+                <button onClick={() => setStatus(t, "dismissed")}
+                  className="rounded bg-white px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-100">✗ Saltar</button>
               </div>
             </div>
           </li>

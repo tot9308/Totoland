@@ -65,3 +65,21 @@ export const SPECIES_MONTHLY_TASKS: Record<string, { month: number; type: string
     { month: 3, type: "prune", title: "Poda de geranios", description: "Recorta tallos largos y pinza puntas para que ramifique." },
   ],
 }
+import { supabase } from "./supabase"
+import { type Plant } from "./plants"
+
+export async function ensureMonthlyTasks(householdId: string, plants: Plant[], month: number, year: number) {
+  const { data: existing } = await supabase
+    .from("tasks").select("id")
+    .eq("household_id", householdId).eq("month", month).eq("year", year).limit(1)
+  if (existing && existing.length > 0) return
+  const toInsert: object[] = []
+  for (const t of MONTHLY_TASKS.filter(m => m.month === month))
+    toInsert.push({ household_id: householdId, plant_id: null, type: t.type, title: t.title, description: t.description, month, year })
+  for (const p of plants) {
+    if (p.status === "dead" || !p.species) continue
+    for (const t of (SPECIES_MONTHLY_TASKS[p.species] ?? []).filter(s => s.month === month))
+      toInsert.push({ household_id: householdId, plant_id: p.id, type: t.type, title: `${p.name}: ${t.title}`, description: t.description, month, year })
+  }
+  if (toInsert.length) await supabase.from("tasks").insert(toInsert)
+}

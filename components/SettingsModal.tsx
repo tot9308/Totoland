@@ -16,6 +16,8 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
   onShowPhotos: (v: boolean) => void
   size: "grande" | "medio" | "pequeno"
   onSize: (v: "grande" | "medio" | "pequeno") => void
+  recoverySchedule: "A" | "B"
+  onRecoverySchedule: (v: "A" | "B") => void
   onClose: () => void
 }) {
   const [s, setS] = useState(summerStart)
@@ -31,6 +33,12 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
     setBusy(false)
     if (error) return alert("Error: " + error.message)
     onSeasonSaved(s, e)
+  }
+  async function saveRecovery(v: "A" | "B") {
+    const { error } = await supabase
+      .from("households").update({ recovery_schedule: v }).eq("id", householdId)
+    if (error) return alert("Error: " + error.message)
+    onRecoverySchedule(v)
   }
 
   function urlBase64ToUint8Array(base64String: string) {
@@ -130,6 +138,15 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
             <option value="grande">Grandes (1 columna en el móvil)</option>
             <option value="medio">Medias (1 en móvil, 3 en PC)</option>
             <option value="pequeno">Pequeñas (2 columnas en el móvil)</option>
+          </select>
+        </label>
+        <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🩺 Recuperación post-sequía</h3>
+        <label className="mb-4 block text-sm text-emerald-900">
+          Seguimiento tras un riego con retraso
+          <select value={recoverySchedule} onChange={ev => saveRecovery(ev.target.value as "A" | "B")}
+            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            <option value="B">Dos chequeos: a los 3 y a los 7 días</option>
+            <option value="A">Un chequeo: a los 3 días</option>
           </select>
         </label>
 
