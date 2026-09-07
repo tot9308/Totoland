@@ -39,6 +39,10 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 🔄 Sincronizar riegos
               </button>
+              <Link href="/guide" onClick={() => setOpen(false)}
+                className="rounded px-3 py-2 text-left hover:bg-emerald-50">
+                📚 Guía
+              </Link>
               <Link href="/cemetery" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 🪦 Cementerio{cemeteryCount > 0 ? ` (${cemeteryCount})` : ""}

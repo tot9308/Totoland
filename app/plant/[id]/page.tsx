@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, type Plant } from "@/lib/plants"
+import { EVENT_LABELS, waterAmount, type Plant } from "@/lib/plants"
 import { compressToJpeg } from "@/lib/photos"
 import PlantForm from "@/components/PlantForm"
 import {
@@ -236,6 +236,7 @@ export default function PlantDetail() {
 
   const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
   const speciesCard = findSpecies(plant.species ?? "")
+  const waterAmt = waterAmount(plant)
 
   return (
     <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
@@ -246,14 +247,12 @@ export default function PlantDetail() {
           <p className="text-sm text-emerald-700">
             {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
           </p>
-          <p className="text-xs text-emerald-600">
-            {events.filter(e => e.type === "watering" && e.occurred_at >= yearStart).length} riegos este año ·{" "}
-            {events.filter(e => e.type === "pest_detection" || e.type === "disease_detection").length} incidencias
-            {plant.acquired_at && (
-              <> · con nosotros desde {new Date(plant.acquired_at).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}</>
-            )}
-          </p>
-        </div>
+          {waterAmt && (
+            <p className="text-xs text-emerald-600">
+              💦 Riego: ≈ {waterAmt.min}–{waterAmt.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
+              {plant.has_saucer && " · vacía el plato a los 10-15 min"}
+            </p>
+          )}        </div>
         <div className="flex flex-wrap justify-end gap-2">
           <button onClick={() => quickWater(false)}
             className="rounded bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700">

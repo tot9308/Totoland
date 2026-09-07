@@ -1,3 +1,5 @@
+exportimport { findSpecies } from "./species"
+
 export type Plant = {
   id: string
   household_id: string
@@ -14,6 +16,8 @@ export type Plant = {
   care_tips: string | null
   acquired_at: string | null
   died_at: string | null
+  pot_diameter_cm: number | null
+  has_saucer: boolean
 }
 
 export const EVENT_LABELS: Record<string, string> = {
@@ -35,12 +39,7 @@ export function daysSince(dateIso: string | null): number | null {
   return Math.floor((Date.now() - new Date(dateIso).getTime()) / 86400000)
 }
 
-// Mayo–septiembre = verano; el resto, invierno
-export function effectiveFreq(
-  p: Plant,
-  summerStart: number,
-  summerEnd: number
-): number | null {
+export function effectiveFreq(p: Plant, summerStart: number, summerEnd: number): number | null {
   const m = new Date().getMonth() + 1
   const inSummer = summerStart <= summerEnd
     ? (m >= summerStart && m <= summerEnd)
@@ -64,3 +63,10 @@ export function daysUntilDue(p: Plant, summerStart: number, summerEnd: number): 
   if (d === null) return -1
   return f - d
 }
+
+export function waterAmountFor(diameterCm: number, style: string): { min: number; max: number } {
+  const d = Math.max(4, diameterCm)
+  const r = d / 2 - 1
+  const h = d * 0.9
+  const vol = Math.PI * r * r * h
+  const [a, b] = style === "A" ? [0.1, 0.15] : style === "C"

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, daysUntilDue, isDue, type Plant } from "@/lib/plants"
+import { EVENT_LABELS, daysSince, daysUntilDue, effectiveFreq, isDue, type Plant } from "@/lib/plants"
 import PlantCard from "./PlantCard"
 import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
@@ -130,6 +130,15 @@ export default function Home({ session }: { session: Session }) {
 
   async function water(list: Plant[], withMisting: boolean) {
     if (list.length === 0) return
+    const late = list
+      .map(p => ({ p, d: daysSince(p.last_watered_at), f: effectiveFreq(p, summerStart, summerEnd) }))
+      .filter(x => x.f != null && x.d != null && x.d >= x.f + 3)
+    if (late.length > 0) {
+      const names = late.map(x => `${x.p.name} (${(x.d ?? 0) - (x.f ?? 0)} días de retraso)`).join(", ")
+      if (!confirm(
+        `Con retraso: ${names}.\n\nNo eches agua de más: riega hasta que salga por el drenaje y, si el sustrato está muy seco, repite a los 10 min o remoja la maceta 10-15 min.\n\n¿Registrar el riego?`
+      )) return
+    }
     const batch = crypto.randomUUID()
     const events = list.flatMap(p => {
       const e: object[] = [{ plant_id: p.id, user_id: userId, type: "watering", batch_id: batch }]

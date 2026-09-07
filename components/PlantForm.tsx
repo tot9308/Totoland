@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { searchSpecies, LIGHT_LABELS, WATER_LABELS, type SpeciesCard } from "@/lib/species"
-import { type Plant } from "@/lib/plants"
+import { waterAmountFor, type Plant } from "@/lib/plants"
+import { searchSpecies, LIGHT_LABELS, WATER_LABELS, findSpecies, type SpeciesCard } from "@/lib/species"
 
 export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   householdId: string
@@ -20,9 +20,12 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   const [misting, setMisting] = useState(plant?.misting_enabled ?? false)
   const [tips, setTips] = useState(plant?.care_tips ?? "")
   const [acquiredAt, setAcquiredAt] = useState(plant?.acquired_at ? plant.acquired_at.slice(0, 10) : "")
+  const [potDiameter, setPotDiameter] = useState(plant?.pot_diameter_cm?.toString() ?? "")
+  const [hasSaucer, setHasSaucer] = useState(plant?.has_saucer ?? false)
   const [busy, setBusy] = useState(false)
 
   const suggestions = searchSpecies(species)
+  const style = findSpecies(species)?.water ?? "B"
 
   function pick(s: SpeciesCard) {
     setSpecies(s.sci)
@@ -47,6 +50,8 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
       misting_enabled: misting,
       care_tips: tips.trim() || null,
       acquired_at: acquiredAt || null,
+      pot_diameter_cm: potDiameter ? Number(potDiameter) : null,
+      has_saucer: hasSaucer,
     }
     const { error } = plant
       ? await supabase.from("plants").update(payload).eq("id", plant.id)
@@ -117,6 +122,23 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
           <input type="date" value={acquiredAt} onChange={e => setAcquiredAt(e.target.value)}
             className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
         </label>
+        <div className="mb-2 grid grid-cols-2 gap-2">
+          <label className="block text-sm text-emerald-900">
+            Diámetro maceta (cm)
+            <input type="number" min={1} value={potDiameter} onChange={e => setPotDiameter(e.target.value)}
+              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+          </label>
+          <label className="flex items-end gap-2 pb-2 text-sm text-emerald-900">
+            <input type="checkbox" checked={hasSaucer} onChange={e => setHasSaucer(e.target.checked)} />
+            Tiene plato
+          </label>
+        </div>
+        {potDiameter && (
+          <p className="mb-3 rounded bg-sky-50 p-2 text-xs text-sky-800">
+            💦 Con esa maceta: ≈ {waterAmountFor(Number(potDiameter), style).min}–{waterAmountFor(Number(potDiameter), style).max} ml por riego.
+            El plato no cambia la cantidad: vacíalo a los 10-15 min.
+          </p>
+        )}
         <label className="mb-3 flex items-center gap-2 text-sm text-emerald-900">
           <input type="checkbox" checked={misting} onChange={e => setMisting(e.target.checked)} />
           Le va bien la pulverización de hojas
