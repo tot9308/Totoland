@@ -18,8 +18,8 @@ export type Plant = {
   died_at: string | null
   pot_diameter_cm: number | null
   has_saucer: boolean
+  recovery_check_at: string | null
 }
-
 export const EVENT_LABELS: Record<string, string> = {
   watering: "Riego",
   misting: "Pulverizar hojas",

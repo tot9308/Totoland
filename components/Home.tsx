@@ -12,6 +12,8 @@ import SettingsModal from "./SettingsModal"
 import SyncModal from "./SyncModal"
 import TasksSection from "./TasksSection"
 import AchievementsModal from "./AchievementsModal"
+import RecoverySection from "./RecoverySection"
+import HouseholdModal from "./HouseholdModal"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -48,6 +50,7 @@ export default function Home({ session }: { session: Session }) {
   const [size, setSizeState] = useState<Size>(() => lsGet("tl_size", "medio") as Size)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [showAchievements, setShowAchievements] = useState(false)
+  const [showHousehold, setShowHousehold] = useState(false)
 
   function setSortBy(v: "due" | "name" | "location") {
     setSortByState(v)
@@ -130,17 +133,18 @@ export default function Home({ session }: { session: Session }) {
     setToast({ message, batch, plantIds })
     toastTimer.current = setTimeout(() => setToast(null), 10000)
   }
-
   async function water(list: Plant[], withMisting: boolean) {
     if (list.length === 0) return
     const late = list
       .map(p => ({ p, d: daysSince(p.last_watered_at), f: effectiveFreq(p, summerStart, summerEnd) }))
       .filter(x => x.f != null && x.d != null && x.d >= x.f + 3)
+    let scheduleCheck = false
     if (late.length > 0) {
       const names = late.map(x => `${x.p.name} (${(x.d ?? 0) - (x.f ?? 0)} días de retraso)`).join(", ")
       if (!confirm(
         `Con retraso: ${names}.\n\nNo eches agua de más: riega hasta que salga por el drenaje y, si el sustrato está muy seco, repite a los 10 min o remoja la maceta 10-15 min.\n\n¿Registrar el riego?`
       )) return
+      scheduleCheck = confirm("¿Programar un chequeo de recuperación en 3 días para estas plantas?")
     }
     const batch = crypto.randomUUID()
     const events = list.flatMap(p => {
@@ -154,10 +158,14 @@ export default function Home({ session }: { session: Session }) {
     const now = new Date().toISOString()
     for (const p of list)
       await supabase.from("plants").update({ last_watered_at: now }).eq("id", p.id)
+    if (scheduleCheck) {
+      const checkAt = new Date(Date.now() + 3 * 86400000).toISOString()
+      for (const x of late)
+        await supabase.from("plants").update({ recovery_check_at: checkAt }).eq("id", x.p.id)
+    }
     await reload()
     showToast(`Riego registrado (${list.length})`, batch, list.map(p => p.id))
   }
-
   async function quickEvent(p: Plant, type: string) {
     const batch = crypto.randomUUID()
     const { error } = await supabase.from("care_events").insert({
@@ -217,13 +225,15 @@ export default function Home({ session }: { session: Session }) {
           cemeteryCount={dead.length}
           onOpenSettings={() => setShowSettings(true)}
           onOpenSync={() => setShowSync(true)}
-          onOpenAchievements={() => setShowAchievements(true)}
-          onChangePassword={changePassword}
+                         onOpenAchievements={() => setShowAchievements(true)}
+                         onOpenHousehold={() => setShowHousehold(true)}
+                         onChangePassword={changePassword}
           onLogout={() => supabase.auth.signOut()}
         />
         <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
       </header>
 
+      <RecoverySection plants={plants} userId={userId} onChanged={reload} />
       {householdId && (
         <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
       )}
@@ -326,6 +336,13 @@ export default function Home({ session }: { session: Session }) {
           householdId={householdId}
           plants={plants}
           onClose={() => setShowAchievements(false)}
+        />
+      )}
+      {showHousehold && (
+        <HouseholdModal
+          userId={userId}
+          onClose={() => setShowHousehold(false)}
+          onJoined={reload}
         />
       )}
       {showSync && (

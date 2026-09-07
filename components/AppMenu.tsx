@@ -3,12 +3,13 @@
 import { useState } from "react"
 import Link from "next/link"
 
-export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSync, onOpenAchievements, onChangePassword, onLogout }: {
+export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onChangePassword, onLogout }: {
   email: string
   cemeteryCount: number
   onOpenSettings: () => void
   onOpenSync: () => void
   onOpenAchievements: () => void
+  onOpenHousehold: () => void
   onChangePassword: () => void
   onLogout: () => void
 }) {
@@ -43,6 +44,10 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
               <button onClick={() => { setOpen(false); onOpenAchievements() }}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 🏆 Logros
+              </button>
+              <button onClick={() => { setOpen(false); onOpenHousehold() }}
+                className="rounded px-3 py-2 text-left hover:bg-emerald-50">
+                🏠 Mi casa
               </button>
               <Link href="/guide" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
