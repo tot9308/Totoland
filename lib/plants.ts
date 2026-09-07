@@ -69,4 +69,4 @@ export function waterAmountFor(diameterCm: number, style: string): { min: number
   const r = d / 2 - 1
   const h = d * 0.9
   const vol = Math.PI * r * r * h
-  const [a, b] = style === "A" ? [0.1, 0.15] : style === "C"
+const [a, b] = style === "A" ? [0.1, 0.15] : style === "C" ? [0.15, 0.2] : [0.12, 0.18]
