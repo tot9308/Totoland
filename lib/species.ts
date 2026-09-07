@@ -12,6 +12,7 @@ export type SpeciesCard = {
   ws: number
   ww: number
   flags: string
+  aliases: string
 }
 
 // Formato: comun|cientifico|luz|riego|temp|pulv|sustrato|abono|tox|dif|diasVerano|diasInvierno|extra
@@ -56,7 +57,7 @@ const RAW = [
   "Tronco Brasil|Dracaena fragrans|3|B|16-26|Sí|1|M-Eq|1|1|7|12",
   "Dracena manchada|Dracaena surculosa|3|B|18-26|Sí|1|M-Eq|1|1|7|12",
   "Palmera de salón|Chamaedorea elegans|3|B|16-24|Sí|1|M-Eq|0|1|6|10",
-  "Areca|Dypsis lutescens|2|B|18-26|Sí|1|M-Eq|0|2|6|9",
+   "Areca|Dypsis lutescens|2|B|18-26|Sí|1|M-Eq|0|2|6|9||dypsis areca,palmera areca",
   "Pata de elefante|Beaucarnea recurvata|1|C|15-26|No|2|M-Eq|0|1|12|20",
   "Amor de hombre|Tradescantia zebrina|2|B|16-25|Sí|1|F-Eq|0|1|6|10",
   "Purpurina|Tradescantia pallida|1|B|16-25|Sí|1|F-Eq|0|1|6|10",
@@ -157,6 +158,163 @@ const RAW = [
   "Bananera enana|Musa acuminata|1|A|18-30|Sí|1|F-Eq|0|2|5|8",
   "Begonia de flor|Begonia semperflorens|3|B|13-28|No|1|F-Flo|1|1|5|8",
   "Schefflera enana|Schefflera arboricola|2|B|15-27|Mod|1|M-Eq|1|1|7|12",
+  "Coleo|Plectranthus scutellarioides|2|B|15-28|Sí|1|F-Eq|1|1|5|8||plectranthus scutellaroides,solenostemon",
+  "Haworthia limifolia|Haworthia limifolia|2|C|15-26|No|2|M-Eq|0|1|12|18||haworthiopsis limifolia,tabla de lavar",
+  "Monstera obliqua|Monstera obliqua|3|A|18-27|Sí|1|F-Eq|1|3|5|8",
+  "Monstera peru|Monstera karstenianum|2|B|18-27|Sí|1|F-Eq|1|1|6|10",
+  "Monstera standleyana|Monstera standleyana|2|B|18-27|Sí|1|F-Eq|1|2|6|10",
+  "Poto n'joy|Epipremnum aureum 'N'Joy'|2|B|16-26|Sí|1|F-Eq|1|1|7|12",
+  "Poto marble queen|Epipremnum aureum 'Marble Queen'|2|B|16-26|Sí|1|F-Eq|1|1|7|12",
+  "Filodendro brasil|Philodendron hederaceum 'Brasil'|2|B|18-27|Sí|1|F-Eq|1|1|7|12",
+  "Filodendro micans|Philodendron hederaceum 'Micans'|2|B|18-27|Sí|1|F-Eq|1|1|7|12",
+  "Filodendro verrucosum|Philodendron verrucosum|2|B|18-26|Sí|1|F-Eq|1|3|6|9",
+  "Anturio clarinervium|Anthurium clarinervium|2|B|18-27|Sí|4|F-Eq|1|3|6|9",
+  "Anturio cristalino|Anthurium crystallinum|2|B|18-27|Sí|4|F-Eq|1|3|6|9",
+  "Alocasia frydek|Alocasia micholitziana|2|A|20-27|Sí|1|F-Eq|1|3|4|7",
+  "Alocasia silver dragon|Alocasia baginda|2|B|20-27|Sí|1|F-Eq|1|3|5|8",
+  "Colocasia|Colocasia esculenta|1|A|18-30|Sí|1|F-Eq|0|2|4|6",
+  "Calathea medallion|Goeppertia veitchiana|3|A|18-24|Sí|1|F-Eq|0|3|5|8",
+  "Calathea white star|Goeppertia majestica|3|A|18-24|Sí|1|F-Eq|0|3|5|8",
+  "Stromanthe|Stromanthe sanguinea|3|A|18-24|Sí|1|F-Eq|0|3|5|8",
+  "Ctenanthe setosa|Ctenanthe setosa|3|A|18-24|Sí|1|F-Eq|0|2|5|8",
+  "Maranta kerchoveana|Maranta leuconeura 'Kerchoveana'|3|A|18-24|Sí|1|F-Eq|0|2|5|8",
+  "Begonia rex|Begonia rex-cultorum|2|B|18-24|No|1|M-Flo|1|2|6|9",
+  "Begonia hoja de arce|Begonia ricinifolia|2|B|18-26|No|1|M-Flo|1|2|6|10",
+  "Peperomia rosso|Peperomia caperata 'Rosso'|3|B|18-26|Mod|1|M-Eq|0|1|7|12",
+  "Peperomia hope|Peperomia 'Hope'|3|B|18-26|Mod|1|M-Eq|0|1|8|12",
+  "Peperomia tortuga|Peperomia prostrata|3|B|18-26|Mod|1|M-Eq|0|2|7|12",
+  "Pilea amistad|Pilea involucrata|3|B|18-24|Sí|1|M-Eq|0|2|5|8",
+  "Pilea plateada|Pilea glauca|3|B|18-24|Sí|1|M-Eq|0|2|6|9",
+  "Fittonia rosa|Fittonia albivenis 'Rosso'|3|A|18-24|Sí|1|M-Eq|0|2|4|7",
+  "Scindapsus treubii|Scindapsus treubii|2|B|18-26|Sí|1|F-Eq|1|1|8|14",
+  "Dischidia botones|Dischidia nummularia|2|B|18-26|Sí|4|M-Eq|0|2|6|10",
+  "Dischidia corazones|Dischidia ruscifolia|2|B|18-26|Sí|4|M-Eq|0|2|6|10",
+  "Hoya corazón|Hoya kerrii|2|C|18-27|No|2|M-Eq|0|1|12|18",
+  "Hoya bella|Hoya bella|2|B|18-26|Sí|4|M-Flo|0|2|8|12",
+  "Hoya pubicalyx|Hoya pubicalyx|2|B|18-27|Sí|1|M-Flo|0|1|9|14",
+  "Rhipsalis|Rhipsalis baccifera|3|B|16-26|Sí|4|M-Eq|0|1|7|12",
+  "Cactus pez|Selenicereus anguliger|2|B|16-26|Sí|4|M-Flo|0|2|8|12||epiphyllum anguliger",
+  "Rhipsalis coral|Rhipsalis cereuscula|3|B|16-26|Sí|4|M-Eq|0|1|7|12",
+  "Bambú de la suerte|Dracaena sanderiana|3|A|18-26|Sí|-|M-Eq|1|1|5|8|agua",
+  "Palmera bambú|Rhapis excelsa|3|B|13-26|Sí|1|M-Eq|0|1|6|10",
+  "Palmera datilera enana|Phoenix roebelenii|2|B|16-28|Sí|1|M-Eq|0|2|6|9",
+  "Palma cola de pez|Caryota mitis|2|B|18-27|Sí|1|M-Eq|0|2|6|9",
+  "Chamaedorea metálica|Chamaedorea metallica|3|B|16-25|Sí|1|M-Eq|0|1|6|10",
+  "Helecho pie de conejo|Davallia fejeensis|3|B|16-24|Sí|4|F-Eq|0|2|5|8",
+  "Pteris|Pteris cretica|3|A|16-24|Sí|1|F-Eq|0|2|4|7",
+  "Helecho espada|Blechnum gibbum|3|A|16-24|Sí|1|F-Eq|0|2|5|8",
+  "Dendrobium|Dendrobium nobile|2|B|16-26|Sí|4|M-Flo|0|2|7|12",
+  "Oncidium|Oncidium hybrida|2|B|16-26|Sí|4|M-Flo|0|2|7|10",
+  "Cattleya|Cattleya hybrida|2|B|16-26|Sí|4|M-Flo|0|3|7|10",
+  "Orquídea joya|Ludisia discolor|3|B|18-26|Sí|4|M-Eq|0|2|6|9",
+  "Drosera|Drosera capensis|1|A|15-30|No|4|-|0|2|3|5|destilada",
+  "Venus atrapamoscas|Dionaea muscipula|1|A|10-32|No|4|-|0|3|3|5|destilada",
+  "Sarracenia|Sarracenia purpurea|1|A|5-32|No|4|-|0|2|3|5|destilada",
+  "Nepenthes|Nepenthes alata|3|A|18-28|Sí|4|-|0|3|4|6|destilada",
+  "Asiento de suegra|Echinocactus grusonii|1|C|15-30|No|2|-|0|1|14|24",
+  "Cactus dedal|Mammillaria hahniana|1|C|15-30|No|2|-|0|1|14|24",
+  "Cereus|Cereus repandus|1|C|15-32|No|2|-|0|1|14|24",
+  "Orejas de conejo|Opuntia microdasys|1|C|15-32|No|2|-|0|2|14|24",
+  "Agave|Agave americana|1|C|8-35|No|2|-|0|1|14|24",
+  "Aloe aristata|Aloe aristata|1|C|15-28|No|2|-|0|1|12|20",
+  "Haworthia cooperi|Haworthia cooperi|2|C|15-26|No|2|M-Eq|0|1|12|18",
+  "Haworthia cebra|Haworthiopsis attenuata|2|C|15-26|No|2|M-Eq|0|1|12|18",
+  "Crassula collar|Crassula perforata|1|C|15-26|No|2|M-Eq|0|1|12|18",
+  "Crassula musgosa|Crassula muscosa|1|C|15-26|No|2|M-Eq|0|1|12|18",
+  "Senecio tiza|Curio talinoides|1|C|15-28|No|2|M-Eq|1|1|12|20",
+  "Echeveria lila|Echeveria lilacina|1|C|15-26|No|2|M-Eq|0|1|12|20",
+  "Graptopetalum|Graptopetalum paraguayense|1|C|15-28|No|2|M-Eq|0|1|12|18",
+  "Pachyfito|Pachyphytum oviferum|1|C|15-26|No|2|M-Eq|0|1|12|20",
+  "Aeonium|Aeonium arboreum|1|C|10-28|No|2|M-Eq|0|1|10|16",
+  "Siempreviva|Sempervivum tectorum|1|C|0-30|No|2|-|0|1|10|16",
+  "Sedum dorado|Sedum adolphii|1|C|10-30|No|2|M-Eq|0|1|10|16",
+  "Portulacaria|Portulacaria afra|1|C|15-28|No|2|M-Eq|0|1|10|16",
+  "Kalanchoe peludo|Kalanchoe tomentosa|1|C|15-28|No|2|M-Eq|1|1|12|18",
+  "Kalanchoe pala|Kalanchoe thyrsiflora|1|C|15-28|No|2|M-Eq|1|1|12|18",
+  "Euphorbia bola|Euphorbia obesa|1|C|18-30|No|2|-|1|2|14|24",
+  "Candelabro|Euphorbia lactea|1|C|18-32|No|2|-|1|1|12|20",
+  "Planta coral|Pedilanthus tithymaloides|1|B|15-30|No|2|M-Eq|1|2|8|14",
+  "Jatrofa|Jatropha podagrica|1|C|18-32|No|2|M-Eq|1|2|10|18",
+  "Pachipodio|Pachypodium lamerei|1|C|18-32|No|2|M-Eq|1|2|12|20",
+  "Jade gollum|Crassula ovata 'Gollum'|1|C|15-26|No|2|M-Eq|1|1|12|20",
+  "Faucia tigre|Faucaria tigrina|1|C|15-26|No|2|M-Eq|0|1|12|20",
+  "Geranio hiedra|Pelargonium peltatum|1|B|10-30|No|1|F-Flo|1|1|5|8||gitanilla",
+  "Margarita común|Bellis perennis|1|B|5-25|No|1|M-Flo|0|1|4|7",
+  "Petunia|Petunia hybrida|1|B|10-30|No|1|F-Flo|0|1|4|7",
+  "Surfinia|Petunia 'Surfinia'|1|B|10-30|No|1|F-Flo|0|1|4|7",
+  "Gerbera|Gerbera jamesonii|1|B|12-26|No|1|F-Flo|0|2|5|8",
+  "Margarita africana|Osteospermum ecklonis|1|B|8-28|No|1|M-Flo|0|1|5|8",
+  "Verbena|Verbena hybrida|1|B|10-30|No|1|F-Flo|0|1|4|7",
+  "Gazania|Gazania rigens|1|C|8-30|No|2|M-Flo|0|1|7|12",
+  "Calibrachoa|Calibrachoa hybrida|1|B|10-28|No|1|F-Flo|0|1|4|7",
+  "Lobelia|Lobelia erinus|1|A|10-24|No|1|F-Flo|0|2|4|6",
+  "Aliso de mar|Lobularia maritima|1|B|8-26|No|1|M-Flo|0|1|5|8",
+  "Clavelina|Dianthus deltoides|1|C|5-28|No|2|M-Flo|0|1|6|10",
+  "Zinnia|Zinnia elegans|1|B|15-32|No|1|F-Flo|0|1|5|8",
+  "Cosmos|Cosmos bipinnatus|1|C|10-32|No|2|M-Flo|0|1|6|10",
+  "Girasol|Helianthus annuus|1|B|10-32|No|1|M-Flo|0|1|5|8",
+  "Tagete|Tagetes patula|1|B|10-32|No|1|M-Flo|0|1|5|8",
+  "Caléndula|Calendula officinalis|1|B|8-28|No|1|M-Flo|0|1|5|8",
+  "Boca de dragón|Antirrhinum majus|1|B|8-28|No|1|M-Flo|0|1|5|8",
+  "Alhelí|Matthiola incana|1|B|8-25|No|1|M-Flo|0|2|5|8",
+  "Guisante de olor|Lathyrus odoratus|1|B|8-25|No|1|M-Flo|1|2|4|7",
+  "Fresa|Fragaria x ananassa|1|B|8-28|No|1|F-Flo|0|1|4|7",
+  "Tomate cherry|Solanum lycopersicum|1|A|15-32|No|1|F-Flo|0|2|3|5",
+  "Pimiento|Capsicum annuum|1|B|15-32|No|1|F-Flo|0|2|4|6",
+  "Orégano|Origanum vulgare|1|C|8-30|No|2|-|0|1|7|12",
+  "Tomillo|Thymus vulgaris|1|C|5-30|No|2|-|0|1|8|14",
+  "Salvia común|Salvia officinalis|1|C|5-30|No|2|-|0|1|8|14",
+  "Cebollino|Allium schoenoprasum|1|B|8-28|No|1|M-Eq|0|1|4|7",
+  "Cilantro|Coriandrum sativum|1|B|10-25|No|1|M-Eq|0|2|4|6",
+  "Melisa|Melissa officinalis|1|B|8-28|No|1|M-Eq|0|1|5|8",
+  "Naranjo|Citrus sinensis|1|B|10-30|No|1|M-Flo|0|2|5|8",
+  "Mandarino|Citrus reticulata|1|B|10-30|No|1|M-Flo|0|2|5|8",
+  "Vid|Vitis vinifera|1|B|5-35|No|1|M-Flo|0|2|5|9",
+  "Higuera|Ficus carica|1|B|5-35|No|1|M-Eq|0|1|6|10",
+  "Granado|Punica granatum|1|C|5-35|No|2|M-Flo|0|1|7|12",
+  "Arándano|Vaccinium corymbosum|1|B|5-28|No|3|M-Flo|0|2|4|7",
+  "Boj|Buxus sempervirens|3|B|0-30|No|1|M-Eq|1|1|6|10",
+  "Laurel|Laurus nobilis|1|B|5-30|No|1|M-Eq|0|1|6|10",
+  "Mirto|Myrtus communis|1|B|5-32|No|1|M-Eq|0|1|6|10",
+  "Pitósporo|Pittosporum tobira|1|B|0-30|No|1|M-Eq|1|1|6|10",
+  "Evónimo|Euonymus japonicus|1|B|0-30|No|1|M-Eq|1|1|6|10",
+  "Adelfa|Nerium oleander|1|C|0-35|No|2|M-Flo|1|2|7|12",
+  "Solano jazminero|Solanum jasminoides|1|B|8-30|No|1|M-Flo|1|2|5|9",
+  "Ipomea|Ipomoea purpurea|1|B|12-32|No|1|M-Flo|1|1|4|7",
+  "Thunbergia|Thunbergia alata|1|B|12-30|No|1|F-Flo|0|1|4|7",
+  "Abutilón|Abutilon megapotamicum|1|B|10-28|No|1|F-Flo|0|2|5|8",
+  "Brezo|Erica carnea|1|B|0-25|No|3|M-Flo|0|2|5|8",
+  "Calluna|Calluna vulgaris|1|B|0-25|No|3|M-Flo|0|2|5|8",
+  "Gaulteria|Gaultheria procumbens|2|B|0-25|No|3|M-Flo|0|1|5|8",
+  "Mahonia|Mahonia aquifolium|3|B|0-28|No|3|M-Eq|1|1|6|10",
+  "Aucuba|Aucuba japonica|4|B|0-28|No|1|M-Eq|1|1|6|10",
+  "Fatsia|Fatsia japonica|4|B|0-25|No|1|M-Eq|0|1|5|9",
+  "Helecho macho|Dryopteris filix-mas|4|B|0-25|No|1|M-Eq|0|1|5|8",
+  "Polístico|Polystichum setiferum|4|B|0-25|No|1|M-Eq|0|1|5|8",
+  "Eléboro|Helleborus orientalis|3|B|0-22|No|3|M-Flo|1|2|5|8",
+  "Anémona japonesa|Anemone hupehensis|3|B|5-25|No|1|M-Flo|0|1|5|8",
+  "Astrantia|Astrantia major|3|B|5-25|No|1|M-Flo|0|1|5|8",
+  "Digital|Digitalis purpurea|3|B|5-25|No|1|M-Flo|1|2|5|8",
+  "Aquilegia|Aquilegia vulgaris|3|B|5-25|No|1|M-Flo|1|1|5|8",
+  "Alquemila|Alchemilla mollis|3|B|5-25|No|1|M-Eq|0|1|5|8",
+  "Sedum de otoño|Hylotelephium spectabile|1|C|0-30|No|2|M-Eq|0|1|8|14",
+  "Equinácea|Echinacea purpurea|1|B|0-30|No|1|M-Flo|0|1|5|9",
+  "Rudbeckia|Rudbeckia fulgida|1|B|0-30|No|1|M-Flo|0|1|5|9",
+  "Hemerocalis|Hemerocallis hybrida|1|B|0-32|No|1|M-Flo|0|1|5|9",
+  "Lirio de jardín|Iris germanica|1|C|0-32|No|2|M-Flo|1|1|7|12",
+  "Tulipán|Tulipa hybrida|1|B|0-22|No|2|M-Flo|1|2|6|9",
+  "Narciso|Narcissus hybrida|1|B|0-25|No|2|M-Flo|1|1|6|10",
+  "Jacinto|Hyacinthus orientalis|1|B|0-22|No|2|M-Flo|1|1|6|9",
+  "Crocus|Crocus vernus|1|B|0-22|No|2|M-Flo|0|1|6|9",
+  "Muscari|Muscari armeniacum|1|B|0-25|No|2|M-Flo|0|1|6|9",
+  "Allium ornamental|Allium giganteum|1|C|0-30|No|2|M-Flo|1|1|8|12",
+  "Dalia|Dahlia hybrida|1|B|10-30|No|1|F-Flo|0|2|4|7",
+  "Gladiolo|Gladiolus hybrida|1|B|10-30|No|2|M-Flo|1|2|5|8",
+  "Festuca azul|Festuca glauca|1|C|0-30|No|2|-|0|1|8|14",
+  "Pennisetum|Pennisetum alopecuroides|1|B|0-32|No|1|-|0|1|6|10",
+  "Carex|Carex morrowii|2|B|0-28|No|1|-|0|1|5|9",
+  "Ophiopogon|Ophiopogon japonicus|3|B|0-28|No|1|-|0|1|5|9",
+  "Liriope|Liriope muscari|3|B|0-28|No|1|-|0|1|6|10",
 ]
 
 function P(r: string): SpeciesCard {
@@ -175,6 +333,8 @@ function P(r: string): SpeciesCard {
     ws: Number(c[10]),
     ww: Number(c[11]),
     flags: c[12] ?? "",
+    aliases: c[13] ?? "",
+
   }
 }
 
@@ -217,6 +377,8 @@ export const FLAG_LABELS: Record<string, string> = {
   tanque: "🫗 Echar agua en el centro (cáliz) y renovarla si se estanca",
   inmersion: "🌊 Riego por inmersión ~1 h/semana o pulverizado diario",
   poda: "✂️ Poda frecuente: pinzar puntas para que no espigue",
+  agua: "💧 Puede vivir en agua con guijarros; en tierra, sustrato siempre húmedo",
+  destilada: "🧪 Solo agua destilada o de lluvia, y nunca abonar",
 }
 
 export function fertLabel(f: string): string {
@@ -231,7 +393,10 @@ export function searchSpecies(q: string, limit = 6): SpeciesCard[] {
   const n = q.trim().toLowerCase()
   if (n.length < 2) return []
   return SPECIES.filter(
-    s => s.sci.toLowerCase().includes(n) || s.common.toLowerCase().includes(n)
+    s =>
+      s.sci.toLowerCase().includes(n) ||
+      s.common.toLowerCase().includes(n) ||
+      s.aliases.toLowerCase().includes(n)
   ).slice(0, limit)
 }
 
@@ -240,6 +405,11 @@ export function findSpecies(q: string): SpeciesCard | undefined {
   if (!n) return undefined
   return (
     SPECIES.find(s => s.sci.toLowerCase() === n || s.common.toLowerCase() === n) ??
-    SPECIES.find(s => s.sci.toLowerCase().includes(n) || s.common.toLowerCase().includes(n))
+    SPECIES.find(
+      s =>
+        s.sci.toLowerCase().includes(n) ||
+        s.common.toLowerCase().includes(n) ||
+        s.aliases.toLowerCase().includes(n)
+    )
   )
 }
