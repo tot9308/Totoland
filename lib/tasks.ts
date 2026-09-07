@@ -56,8 +56,6 @@ export const SPECIES_MONTHLY_TASKS: Record<string, { month: number; type: string
   ],
   "Hydrangea macrophylla": [
     { month: 3, type: "prune", title: "Poda de hortensia", description: "Recorta solo las flores secas del año anterior, sin bajar más de 2 nudos." },
-  ],
-  "Hydrangea macrophylla": [
     { month: 3, type: "fertilize", title: "Abono ácido", description: "Abono específico para hortensias; sulfato de hierro si quieres azules." },
   ],
   "Lavandula angustifolia": [
