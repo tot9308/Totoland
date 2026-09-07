@@ -10,6 +10,8 @@ import EventForm from "./EventForm"
 import AppMenu from "./AppMenu"
 import SettingsModal from "./SettingsModal"
 import SyncModal from "./SyncModal"
+import TasksSection from "./TasksSection"
+import AchievementsModal from "./AchievementsModal"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -45,6 +47,7 @@ export default function Home({ session }: { session: Session }) {
   const [showPhotos, setShowPhotosState] = useState<boolean>(() => lsGet("tl_photos", "1") !== "0")
   const [size, setSizeState] = useState<Size>(() => lsGet("tl_size", "medio") as Size)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [showAchievements, setShowAchievements] = useState(false)
 
   function setSortBy(v: "due" | "name" | "location") {
     setSortByState(v)
@@ -204,11 +207,16 @@ export default function Home({ session }: { session: Session }) {
           cemeteryCount={dead.length}
           onOpenSettings={() => setShowSettings(true)}
           onOpenSync={() => setShowSync(true)}
+          onOpenAchievements={() => setShowAchievements(true)}
           onChangePassword={changePassword}
           onLogout={() => supabase.auth.signOut()}
         />
         <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
       </header>
+
+      {householdId && (
+        <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
+      )}
 
       <section className="mb-6 grid gap-3 md:grid-cols-2">
         <button
@@ -301,6 +309,13 @@ export default function Home({ session }: { session: Session }) {
           size={size}
           onSize={setSize}
           onClose={() => setShowSettings(false)}
+        />
+      )}
+      {showAchievements && householdId && (
+        <AchievementsModal
+          householdId={householdId}
+          plants={plants}
+          onClose={() => setShowAchievements(false)}
         />
       )}
       {showSync && (
