@@ -1,0 +1,125 @@
+"use client"
+
+import { useMemo, useState } from "react"
+import { supabase } from "@/lib/supabase"
+import { type Plant } from "@/lib/plants"
+
+export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }: {
+  plants: Plant[]
+  onClose: () => void
+  onSaved: () => Promise<void>
+  onWaterTogether: (list: Plant[]) => void
+}) {
+  const [cycle, setCycle] = useState(7)
+  const [tol, setTol] = useState(2)
+  const [selected, setSelected] = useState<Record<string, boolean>>({})
+  const [busy, setBusy] = useState(false)
+  const [applied, setApplied] = useState(false)
+
+  const rows = useMemo(() => {
+    return plants
+      .filter(p => p.watering_frequency_days != null)
+      .map(p => {
+        const f = p.watering_frequency_days!
+        const k = Math.max(1, Math.round(f / cycle))
+        const adj = k * cycle
+        const diff = adj - f
+        const fits = Math.abs(diff) <= tol
+        return { p, f, adj, diff, fits }
+      })
+  }, [plants, cycle, tol])
+
+  function isSel(id: string, fits: boolean) {
+    return selected[id] ?? fits
+  }
+
+  const selRows = rows.filter(r => r.fits && isSel(r.p.id, r.fits))
+
+  async function apply() {
+    setBusy(true)
+    for (const r of selRows) {
+      if (r.adj !== r.f)
+        await supabase.from("plants").update({ watering_frequency_days: r.adj }).eq("id", r.p.id)
+    }
+    setBusy(false)
+    setApplied(true)
+    await onSaved()
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
+      <div className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
+        <h2 className="mb-1 text-lg font-semibold text-emerald-900">🔄 Sincronizar riegos</h2>
+        <p className="mb-3 text-xs text-emerald-600">
+          Ajusta las frecuencias a múltiplos de un ciclo común para regar varias plantas el mismo día,
+          sin salirte de la tolerancia que elijas. Las que no encajen se quedan como están.
+        </p>
+        <div className="mb-3 grid grid-cols-2 gap-3">
+          <label className="block text-sm text-emerald-900">
+            Ciclo base (días)
+            <select value={cycle} onChange={e => { setCycle(Number(e.target.value)); setApplied(false) }}
+              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+              {[5, 6, 7, 8, 10, 14].map(c => <option key={c} value={c}>{c} días</option>)}
+            </select>
+          </label>
+          <label className="block text-sm text-emerald-900">
+            Tolerancia
+            <select value={tol} onChange={e => { setTol(Number(e.target.value)); setApplied(false) }}
+              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+              {[1, 2, 3].map(t => <option key={t} value={t}>±{t} día{t > 1 ? "s" : ""}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <ul className="mb-3 space-y-1">
+          {rows.map(r => (
+            <li key={r.p.id} className="flex items-center justify-between gap-2 rounded bg-emerald-50 px-3 py-2 text-sm">
+              <label className="flex flex-1 items-center gap-2">
+                <input
+                  type="checkbox"
+                  disabled={!r.fits}
+                  checked={r.fits && isSel(r.p.id, r.fits)}
+                  onChange={e => setSelected(s => ({ ...s, [r.p.id]: e.target.checked }))}
+                />
+                <span className="flex-1 text-emerald-900">{r.p.name}</span>
+              </label>
+              <span className="text-xs text-emerald-700">
+                {r.fits ? (
+                  <>cada {r.f} → <b>{r.adj}</b> días ({r.diff >= 0 ? `+${r.diff}` : r.diff})</>
+                ) : (
+                  <>cada {r.f} días: no encaja (±{tol})</>
+                )}
+              </span>
+            </li>
+          ))}
+          {rows.length === 0 && (
+            <p className="text-sm text-emerald-700">Ninguna planta tiene frecuencia de riego.</p>
+          )}
+        </ul>
+
+        <p className="mb-3 text-xs text-emerald-600">
+          {selRows.length} planta(s) en el ciclo de {cycle} días.
+          Si las riegas juntas el mismo día, quedarán sincronizadas.
+        </p>
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <button onClick={onClose}
+            className="rounded px-3 py-2 text-emerald-800 hover:bg-emerald-50">
+            Cerrar
+          </button>
+          {!applied ? (
+            <button onClick={apply} disabled={busy || selRows.length === 0}
+              className="rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-40">
+              Aplicar frecuencias
+            </button>
+          ) : (
+            <button onClick={() => { onWaterTogether(selRows.map(r => r.p)); onClose() }}
+              className="rounded bg-sky-600 px-4 py-2 text-white hover:bg-sky-700">
+              💧 Regarlas juntas ahora
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -3,10 +3,11 @@
 import { useState } from "react"
 import Link from "next/link"
 
-export default function AppMenu({ email, cemeteryCount, onOpenSettings, onChangePassword, onLogout }: {
+export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSync, onChangePassword, onLogout }: {
   email: string
   cemeteryCount: number
   onOpenSettings: () => void
+  onOpenSync: () => void
   onChangePassword: () => void
   onLogout: () => void
 }) {
@@ -33,6 +34,10 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onChange
               <button onClick={() => { setOpen(false); onOpenSettings() }}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 ⚙️ Ajustes
+              </button>
+              <button onClick={() => { setOpen(false); onOpenSync() }}
+                className="rounded px-3 py-2 text-left hover:bg-emerald-50">
+                🔄 Sincronizar riegos
               </button>
               <Link href="/cemetery" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">

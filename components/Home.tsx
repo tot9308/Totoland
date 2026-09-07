@@ -9,6 +9,7 @@ import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
 import AppMenu from "./AppMenu"
 import SettingsModal from "./SettingsModal"
+import SyncModal from "./SyncModal"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -34,6 +35,7 @@ export default function Home({ session }: { session: Session }) {
   const [showPlantForm, setShowPlantForm] = useState(false)
   const [eventPlant, setEventPlant] = useState<Plant | null>(null)
   const [showSettings, setShowSettings] = useState(false)
+  const [showSync, setShowSync] = useState(false)
   const [summerStart, setSummerStart] = useState(5)
   const [summerEnd, setSummerEnd] = useState(9)
   const [query, setQuery] = useState("")
@@ -192,6 +194,7 @@ export default function Home({ session }: { session: Session }) {
           email={session.user.email ?? ""}
           cemeteryCount={dead.length}
           onOpenSettings={() => setShowSettings(true)}
+          onOpenSync={() => setShowSync(true)}
           onChangePassword={changePassword}
           onLogout={() => supabase.auth.signOut()}
         />
@@ -289,6 +292,14 @@ export default function Home({ session }: { session: Session }) {
           size={size}
           onSize={setSize}
           onClose={() => setShowSettings(false)}
+        />
+      )}
+      {showSync && (
+        <SyncModal
+          plants={active}
+          onClose={() => setShowSync(false)}
+          onSaved={reload}
+          onWaterTogether={list => water(list, false)}
         />
       )}
 
