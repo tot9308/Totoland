@@ -210,7 +210,19 @@ export default function PlantDetail() {
     `)
     w.document.close()
   }
-
+  async function toCemetery() {
+    if (!plant) return
+    if (!confirm(`¿Mandar "${plant.name}" al cementerio? Dejará de salir en la home.`)) return
+    const epitaph = window.prompt("Epitafio o causa (opcional):") ?? ""
+    const { error } = await supabase.from("plants").update({
+      status: "dead",
+      died_at: new Date().toISOString().slice(0, 10),
+      notes: epitaph || plant.notes,
+    }).eq("id", plant.id)
+    if (error) return alert("Error: " + error.message)
+    alert("Descanse en paz 🪦")
+    window.location.href = "/"
+  }
   const batchCount: Record<string, number> = {}
   const firstEventOfBatch: Record<string, string> = {}
   for (const ev of events) {
@@ -260,6 +272,10 @@ export default function PlantDetail() {
           <button onClick={exportPdf}
             className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
             🖨 PDF
+          </button>
+          <button onClick={toCemetery}
+            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            🪦 Cementerio
           </button>
         </div>
       </header>

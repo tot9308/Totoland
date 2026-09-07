@@ -7,24 +7,44 @@ import { EVENT_LABELS, daysUntilDue, isDue, type Plant } from "@/lib/plants"
 import PlantCard from "./PlantCard"
 import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
-import SeasonModal from "./SeasonModal"
+import AppMenu from "./AppMenu"
+import SettingsModal from "./SettingsModal"
+import CemeteryModal from "./CemeteryModal"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
+
+function lsGet(key: string, def: string): string {
+  if (typeof window === "undefined") return def
+  return window.localStorage.getItem(key) ?? def
+}
 
 export default function Home({ session }: { session: Session }) {
   const userId = session.user.id
   const [householdId, setHouseholdId] = useState<string | null>(null)
   const [plants, setPlants] = useState<Plant[]>([])
   const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({})
-  const [sortBy, setSortBy] = useState<"due" | "name" | "location">("due")
-  const [summerStart, setSummerStart] = useState<number>(5)
-  const [summerEnd, setSummerEnd] = useState<number>(9)
-  const [showSeason, setShowSeason] = useState(false)
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<Toast | null>(null)
   const [showPlantForm, setShowPlantForm] = useState(false)
   const [eventPlant, setEventPlant] = useState<Plant | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
+  const [showCemetery, setShowCemetery] = useState(false)
+  const [summerStart, setSummerStart] = useState(5)
+  const [summerEnd, setSummerEnd] = useState(9)
+  const [sortBy, setSortByState] = useState<"due" | "name" | "location">(
+    () => lsGet("tl_sort", "due") as "due" | "name" | "location"
+  )
+  const [showPhotos, setShowPhotosState] = useState<boolean>(() => lsGet("tl_photos", "1") !== "0")
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function setSortBy(v: "due" | "name" | "location") {
+    setSortByState(v)
+    if (typeof window !== "undefined") window.localStorage.setItem("tl_sort", v)
+  }
+  function setShowPhotos(v: boolean) {
+    setShowPhotosState(v)
+    if (typeof window !== "undefined") window.localStorage.setItem("tl_photos", v ? "1" : "0")
+  }
 
   const reload = useCallback(async () => {
     const { data: mem } = await supabase
@@ -35,6 +55,7 @@ export default function Home({ session }: { session: Session }) {
       .single()
     if (!mem) return
     setHouseholdId(mem.household_id)
+
     const { data: hh } = await supabase
       .from("households")
       .select("summer_start_month, summer_end_month")
@@ -44,6 +65,7 @@ export default function Home({ session }: { session: Session }) {
       setSummerStart(hh.summer_start_month)
       setSummerEnd(hh.summer_end_month)
     }
+
     const { data } = await supabase
       .from("plants")
       .select("*")
@@ -66,8 +88,10 @@ export default function Home({ session }: { session: Session }) {
   useEffect(() => { reload() }, [reload])
 
   const active = plants.filter(p => p.status !== "dead")
+  const dead = plants.filter(p => p.status === "dead")
   const due = active.filter(p => isDue(p, summerStart, summerEnd))
   const visible = active
+    .filter(() => true)
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
       if (sortBy === "location") return (a.location ?? "∅").localeCompare(b.location ?? "∅")
@@ -136,53 +160,39 @@ export default function Home({ session }: { session: Session }) {
     setToast(null)
     await reload()
   }
-  function urlBase64ToUint8Array(base64String: string) {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4)
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/")
-    const rawData = window.atob(base64)
-    const outputArray = new Uint8Array(rawData.length)
-    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i)
-    return outputArray
+
+  async function revive(id: string) {
+    const { error } = await supabase.from("plants").update({ status: "alive", died_at: null }).eq("id", id)
+    if (error) return alert("Error: " + error.message)
+    await reload()
   }
 
-  async function enablePush() {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window))
-      return alert("Este navegador no soporta avisos")
-    const perm = await Notification.requestPermission()
-    if (perm !== "granted") return alert("Permiso de avisos denegado")
-    const reg = await navigator.serviceWorker.ready
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
-    })
-    await supabase.from("push_subscriptions").delete().eq("user_id", userId)
-    const { error } = await supabase.from("push_subscriptions").insert({
-      user_id: userId,
-      endpoint: sub.endpoint,
-      subscription: sub.toJSON(),
-    })
-    if (error) return alert("Error al guardar el aviso: " + error.message)
-    alert("Avisos activados ✅")
+  async function deleteForever(id: string) {
+    if (!confirm("¿Borrar DEFINITIVAMENTE esta planta con su historial y sus fotos? No se puede deshacer.")) return
+    const { error } = await supabase.from("plants").delete().eq("id", id)
+    if (error) return alert("Error: " + error.message)
+    await reload()
+  }
+
+  async function changePassword() {
+    const pw = window.prompt("Nueva contraseña (mínimo 6 caracteres):")
+    if (!pw) return
+    const { error } = await supabase.auth.updateUser({ password: pw })
+    alert(error ? "Error: " + error.message : "Contraseña cambiada ✅")
   }
 
   return (
     <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
-      <header className="mb-6 flex items-center justify-between">
+      <header className="mb-6 flex items-center gap-2">
+        <AppMenu
+          email={session.user.email ?? ""}
+          cemeteryCount={dead.length}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenCemetery={() => setShowCemetery(true)}
+          onChangePassword={changePassword}
+          onLogout={() => supabase.auth.signOut()}
+        />
         <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={enablePush}
-            className="rounded border border-emerald-300 px-2 py-1 text-sm text-emerald-800"
-          >
-            🔔 Avisos
-          </button>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="rounded border border-emerald-300 px-2 py-1 text-sm text-emerald-800"
-          >
-            Salir
-          </button>
-        </div>
       </header>
 
       <section className="mb-6 grid gap-3 md:grid-cols-2">
@@ -221,10 +231,6 @@ export default function Home({ session }: { session: Session }) {
             className="rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
             + Añadir planta
           </button>
-          <button onClick={() => setShowSeason(true)}
-            className="rounded border border-emerald-300 px-2 py-1 text-emerald-800">
-            ⚙️ Estación
-          </button>
         </div>
       </section>
 
@@ -236,7 +242,7 @@ export default function Home({ session }: { session: Session }) {
             <PlantCard
               key={p.id}
               plant={p}
-              photoUrl={photoUrls[p.id]}
+              photoUrl={showPhotos ? photoUrls[p.id] : undefined}
               summerStart={summerStart}
               summerEnd={summerEnd}
               onWater={() => quickEvent(p, "watering")}
@@ -256,21 +262,33 @@ export default function Home({ session }: { session: Session }) {
       {eventPlant && (
         <EventForm plant={eventPlant} userId={userId} onClose={() => setEventPlant(null)} onSaved={reload} />
       )}
+      {showSettings && householdId && (
+        <SettingsModal
+          householdId={householdId}
+          summerStart={summerStart}
+          summerEnd={summerEnd}
+          onSeasonSaved={(s, e) => { setSummerStart(s); setSummerEnd(e); reload() }}
+          sortBy={sortBy}
+          onSortBy={setSortBy}
+          showPhotos={showPhotos}
+          onShowPhotos={setShowPhotos}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+      {showCemetery && (
+        <CemeteryModal
+          plants={dead}
+          onRevive={revive}
+          onDelete={deleteForever}
+          onClose={() => setShowCemetery(false)}
+        />
+      )}
 
       {toast && (
         <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full bg-emerald-900 px-5 py-3 text-white shadow-lg">
           <span>{toast.message}</span>
           <button onClick={undo} className="font-semibold underline">Deshacer</button>
         </div>
-      )}
-      {showSeason && householdId && (
-        <SeasonModal
-          householdId={householdId}
-          summerStart={summerStart}
-          summerEnd={summerEnd}
-          onClose={() => setShowSeason(false)}
-          onSaved={(s, e) => { setSummerStart(s); setSummerEnd(e); reload() }}
-        />
       )}
     </main>
   )
