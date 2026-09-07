@@ -13,6 +13,7 @@ export type Plant = {
   main_photo_path: string | null
   care_tips: string | null
   acquired_at: string | null
+  died_at: string | null
 }
 
 export const EVENT_LABELS: Record<string, string> = {
