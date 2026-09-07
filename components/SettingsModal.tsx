@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-export default function SettingsModal({ householdId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, onClose }: {
+export default function SettingsModal({ householdId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, onClose }: {
   householdId: string
   summerStart: number
   summerEnd: number
@@ -14,6 +14,8 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
   onSortBy: (v: "due" | "name" | "location") => void
   showPhotos: boolean
   onShowPhotos: (v: boolean) => void
+  size: "grande" | "medio" | "pequeno"
+  onSize: (v: "grande" | "medio" | "pequeno") => void
   onClose: () => void
 }) {
   const [s, setS] = useState(summerStart)
@@ -117,9 +119,18 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
             <option value="location">Ubicación</option>
           </select>
         </label>
-        <label className="mb-4 flex items-center gap-2 text-sm text-emerald-900">
+        <label className="mb-2 flex items-center gap-2 text-sm text-emerald-900">
           <input type="checkbox" checked={showPhotos} onChange={ev => onShowPhotos(ev.target.checked)} />
           Mostrar fotos en las tarjetas
+        </label>
+        <label className="mb-4 block text-sm text-emerald-900">
+          Tamaño de las tarjetas
+          <select value={size} onChange={ev => onSize(ev.target.value as "grande" | "medio" | "pequeno")}
+            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            <option value="grande">Grandes (1 columna en el móvil)</option>
+            <option value="medio">Medias (1 en móvil, 3 en PC)</option>
+            <option value="pequeno">Pequeñas (2 columnas en el móvil)</option>
+          </select>
         </label>
 
         <div className="flex justify-end">

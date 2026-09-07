@@ -9,9 +9,15 @@ import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
 import AppMenu from "./AppMenu"
 import SettingsModal from "./SettingsModal"
-import CemeteryModal from "./CemeteryModal"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
+type Size = "grande" | "medio" | "pequeno"
+
+const GRID: Record<Size, string> = {
+  grande: "grid-cols-1 md:grid-cols-2",
+  medio: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  pequeno: "grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
+}
 
 function lsGet(key: string, def: string): string {
   if (typeof window === "undefined") return def
@@ -28,13 +34,14 @@ export default function Home({ session }: { session: Session }) {
   const [showPlantForm, setShowPlantForm] = useState(false)
   const [eventPlant, setEventPlant] = useState<Plant | null>(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [showCemetery, setShowCemetery] = useState(false)
   const [summerStart, setSummerStart] = useState(5)
   const [summerEnd, setSummerEnd] = useState(9)
+  const [query, setQuery] = useState("")
   const [sortBy, setSortByState] = useState<"due" | "name" | "location">(
     () => lsGet("tl_sort", "due") as "due" | "name" | "location"
   )
   const [showPhotos, setShowPhotosState] = useState<boolean>(() => lsGet("tl_photos", "1") !== "0")
+  const [size, setSizeState] = useState<Size>(() => lsGet("tl_size", "medio") as Size)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function setSortBy(v: "due" | "name" | "location") {
@@ -44,6 +51,10 @@ export default function Home({ session }: { session: Session }) {
   function setShowPhotos(v: boolean) {
     setShowPhotosState(v)
     if (typeof window !== "undefined") window.localStorage.setItem("tl_photos", v ? "1" : "0")
+  }
+  function setSize(v: Size) {
+    setSizeState(v)
+    if (typeof window !== "undefined") window.localStorage.setItem("tl_size", v)
   }
 
   const reload = useCallback(async () => {
@@ -90,8 +101,14 @@ export default function Home({ session }: { session: Session }) {
   const active = plants.filter(p => p.status !== "dead")
   const dead = plants.filter(p => p.status === "dead")
   const due = active.filter(p => isDue(p, summerStart, summerEnd))
+  const q = query.trim().toLowerCase()
   const visible = active
-    .filter(() => true)
+    .filter(p =>
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      (p.species ?? "").toLowerCase().includes(q) ||
+      (p.location ?? "").toLowerCase().includes(q)
+    )
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
       if (sortBy === "location") return (a.location ?? "∅").localeCompare(b.location ?? "∅")
@@ -161,19 +178,6 @@ export default function Home({ session }: { session: Session }) {
     await reload()
   }
 
-  async function revive(id: string) {
-    const { error } = await supabase.from("plants").update({ status: "alive", died_at: null }).eq("id", id)
-    if (error) return alert("Error: " + error.message)
-    await reload()
-  }
-
-  async function deleteForever(id: string) {
-    if (!confirm("¿Borrar DEFINITIVAMENTE esta planta con su historial y sus fotos? No se puede deshacer.")) return
-    const { error } = await supabase.from("plants").delete().eq("id", id)
-    if (error) return alert("Error: " + error.message)
-    await reload()
-  }
-
   async function changePassword() {
     const pw = window.prompt("Nueva contraseña (mínimo 6 caracteres):")
     if (!pw) return
@@ -188,7 +192,6 @@ export default function Home({ session }: { session: Session }) {
           email={session.user.email ?? ""}
           cemeteryCount={dead.length}
           onOpenSettings={() => setShowSettings(true)}
-          onOpenCemetery={() => setShowCemetery(true)}
           onChangePassword={changePassword}
           onLogout={() => supabase.auth.signOut()}
         />
@@ -218,6 +221,15 @@ export default function Home({ session }: { session: Session }) {
       <section className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-emerald-900">Mis plantas</h2>
         <div className="flex flex-wrap items-center gap-2 text-sm text-emerald-800">
+          <label className="flex items-center gap-1">
+            <span aria-hidden>🔍</span>
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Buscar planta…"
+              className="rounded border border-emerald-300 px-2 py-1"
+            />
+          </label>
           <label>
             Ordenar:{" "}
             <select value={sortBy} onChange={e => setSortBy(e.target.value as "due" | "name" | "location")}
@@ -237,7 +249,7 @@ export default function Home({ session }: { session: Session }) {
       {loading ? (
         <p className="text-emerald-800">Cargando…</p>
       ) : (
-        <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <section className={`grid gap-3 ${GRID[size]}`}>
           {visible.map(p => (
             <PlantCard
               key={p.id}
@@ -250,8 +262,10 @@ export default function Home({ session }: { session: Session }) {
               onMore={() => setEventPlant(p)}
             />
           ))}
-          {active.length === 0 && (
-            <p className="text-emerald-800">Aún no hay plantas. Añade la primera 🌱</p>
+          {visible.length === 0 && (
+            <p className="text-emerald-800">
+              {q ? `Nada coincide con “${query}”.` : "Aún no hay plantas. Añade la primera 🌱"}
+            </p>
           )}
         </section>
       )}
@@ -272,15 +286,9 @@ export default function Home({ session }: { session: Session }) {
           onSortBy={setSortBy}
           showPhotos={showPhotos}
           onShowPhotos={setShowPhotos}
+          size={size}
+          onSize={setSize}
           onClose={() => setShowSettings(false)}
-        />
-      )}
-      {showCemetery && (
-        <CemeteryModal
-          plants={dead}
-          onRevive={revive}
-          onDelete={deleteForever}
-          onClose={() => setShowCemetery(false)}
         />
       )}
 

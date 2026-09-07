@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 
-export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenCemetery, onChangePassword, onLogout }: {
+export default function AppMenu({ email, cemeteryCount, onOpenSettings, onChangePassword, onLogout }: {
   email: string
   cemeteryCount: number
   onOpenSettings: () => void
-  onOpenCemetery: () => void
   onChangePassword: () => void
   onLogout: () => void
 }) {
@@ -34,10 +34,10 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenCe
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 ⚙️ Ajustes
               </button>
-              <button onClick={() => { setOpen(false); onOpenCemetery() }}
+              <Link href="/cemetery" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 🪦 Cementerio{cemeteryCount > 0 ? ` (${cemeteryCount})` : ""}
-              </button>
+              </Link>
               <button onClick={() => { setOpen(false); onChangePassword() }}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 🔑 Cambiar contraseña
