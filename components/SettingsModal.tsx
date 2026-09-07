@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-export default function SettingsModal({ householdId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, onClose }: {
+export default function SettingsModal({ householdId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, recoverySchedule, onRecoverySchedule, onClose }: {
   householdId: string
   summerStart: number
   summerEnd: number
@@ -34,6 +34,7 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
     if (error) return alert("Error: " + error.message)
     onSeasonSaved(s, e)
   }
+
   async function saveRecovery(v: "A" | "B") {
     const { error } = await supabase
       .from("households").update({ recovery_schedule: v }).eq("id", householdId)
@@ -140,6 +141,7 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
             <option value="pequeno">Pequeñas (2 columnas en el móvil)</option>
           </select>
         </label>
+
         <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🩺 Recuperación post-sequía</h3>
         <label className="mb-4 block text-sm text-emerald-900">
           Seguimiento tras un riego con retraso
