@@ -193,9 +193,19 @@ export default function Home({ session }: { session: Session }) {
   }
 
   async function changePassword() {
-    const pw = window.prompt("Nueva contraseña (mínimo 6 caracteres):")
-    if (!pw) return
-    const { error } = await supabase.auth.updateUser({ password: pw })
+    const current = window.prompt("Contraseña actual:")
+    if (!current) return
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: session.user.email!,
+      password: current,
+    })
+    if (authError) return alert("Contraseña actual incorrecta: " + authError.message)
+    
+    const newPw = window.prompt("Nueva contraseña (mínimo 6 caracteres):")
+    if (!newPw) return
+    if (newPw.length < 6) return alert("La contraseña debe tener al menos 6 caracteres")
+    
+    const { error } = await supabase.auth.updateUser({ password: newPw })
     alert(error ? "Error: " + error.message : "Contraseña cambiada ✅")
   }
 
