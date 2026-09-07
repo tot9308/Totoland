@@ -67,10 +67,10 @@ export function daysUntilDue(p: Plant, summerStart: number, summerEnd: number): 
 export function waterAmountFor(diameterCm: number, style: string): { min: number; max: number } {
   const d = Math.max(4, diameterCm)
   const r = d / 2 - 1
-  const h = d * 0.9
-  const vol = Math.PI * r * r * h
-const [a, b] = style === "A" ? [0.1, 0.15] : style === "C" ? [0.15, 0.2] : [0.12, 0.18]
-  const round10 = (x: number) => Math.max(50, Math.round(x / 10) * 10)
+  const h = Math.max(6, d * 0.75 - 2)
+  const vol = Math.PI * r * r * h * 0.8
+  const [a, b] = style === "A" ? [0.08, 0.12] : style === "C" ? [0.18, 0.28] : [0.12, 0.18]
+  const round10 = (x: number) => Math.max(30, Math.round(x / 10) * 10)
   return { min: round10(vol * a), max: round10(vol * b) }
 }
 
