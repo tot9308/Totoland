@@ -38,14 +38,13 @@ export function plantType(card: SpeciesCard | undefined, override: string | null
   if (override && override in TYPE_LABEL) return override as PType
   if (!card) return "hardy"
   if (card.substrate === 4) return "epiphyte"
-  if (card.water === "C" && card.drought === "alta") {
+  if (card.water === "C" && card.substrate === 2) {
     const tmin = parseInt(card.temp.split("-")[0], 10)
     return tmin <= 10 ? "mediterranean" : "succulent"
   }
-  if (card.water === "A" || card.drought === "baja") return "tropical"
+  if (card.water === "A") return "tropical"
   return "hardy"
 }
-
 export function severityFor(daysWithoutWater: number, freq: number, type: PType): string {
   const m = MULT[type]
   if (daysWithoutWater <= freq * m[0]) return "mild"
