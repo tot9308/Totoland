@@ -20,6 +20,8 @@ type EventRow = {
   occurred_at: string
   notes: string | null
   batch_id: string | null
+  detail: string | null
+  health: string | null
 }
 
 type PhotoRow = {
@@ -43,6 +45,8 @@ const EVENT_ICONS: Record<string, string> = {
   disease_detection: "🦠",
   location_change: "📍",
 }
+
+const HEALTH_ICON: Record<string, string> = { green: "🟢", yellow: "🟡", red: "🔴" }
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleString("es-ES", {
@@ -386,6 +390,8 @@ export default function PlantDetail() {
                 <div className="text-sm text-emerald-900">
                   <span className="mr-1">{EVENT_ICONS[ev.type] ?? "•"}</span>
                   <strong>{EVENT_LABELS[ev.type] ?? ev.type}</strong>
+                  {ev.detail && <span className="text-emerald-700"> · {ev.detail}</span>}
+                  {ev.health && <span className="ml-1">{HEALTH_ICON[ev.health] ?? ""}</span>}
                   {ev.batch_id && (batchCount[ev.batch_id] ?? 0) > 1 && (
                     <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] text-sky-800">
                       ronda de {batchCount[ev.batch_id]}
