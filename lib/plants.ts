@@ -20,6 +20,9 @@ export type Plant = {
   has_saucer: boolean
   recovery_check_at: string | null
   recovery_step: number
+  recovery_severity: string | null
+  recovery_started_at: string | null
+  plant_type: string | null
 }
 export const EVENT_LABELS: Record<string, string> = {
   watering: "Riego",

@@ -11,6 +11,8 @@ import {
   findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
   SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
 } from "@/lib/species"
+import RecoveryPanel from "@/components/RecoveryPanel"
+import { TYPE_LABEL, plantType } from "@/lib/recovery"
 
 type EventRow = {
   id: string
@@ -325,6 +327,7 @@ export default function PlantDetail() {
           <p className="text-sm text-amber-800">Aún no hay cuidados clave.</p>
         )}
       </section>
+      <RecoveryPanel plant={plant} userId={userId ?? ""} speciesCard={speciesCard} onChanged={reload} />
       {speciesCard && (
         <section className="mb-6 rounded-xl bg-sky-50 p-4 shadow-sm">
           <h2 className="mb-2 text-lg font-semibold text-sky-900">
@@ -342,6 +345,7 @@ export default function PlantDetail() {
             <p>🌾 Abono: {fertLabel(speciesCard.fert)}</p>
             <p>🐶 Tóxica para mascotas: {speciesCard.toxic ? "sí" : "no"}</p>
             <p>Dificultad: {DIFF_LABELS[speciesCard.difficulty]}</p>
+            <p>🧬 Tipo: {TYPE_LABEL[plantType(speciesCard, plant.plant_type)]}</p>
             <p>💧 Orientativo: {speciesCard.ws} d verano / {speciesCard.ww} d invierno</p>
           </div>
           {speciesCard.flags && FLAG_LABELS[speciesCard.flags] && (

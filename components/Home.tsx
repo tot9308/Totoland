@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
 import { EVENT_LABELS, daysSince, daysUntilDue, effectiveFreq, isDue, type Plant } from "@/lib/plants"
+import { findSpecies } from "@/lib/species"
+import { plantType, severityFor, rehydrateTip, startRecovery } from "@/lib/recovery"
 import PlantCard from "./PlantCard"
 import PlantForm from "./PlantForm"
 import EventForm from "./EventForm"
@@ -139,13 +141,13 @@ export default function Home({ session }: { session: Session }) {
     const late = list
       .map(p => ({ p, d: daysSince(p.last_watered_at), f: effectiveFreq(p, summerStart, summerEnd) }))
       .filter(x => x.f != null && x.d != null && x.d >= x.f + 3)
-    let scheduleCheck = false
     if (late.length > 0) {
+      const first = late[0]
+      const t = plantType(findSpecies(first.p.species ?? ""), first.p.plant_type)
       const names = late.map(x => `${x.p.name} (${(x.d ?? 0) - (x.f ?? 0)} días de retraso)`).join(", ")
       if (!confirm(
-        `Con retraso: ${names}.\n\nNo eches agua de más: riega hasta que salga por el drenaje y, si el sustrato está muy seco, repite a los 10 min o remoja la maceta 10-15 min.\n\n¿Registrar el riego?`
+        `Con retraso: ${names}.\n\n${rehydrateTip(t)}\n\n¿Registrar el riego e iniciar la recuperación?`
       )) return
-      scheduleCheck = confirm("¿Programar un chequeo de recuperación en 3 días para estas plantas?")
     }
     const batch = crypto.randomUUID()
     const events = list.flatMap(p => {
@@ -159,16 +161,14 @@ export default function Home({ session }: { session: Session }) {
     const now = new Date().toISOString()
     for (const p of list)
       await supabase.from("plants").update({ last_watered_at: now }).eq("id", p.id)
-    if (scheduleCheck) {
-      const checkAt = new Date(Date.now() + 3 * 86400000).toISOString()
-      for (const x of late)
-        await supabase.from("plants")
-          .update({ recovery_check_at: checkAt, recovery_step: 1 }).eq("id", x.p.id)
+    for (const x of late) {
+      const t = plantType(findSpecies(x.p.species ?? ""), x.p.plant_type)
+      const sev = severityFor(x.d ?? 0, x.f ?? 7, t)
+      await startRecovery(x.p, sev, t)
     }
     await reload()
     showToast(`Riego registrado (${list.length})`, batch, list.map(p => p.id))
-  }
-  async function quickEvent(p: Plant, type: string) {
+  }  async function quickEvent(p: Plant, type: string) {
     const batch = crypto.randomUUID()
     const { error } = await supabase.from("care_events").insert({
       plant_id: p.id, user_id: userId, type, batch_id: batch,
@@ -235,7 +235,7 @@ export default function Home({ session }: { session: Session }) {
         <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
       </header>
 
-      <RecoverySection plants={plants} userId={userId} schedule={recoverySchedule} onChanged={reload} />
+      <RecoverySection plants={plants} userId={userId} onChanged={reload} />
       {householdId && (
         <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
       )}
