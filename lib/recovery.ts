@@ -45,6 +45,7 @@ export function plantType(card: SpeciesCard | undefined, override: string | null
   if (card.water === "A") return "tropical"
   return "hardy"
 }
+
 export function severityFor(daysWithoutWater: number, freq: number, type: PType): string {
   const m = MULT[type]
   if (daysWithoutWater <= freq * m[0]) return "mild"
@@ -125,6 +126,8 @@ export async function resolveRecovery(plant: Plant, action: "ok" | "topup" | "st
       recovery_step: step + 1,
     }).eq("id", plant.id)
   }
+}
+
 export function plantCategory(card: SpeciesCard | undefined): string {
   if (!card) return "Planta de interior"
   if (card.flags.includes("tanque")) return "Bromelia"
