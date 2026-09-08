@@ -1,0 +1,166 @@
+# 📊 GUÍA COMPLETA DE ALIMENTACIÓN EN EL EMBARAZO
+
+## TABLA 1: ALIMENTOS - RIESGOS, ALTERNATIVAS Y PREPARACIÓN SEGURA
+
+| **CATEGORÍA** | **ALIMENTO** | **RIESGO ESPECÍFICO** | **PATÓGENO/TOXINA** | **EVITAR COMPLETAMENTE** | **ALTERNATIVA SEGURA** | **MÉTODO DE PREPARACIÓN SEGURO** | **TEMPERATURA/TIEMPO** | **NOTAS IMPORTANTES** |
+|---------------|--------------|----------------------|---------------------|-------------------------|----------------------|--------------------------------|----------------------|---------------------|
+| **CARNES Y EMBUTIDOS** | Jamón serrano/ibérico crudo | Toxoplasmosis + Listeriosis | *Toxoplasma gondii* + *Listeria monocytogenes* | Sí, si no tienes anticuerpos | Cocinarlo (salteado, pizza, tortilla) | Cocción completa | >74°C interno | Congelar -20°C 5-7 días mata Toxoplasma PERO NO Listeria |
+| | Chorizo, salchichón, salami | Toxoplasmosis + Listeriosis | *T. gondii* + *L. monocytogenes* | Sí | Cocinar en guisos, sopas | Hervido/cocción prolongada | >74°C, 2-3 min | Los embutidos curados NO son seguros aunque estén curados meses |
+| | Jamón cocido/York, pavo (fiambre) | Listeriosis (bajo riesgo) | *L. monocytogenes* | No necesariamente | Consumir recién abierto o calentado | Calentar hasta humear | >74°C o hasta vapor visible | Si es en sándwich frío, que el paquete esté recién abierto y bien refrigerado |
+| | Carne picada/hamburguesas | Toxoplasmosis, E. coli, Salmonella | *T. gondii*, *E. coli*, *Salmonella* | Sí, si está poco hecha | Cocinar completamente | Cocción completa | Centro sin rosa, jugos claros | Nunca comer término medio o poco hecha |
+| | Pollo, pavo entero o troceado | Salmonelosis | *Salmonella spp.* | Sí, si está crudo/poco hecho | Cocinar completamente | Asado, horno, plancha | >74°C, carne blanca uniforme | Los jugos deben salir claros, no rosados |
+| | Hígado y patés | Exceso Vitamina A + Listeria | Retinol (tóxico en exceso) | Sí | Evitar durante todo el embarazo | - | - | La vitamina A en exceso causa malformaciones fetales |
+| **PESCADOS Y MARISCOS** | Tiburón/Cazón, Pez Espada/Emperador, Atún rojo, Lucio | Mercurio (neurotóxico) | Metilmercurio | Sí, completamente | Sustituir por pescados bajos en Hg | - | - | El mercurio NO se elimina cocinando ni congelando. Afecta sistema nervioso fetal |
+| | Pescado crudo (sushi, sashimi) | Anisakis + Bacterias | *Anisakis simplex*, *Vibrio*, *Listeria* | Sí | Pescado cocido o congelado industrialmente | Congelación -20°C ≥24h O cocción | -35°C 15h o -20°C 7 días | Congelar mata Anisakis PERO NO bacterias. Para sushi seguro, mejor cocido |
+| | Boquerones en vinagre | Anisakis | *Anisakis simplex* | Sí, si no están bien tratados | Macerar en vinagre ≥6h O congelar antes | Vinagre 6h + congelación previa | -20°C 5 días ANTES de marinar | El vinagre solo NO mata Anisakis. Requiere 6h mínimo en vinagre |
+| | Marisco crudo (ostras, almejas) | Vibrio, Hepatitis A, Norovirus | *Vibrio vulnificus*, Virus | Sí | Cocinar completamente | Vapor, horno, plancha | Hasta que abran conchas, carne opaca | Las ostras crudas son alto riesgo incluso en restaurantes |
+| | Caballa, anchoas, sardinas en lata | Ninguno (seguras) | - | No | ¡Consumir regularmente! | Enlatado industrial (ya cocido) | Proceso esterilización >116°C | Ricas en Omega-3, calcio (si comes espinas), bajas en mercurio. 2-3 veces/semana |
+| | Bonito en lata | Bajo mercurio | Trazas mínimas | No | Consumir con moderación | Enlatado industrial | - | Mejor que atún rojo. 1-2 veces/semana seguro |
+| | Lubina, dorada, merluza, bacalao | Ninguno (seguros) | - | No | ¡Excelentes opciones! | Horno, plancha, vapor, papillote | >63°C, carne opaca y firme | Pescados blancos/semigrasos bajos en mercurio. Ideales 2-3 veces/semana |
+| | Salmón, trucha | Bajo riesgo (parásitos) | *Anisakis* (raro) | No si está bien cocinado | Cocinar completamente | Horno, plancha | >63°C interno | Evitar salmón ahumado frío (riesgo Listeria). Si es ahumado, cocinarlo |
+| | Atún en lata (blanco/albacora) | Mercurio moderado | Metilmercurio | Limitar | Alternar con atún claro | Enlatado | - | Máximo 1 lata pequeña/semana. El atún claro (skipjack) es más bajo en Hg |
+| **LÁCTEOS Y QUESOS** | Leche cruda (sin pasteurizar) | Listeriosis, Brucelosis, Salmonella | *L. monocytogenes*, *Brucella* | Sí | Leche pasteurizada o UHT | Pasteurización industrial | >72°C 15s | Siempre verificar etiqueta "leche pasteurizada" |
+| | Quesos blandos no pasteurizados (Brie, Camembert, Feta, Queso fresco artesano) | Listeriosis | *L. monocytogenes* | Sí, si no son pasteurizados | Quesos con etiqueta "leche pasteurizada" O cocinarlos | Horno (pizza, gratinado) | >74°C, burbujeante | Si está cocinado hasta gratinar, es seguro aunque no sea pasteurizado |
+| | Quesos azules (Gorgonzola, Roquefort, Cabrales) | Listeriosis | *L. monocytogenes* | Sí, si son blandos y fríos | Cocinar en pizza/salsas calientes | Horno completo | >74°C, derretido | En pizza al horno es 100% seguro. Frío, solo si es pasteurizado |
+| | Quesos curados/duras (Parmesano, Manchego curado >6 meses, Cheddar) | Muy bajo riesgo | - | No | Seguros incluso sin pasteurizar | - | - | La baja humedad impide crecimiento bacteriano. Seguros sin cocinar |
+| | Yogur, kéfir, requesón | Bajo riesgo si pasteurizados | - | No | Verificar pasteurización | - | - | Excelentes fuentes de calcio y probióticos |
+| **HUEVOS** | Huevos crudos o poco cocidos | Salmonelosis | *Salmonella enteritidis* | Sí | Cocinar completamente | Hervido, tortilla bien cuajada | Yema y clara firmes | Evitar mayonesa casera, mousses, tiramisú, merengue crudo |
+| | Mayonesa, alioli caseros | Salmonelosis | *Salmonella* | Sí | Usar huevo pasteurizado (brick) O mayonesa industrial | - | - | La mayonesa industrial es segura (hecha con huevo pasteurizado y ácidos) |
+| | Huevos revueltos, tortilla | Salmonelosis (si están poco hechos) | *Salmonella* | Sí, si están babosos | Cocinar hasta cuajar | Sartén, horno | Clara y yema completamente firmes | La tortilla debe estar bien cuajada, sin huevo líquido |
+| **FRUTAS Y VERDURAS** | Verduras crudas (lechuga, espinacas, rúcula) | Toxoplasmosis, E. coli | *T. gondii*, *E. coli* | Sí, si no se lavan bien | Lavar y desinfectar correctamente | Ver protocolo abajo | - | **VER TABLA 2 DE PROTOCOLO DE LIMPIEZA** |
+| | Frutas crudas con piel (manzana, pera, uvas) | Toxoplasmosis, pesticidas | *T. gondii*, residuos químicos | Sí, si no se lavan | Lavar, pelar o desinfectar | Ver protocolo abajo | - | Si pelas, lava ANTES la piel para no contaminar al cortar |
+| | Frutas que se pelan (plátano, naranja, aguacate, melón) | Contaminación cruzada al cortar | *T. gondii*, *Listeria* | No, pero con precaución | Lavar la piel ANTES de pelar/cortar | Agua corriente + cepillo | Frotar piel 20-30s | Al clavar el cuchillo en piel sucia, arrastras bacterias a la carne |
+| | Brotes crudos (alfalfa, soja, rábano) | E. coli, Salmonella (dentro de la semilla) | *E. coli O157:H7* | Sí | Cocinar siempre | Salteado, sopa, guiso | >74°C, 2-3 min | Lavar NO sirve: las bacterias están DENTRO de la semilla |
+| | Setas/champiñones crudos | Toxinas termolábiles, parásitos | Varias toxinas | Sí | Cocinar siempre | Salteado, horno, guiso | >74°C, 5-10 min | Algunas setas son tóxicas crudas. Siempre cocinar bien |
+| **CONSERVAS Y ENLATADOS** | Latas abombadas, oxidadas, con fugas | Botulismo | *Clostridium botulinum* | Sí, completamente | Desechar inmediatamente | - | - | **NUNCA probar** una lata en mal estado. Riesgo mortal |
+| | Patés refrigerados en lata | Listeriosis | *L. monocytogenes* | Sí | Patés esterilizados (estante, no nevera) | - | - | Los patés de nevera son alto riesgo incluso antes de abrir |
+| | Ensaladas preparadas/bolsa | Listeria, E. coli | *L. monocytogenes* | Mejor evitar | Lavar y desinfectar en casa | Ver protocolo | - | Si consumes fuera, que sean recién hechas y de confianza |
+| **BEBIDAS** | Alcohol (vino, cerveza, licores) | Síndrome alcohólico fetal | Etanol | Sí, 100% | Agua, infusiones seguras, zumos naturales | - | - | **Cero alcohol**. No hay nivel seguro demostrado |
+| | Café, té negro, mate, cola | Exceso cafeína | Cafeína | Limitar a <200mg/día | Descafeinado, infusiones seguras | - | ≈2 tazas café filtro | 200mg = 2 cafés filtro o 3-4 tés negros. Incluye chocolate, refrescos |
+| | Leche cruda, zumos no pasteurizados | Brucelosis, E. coli | *Brucella*, *E. coli* | Sí | Pasteurizados o hervidos | Hervir 1-2 min | >72°C | Zumo natural: consumir inmediatamente después de hacer |
+| | Infusiones (menta, manzanilla, jengibre) | Algunas son seguras, otras no | - | Depende de la planta | Consultar lista segura | - | - | Seguras: manzanilla, menta, jengibre (moderado). Evitar: regaliz, poleo, efedra |
+
+---
+
+## TABLA 2: PROTOCOLO DE LIMPIEZA DE FRUTAS Y VERDURAS (PASO A PASO)
+
+| **PASO** | **ACCIÓN** | **DETALLE ESPECÍFICO** | **TIEMPO** | **MATERIAL NECESARIO** | **ERRORES COMUNES A EVITAR** |
+|----------|------------|----------------------|------------|----------------------|----------------------------|
+| **1** | Lavado de manos | Agua tibia + jabón, frotar 20 segundos, incluir uñas y muñecas | 20-30 segundos | Jabón neutro, agua corriente | No secar con paño sucio. Usar papel desechable |
+| **2** | Retirar partes dañadas | Quitar hojas mustias, golpes, zonas mohosas (las bacterias proliferan ahí) | Variable | Cuchillo limpio, basura cercana | No aprovechar "un poco" de zona dañada. Tirar generosamente |
+| **3** | Lavado bajo grifo | Agua corriente potable. Frotar con manos limpias o cepillo exclusivo para alimentos | 20-30 segundos por pieza | Cepillo de cerdas suaves (solo para alimentos) | **NO USAR JABÓN, DETERGENTE O FAIRY** (se absorben y son tóxicos) |
+| **4** | Preparar solución desinfectante | Agua potable + lejía **APTA PARA AGUA DE BEBIDA** (ver etiqueta) | 1 minuto para preparar | Recipiente limpio, lejía alimentaria | **NO usar lejía normal** (tiene perfumes y aditivos tóxicos) |
+| **5** | Dosificación lejía | Leer etiqueta. Generalmente: 1-3 gotas por litro de agua (varía según concentración) | - | Gotero o envase con dosificador | No echar "a ojo". Seguir instrucciones del fabricante |
+| **6** | Remojo desinfectante | Sumergir completamente verduras/frutas en solución | 3-5 minutos (según etiqueta) | Recipiente amplio, limpio | No superar 10 min (puede afectar sabor/textura). No mezclar con vinagre (gases tóxicos) |
+| **7** | Aclarado final | Enjuagar bajo grifo con agua corriente abundante | 20-30 segundos | Agua corriente | **NO saltar este paso**. Eliminar restos de cloro para evitar sabor y toxicidad |
+| **8** | Secado | Papel de cocina desechable O centrifugadora muy limpia | Variable | Papel cocina O ensaladera centrífuga | **NO usar paños de tela** (albergan bacterias si no se lavan a >60°C) |
+| **9** | Almacenamiento | Nevera <4°C en recipientes limpios y cerrados | Inmediato | Tupper limpio, nevera | No dejar a temperatura ambiente >2 horas. Consumir en 24-48h |
+| **10** | Si vas a pelar | **Lavar la piel ANTES de pelar** con agua y cepillo | 20-30 segundos | Cepillo exclusivo | **ERROR GRAVE**: Pelar sin lavar antes. El cuchillo arrastra bacterias de la piel a la carne |
+
+### 📋 PRODUCTOS DE LIMPIEZA - COMPARATIVA
+
+| **PRODUCTO** | **EFICACIA CONTRA TOXOPLASMA** | **EFICACIA CONTRA BACTERIAS** | **SEGURO PARA CONSUMO** | **RECOMENDADO EN EMBARAZO** | **COMENTARIOS** |
+|--------------|-------------------------------|------------------------------|------------------------|---------------------------|----------------|
+| **Agua corriente + fricción** | Moderada (elimina mecánicamente) | Moderada | Sí | Sí (mínimo indispensable) | Eficaz si se frota bien, pero no garantiza eliminación total de quistes |
+| **Lejía APTA AGUA DE BEBIDA** | **ALTA (99.9%)** | **ALTA (99.9%)** | Sí (si se aclara bien) | **SÍ - LA MÁS RECOMENDADA** | Única opción casera que mata quistes de Toxoplasma. AESAN/CDC la recomiendan |
+| **Vinagre (ácido acético 5-10%)** | BAJA (no mata quistes) | MODERADA (reduce bacterias) | Sí | No como único método | Bueno para quitar pesticidas, NO para desinfectar parásitos |
+| **Bicarbonato de sodio** | BAJA (no mata quistes) | BAJA (limpieza mecánica) | Sí | No como único método | Ayuda a quitar residuos, no desinfecta |
+| **Productos comerciales (sprays/gotas)** | Variable (depende del producto) | Alta (generalmente) | Sí (si son alimentarios) | Sí (alternativa válida) | Muchos contienen lejía alimentaria. Verificar composición |
+| **Jabón/Fairy/Detergente** | - | - | **NO - TÓXICO** | **PROHIBIDO** | **NUNCA USAR**. Se absorbe en el alimento y causa toxicidad |
+
+---
+
+## TABLA 3: NUTRIENTES CLAVE EN EL EMBARAZO - FUENTES Y RECOMENDACIONES
+
+| **NUTRIENTE** | **FUNCIÓN PRINCIPAL** | **NECESIDAD DIARIA** | **FUENTES SEGURAS RECOMENDADAS** | **FRECUENCIA** | **CONSEJOS DE ABSORCIÓN** | **SUPLEMENTACIÓN** |
+|---------------|---------------------|---------------------|--------------------------------|----------------|-------------------------|-------------------|
+| **Ácido Fólico (Folato)** | Previene defectos tubo neural | 400-600 mcg/día | Espinacas cocidas, lentejas, garbanzos, aguacate, espárragos | Diario | Cocinar ligeramente (el calor destruye folato). Mejor crudo o al vapor | **OBLIGATORIA** desde 1-3 meses antes del embarazo. Consultar dosis con médico |
+| **Hierro** | Formación hemoglobina, oxigenación fetal | 27 mg/día | Carne magra cocida, lentejas, espinacas, sardinas, almejas cocidas | 2-3 veces/semana carne, legumbres 2-3 veces/semana | **Combinar con Vitamina C**: limón, pimiento crudo, kiwi, fresas de postre | Frecuente en embarazo. Solo si médico lo indica (exceso es dañino) |
+| **Calcio** | Formación huesos/dientes fetales | 1000-1300 mg/día | Leche pasteurizada, yogur, queso curado, sardinas (con espinas), almendras | 3-4 raciones/día | La Vitamina D mejora absorción. Evitar exceso de sal/cafeína (eliminan calcio) | Si no llegas con dieta. Consultar con médico |
+| **Vitamina D** | Fijación calcio, sistema inmune | 600 UI/día | Salmón cocido, atún en lata (con moderación), yema huevo cocida, lácteos enriquecidos | Pescado 2-3 veces/semana | Exposición solar 10-15 min/día (sin protector en brazos/cara) | Frecuente en embarazo, especialmente en invierno. Consultar niveles |
+| **Omega-3 (DHA)** | Desarrollo cerebro y retina fetal | 200-300 mg DHA/día | Salmón, sardinas, caballa en lata, anchoas, nueces, semillas chía | Pescado azul pequeño 2-3 veces/semana | Evitar pescados grandes (mercurio). Las nueces son excelente complemento | Suplementos de DHA disponibles. Consultar con médico |
+| **Yodo** | Desarrollo cerebral, tiroides | 220-250 mcg/día | Pescado blanco (merluza, lubina), marisco cocido, sal yodada, lácteos | Pescado 3-4 veces/semana | Usar sal yodada con moderación (máx 5g sal/día total) | Importante si no consumes sal yodada o pescado. Consultar |
+| **Proteínas** | Crecimiento tejidos fetales | 71 g/día (aprox +25g vs normal) | Pollo cocido, pescado, huevos cocidos, legumbres, lácteos pasteurizados | En cada comida principal | Combinar proteínas animales y vegetales. Legumbres + cereales = proteína completa | Generalmente se cubre con dieta variada |
+| **Fibra** | Prevenir estreñimiento | 25-30 g/día | Frutas enteras (con piel si se lava bien), verduras, legumbres, cereales integrales | 5 raciones frutas/verduras/día | **Beber 2-2.5L agua/día** (sin agua, la fibra estriñe más) | Suplementos solo si médico indica. Mejor fuentes naturales |
+| **Agua** | Volumen sanguíneo, líquido amniótico | 2-2.5 L/día | Agua, infusiones seguras, caldos, frutas/verduras acuosas | Constante durante el día | Llevar botella siempre. Beber antes de tener sed | - |
+
+---
+
+## TABLA 4: MÉTODOS DE COCCIÓN SEGUROS - TEMPERATURAS Y TIEMPOS
+
+| **MÉTODO** | **TEMPERATURA INTERNA MÍNIMA** | **TIEMPO APROXIMADO** | **ALIMENTOS ADECUADOS** | **VENTAJAS** | **PRECAUCIONES ESPECÍFICAS** | **CÓMO VERIFICAR** |
+|------------|-------------------------------|---------------------|----------------------|-------------|----------------------------|-------------------|
+| **Horno (asado)** | 74°C (carne), 63°C (pescado) | 20-60 min según tamaño | Pollo, pescado, verduras, carne | Cocción uniforme, sin añadir grasas | Precalentar horno. No abrir frecuentemente | Termómetro cocina o verificar que jugos salgan claros |
+| **Plancha/Sartén** | 74°C (carne), 63°C (pescado) | 3-10 min por lado | Pescado, carne magra, verduras | Rápido, mantiene nutrientes | Usar poco aceite. No quemar alimentos | Carne sin rosa, pescado opaco y firme |
+| **Vapor** | 100°C (agua hirviendo) | 5-20 min | Verduras, pescado, marisco | **MÉTODO MÁS SALUDABLE**. Máxima retención nutrientes | No sobrecocinar (pierde textura) | Verduras tiernas pero firmes, pescado opaco |
+| **Hervido/Cocción** | 100°C | 10-30 min | Legumbres, pasta, huevos, marisco | Seguro, mata todos los patógenos | No reutilizar agua de cocción de carne | Huevos: yema clara firme. Marisco: conchas abiertas |
+| **Papillote** | 100°C (vapor interno) | 15-25 min | Pescado, verduras | Mantiene jugos y nutrientes | Cerrar bien el paquete | Pescado se deshace fácilmente con tenedor |
+| **Estofado/Guiso** | >74°C sostenido | 30-120 min | Carne, legumbres, verduras | Cocción completa garantizada | Cocinar a fuego lento pero constante | Carne se desprende fácilmente, muy tierna |
+| **Microondas** | 74°C en todo el alimento | Variable según potencia | Recalentar sobras, verduras | Rápido | **Remover a mitad de cocción** para distribución calor | Verificar que no queden zonas frías. Dejar reposar 2 min |
+| **Freír** | 170-180°C (aceite) | 3-10 min | Pescado (rebozado), verduras | Sabor, textura crujiente | **NO recomendado frecuentemente**. Usar aceite oliva, no reutilizar | Dorado uniforme. Escurrir bien en papel |
+
+### 🌡️ TEMPERATURAS INTERNAS DE SEGURIDAD (USAR TERMÓMETRO)
+
+| **ALIMENTO** | **TEMPERATURA MÍNIMA INTERNA** | **DÓNDE MEDIR** | **INDICADOR VISUAL** |
+|--------------|-------------------------------|----------------|---------------------|
+| **Pollo/Pavo entero o troceado** | 74°C | Parte más gruesa del muslo/pechuga | Carne blanca, jugos claros |
+| **Carne picada (ternera, cerdo, cordero)** | 71°C | Centro de la hamburguesa/albóndiga | Sin rosa, jugos claros |
+| **Filetes de ternera/cerdo/cordero** | 63°C + reposo 3 min | Centro del filete | Puede tener rosa ligero si es entero (NO si es picado) |
+| **Pescado** | 63°C | Parte más gruesa del filete | Carne opaca, se separa con tenedor |
+| **Huevos** | Clara y yema firmes | - | Sin líquido, yema cuajada |
+| **Sobras/recalentados** | 74°C | Centro del plato | Debe humear uniformemente |
+
+---
+
+## TABLA 5: SEMÁFORO DE ALIMENTOS - RESUMEN RÁPIDO
+
+| **🟢 VERDE (SEGURO)** | **🟡 AMARILLO (CON PRECAUCIÓN)** | **🔴 ROJO (EVITAR)** |
+|---------------------|-------------------------------|-------------------|
+| **Lácteos pasteurizados** (leche, yogur, queso fresco pasteurizado) | Jamón cocido/pavo fiambre (mejor calentado) | Leche cruda sin pasteurizar |
+| **Quesos curados** (parmesano, manchego >6 meses) | Quesos blandos (brie, feta) SOLO si pasteurizados | Quesos blandos no pasteurizados |
+| **Quesos cocinados** (gorgonzola en pizza al horno) | Atún en lata blanco/albacora (máx 1 lata pequeña/semana) | Quesos azules fríos no pasteurizados |
+| **Pescados pequeños** (sardinas, anchoas, caballa, salmón) | Café/té (máximo 200mg cafeína/día ≈ 2 cafés) | Pescados grandes (tiburón, emperador, atún rojo) |
+| **Pescado blanco** (merluza, lubina, dorada, bacalao) | Huevos (siempre bien cocidos, yema firme) | Pescado/marisco crudo (sushi, ostras, ceviche) |
+| **Carnes bien cocidas** (sin partes rosadas) | Embutidos cocinados (en pizza, guiso, tortilla) | Embutidos crudos (jamón serrano, chorizo, salami) |
+| **Legumbres** (lentejas, garbanzos, alubias bien cocidas) | Patés esterilizados (de estante, no nevera) | Patés refrigerados |
+| **Frutas** (lavadas y desinfectadas correctamente) | Setas/champiñones (siempre bien cocinadas) | Hígado y derivados |
+| **Verduras** (lavadas, desinfectadas o cocinadas) | Brotes (siempre cocinados, nunca crudos) | Verduras/frutas sin lavar |
+| **Huevos** (cocidos, revueltos bien cuajados, tortilla hecha) | Infusiones (manzanilla, menta, jengibre con moderación) | Huevos crudos o poco hechos (mayonesa casera) |
+| **Frutos secos** (naturales o tostados, sin sal) | Chocolate negro (con moderación, por cafeína) | Alcohol (cero consumo) |
+| **Aceite de oliva** (virgen extra, en crudo o cocinado) | Sal (yodada, pero máxima 5g/día) | Latas abombadas/oxidadas |
+| **Agua** (2-2.5L/día) | - | Bebidas energéticas/exceso cafeína |
+
+---
+
+## 📌 RECORDATORIOS FINALES IMPORTANTES
+
+### ✅ LO QUE SÍ DEBES HACER:
+1. **Consulta siempre a tu médico/matrona** antes de tomar suplementos o si tienes dudas específicas
+2. **Lávate las manos** antes de manipular alimentos (20 segundos con jabón)
+3. **Separa alimentos crudos y cocinados** en la nevera y en la cocina (evita contaminación cruzada)
+4. **Refrigera rápidamente** (<2 horas a <4°C)
+5. **Confía en el proceso**: Si sigues estas pautas, estás haciendo todo lo posible por cuidar de ti y tu bebé
+6. **Disfruta de la comida**: El embarazo es para nutrirse, no para sufrir. Hay miles de alimentos deliciosos y seguros
+
+### ❌ LO QUE NO DEBES HACER:
+1. **NO uses jabón/detergente** en frutas y verduras (es tóxico)
+2. **NO confíes en el "olor" o "aspecto"** para determinar si un alimento es seguro
+3. **NO pruebes masas crudas** (galletas, bizcochos) con huevo sin cocinar
+4. **NO reutilices aceites** de frituras anteriores
+5. **NO te obsesiones**: Un desliz ocasional no arruina el embarazo. Retoma buenos hábitos en la siguiente comida
+6. **NO sigas dietas extremas** o restrictivas sin supervisión médica
+
+### 🧠 SALUD MENTAL Y EQUILIBRIO:
+- **El estrés crónico es peor que un alimento mal lavado ocasionalmente**
+- Si comes algo que no debías por error: **respira, no te castigues, y continúa**
+- **Enfócate en lo que SUMA**, no en lo que restas
+- **Pide ayuda**: Tu pareja, familia o amigos pueden ayudarte a preparar comidas seguras
+- **Disfruta**: Este es un momento único. La alimentación debe ser placentera y nutritiva
+
+---
+
+**📅 Fecha de revisión recomendada:** Cada trimestre del embarazo, o cuando cambien tus necesidades nutricionales.
+
+**👩‍⚕️ Profesionales a consultar:** Ginecólogo/a, matrona, nutricionista especializado en salud materna.
+
+¡Espero que esta guía te sea de gran utilidad! Recuerda que cada embarazo es único, y lo más importante es que te sientas tranquila, informada y acompañada por profesionales de confianza. 🌸🤰✨

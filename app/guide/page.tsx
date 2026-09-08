@@ -32,16 +32,36 @@ export default function GuidePage() {
         <p><b>A · Siempre húmedo:</b> no dejar secar nunca (helechos, calatheas, fittonia). Comprueba cada 2-3 días.</p>
         <p><b>B · Secar 1-2 cm superficial:</b> mete el dedo; si solo está seca la capa de arriba, aún no. Si seca hasta la 2ª falange, riega.</p>
         <p><b>C · Secar completamente:</b> la maceta se nota <b>ligera</b> al levantarla y la tierra está seca del todo (cactus, crasas, sansevieria).</p>
-        <p>🫗 <b>¿Cuánta agua?</b> La fija la maceta, no el calendario: riega hasta que <b>salga por el agujero de drenaje</b>. Como referencia, un 10-20% del volumen del sustrato: maceta de 12 cm ≈ 100-200 ml; de 20 cm ≈ 450-900 ml. La app te calcula el rango en cada ficha si pones el diámetro.</p>
-        <p>🍽️ <b>El plato:</b> no cambia la cantidad. Vacíalo a los 10-15 min (agua estancada = raíces podridas). Excepción: carnívoras, que viven con plato de agua destilada.</p>
-        <p>⏰ <b>Con retraso:</b> NO eches un 20% más por compensar. Misma cantidad en <b>dos tandas</b> (riegas, esperas 10 min, repites) o <b>remojo</b> de la maceta 10-15 min en un cubo. Y no abones hasta que se recupere.</p>
-        <p>🌧️ Agua del grifo: déjala reposar unas horas (se va el cloro). Calatheas y carnívoras, mejor agua sin cal o destilada.</p>
+        <p>🫗 <b>¿Cuánta agua?</b> La fija la maceta, no el calendario. Riega hasta que <b>salga por el agujero de drenaje</b>. Como referencia, entre un 8% y un 18% del volumen del sustrato:</p>
+        <ul className="list-disc pl-5">
+          <li>Maceta de 10 cm ≈ <b>50–100 ml</b> (un chupito de café)</li>
+          <li>Maceta de 14 cm ≈ <b>90–140 ml</b> (un vasito)</li>
+          <li>Maceta de 20 cm ≈ <b>320–480 ml</b> (una lata de refresco pequeña)</li>
+          <li>Maceta de 30 cm ≈ <b>1–1,5 L</b></li>
+        </ul>
+        <p>La app te calcula el rango exacto en cada ficha si pones el diámetro de la maceta.</p>
+        <p>🍽️ <b>El plato:</b> no cambia la cantidad. Vacíalo a los 10-15 min de regar (agua estancada = raíces podridas). Excepción: carnívoras, que viven con plato de agua destilada.</p>
+        <p>⏰ <b>Con retraso:</b> NO eches más agua de la cuenta por compensar. Misma cantidad, pero en <b>dos tandas</b> (riegas, esperas 10 min, repites) o <b>remojo</b> de la maceta 10-15 min en un cubo. Y no abones hasta que se recupere.</p>
+        <p>🌧️ <b>Agua del grifo:</b> déjala reposar unas horas en una jarra abierta para que se vaya el cloro. Calatheas, azaleas y carnívoras prefieren agua sin cal o destilada.</p>
       </S>
 
-      <S title="💦 Humedad y pulverizado">
-        <p><b>Sí:</b> tropicales de selva (calathea, helechos, fittonia). Pulverizar sube la humedad un rato; lo que de verdad ayuda: agrupar plantas, bandeja con guijarros y agua, o baño/cocina luminosos.</p>
-        <p><b>Mod:</b> solo en verano o con calefacción encendida.</p>
-        <p><b>No:</b> crasas, cactus, violeta africana, begonia rex… el agua en hojas les mancha o pudre.</p>
+      <S title="💦 Humedad y pulverizado: cuándo y cómo">
+        <p>Pulverizar sube la humedad solo durante unos minutos. Para subirla de verdad en la habitación, lo que ayuda es <b>agrupar plantas</b>, <b>bandeja con guijarros y agua</b> (la maceta encima, sin tocar el agua), o ubicarlas en baño/cocina luminosos.</p>
+        <p><b>Sí pulverizar:</b> tropicales de selva (calathea, maranta, helechos, fittonia, palmeras de interior, alocasia).</p>
+        <p><b>Pulverizar con moderación:</b> solo en verano o cuando la calefacción esté encendida y el aire sea muy seco.</p>
+        <p><b>Nunca pulverizar:</b> crasas, cactus, violeta africana, begonia rex, plantas con hojas aterciopeladas o peludas. El agua en sus hojas mancha o pudre.</p>
+        <p>🔧 <b>Cómo pulverizar bien:</b></p>
+        <ul className="list-disc pl-5">
+          <li>Usa un pulverizador de <b>gota fina</b> (nebulizador): los de limpieza de hogar suelen ser demasiado gruesos.</li>
+          <li>Distancia: unos <b>30-40 cm</b> de la planta. Nunca a quemarropa.</li>
+          <li><b>Niebla, no lluvia</b>: la idea es crear bruma alrededor, no empapar las hojas.</li>
+          <li>Pulveriza por la <b>mañana</b>, nunca al atardecer: así las hojas se secan antes de la noche y no proliferan hongos.</li>
+          <li>Nunca al sol directo: las gotitas hacen efecto lupa y queman la hoja.</li>
+          <li>Pulveriza también por el <b>envés</b> de las hojas, donde están los estomas.</li>
+          <li><b>No mojes las flores</b>: se estropean antes.</li>
+          <li>Agua templada, nunca fría del grifo (shock térmico).</li>
+          <li>Limpia de vez en cuando la boquilla del pulverizador para que no se atasque y suelte goterones.</li>
+        </ul>
       </S>
 
       <S title="🪴 Sustrato: los 4 tipos">
@@ -67,7 +87,8 @@ export default function GuidePage() {
         <p>💧 Regar · 💧+🌫 Regar y pulverizar · ＋ Más acciones (observaciones, plagas…) · ⭐ Foto principal · 🪦 Cementerio · 🔄 Sincronizar · 🔔 Avisos · ✏️ Editar · 🖨 PDF.</p>
         <p><b>"Le toca"</b> sale cuando han pasado más días que su frecuencia desde el último riego (o si nunca se regó).</p>
         <p><b>Verano/invierno:</b> cada planta tiene dos frecuencias; la app usa la de la temporada que marques en ⚙️ Ajustes.</p>
-        <p><b>🔄 Sincronizar:</b> ajusta frecuencias a múltiplos de un ciclo común (p. ej. 7 días) dentro de tu tolerancia, para regar en tandas el mismo día.</p>
+        <p><b>🔄 Sincronizar:</b> ajusta frecuencias a múltiplos de un ciclo común (p. ej. 7 días) dentro de tu tolerancia, para regar en tandas el mismo día. También permite varias veces por ronda (p. ej. una planta de 4 días se convierte en "2 riegos por semana").</p>
+        <p><b>🩺 Recuperación:</b> cuando riegas con retraso, la app te ofrece programar chequeos de seguimiento (a los 3 días, o a los 3 y 7 según ajustes).</p>
         <p><b>🪦 Cementerio:</b> las plantas no se borran, se entierran con su historia. Puedes revivirlas o borrarlas del todo.</p>
       </S>
 

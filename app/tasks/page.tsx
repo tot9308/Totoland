@@ -23,7 +23,7 @@ export default function TasksPage() {
   const [fTitle, setFTitle] = useState("")
   const [fDesc, setFDesc] = useState("")
   const [fMonth, setFMonth] = useState(month)
-  const [fPlant, setFPlant] = useState("")
+  const [fPlants, setFPlants] = useState<string[]>([])
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -59,30 +59,54 @@ export default function TasksPage() {
   }
 
   function openAdd() {
-    setEditing(null); setFTitle(""); setFDesc(""); setFMonth(month); setFPlant(""); setShowForm(true)
+    setEditing(null); setFTitle(""); setFDesc(""); setFMonth(month); setFPlants([]); setShowForm(true)
   }
   function openEdit(t: Task) {
-    setEditing(t); setFTitle(t.title); setFDesc(t.description ?? ""); setFMonth(t.month); setFPlant(t.plant_id ?? ""); setShowForm(true)
+    setEditing(t); setFTitle(t.title); setFDesc(t.description ?? ""); setFMonth(t.month)
+    setFPlants(t.plant_id ? [t.plant_id] : [])
+    setShowForm(true)
   }
 
   async function saveForm(e: React.FormEvent) {
     e.preventDefault()
     if (!householdId || !fTitle.trim()) return
-    const payload = {
-      household_id: householdId,
-      plant_id: fPlant || null,
-      type: "custom",
-      title: fTitle.trim(),
-      description: fDesc.trim() || null,
-      month: fMonth,
-      year,
+    const baseTitle = fTitle.trim()
+    const baseDesc = fDesc.trim() || null
+
+    if (editing) {
+      // Editar: solo cambia título/descripción/mes de esa tarea concreta
+      await supabase.from("tasks").update({
+        title: baseTitle,
+        description: baseDesc,
+        month: fMonth,
+        plant_id: fPlants[0] || null,
+      }).eq("id", editing.id)
+    } else {
+      // Crear: si se eligen plantas, una tarea por planta con título "Nombre: título"
+      if (fPlants.length === 0) {
+        await supabase.from("tasks").insert({
+          household_id: householdId, plant_id: null, type: "custom",
+          title: baseTitle, description: baseDesc, month: fMonth, year,
+        })
+      } else {
+        const rows = fPlants.map(pid => {
+          const p = plants.find(pl => pl.id === pid)
+          return {
+            household_id: householdId,
+            plant_id: pid,
+            type: "custom",
+            title: p ? `${p.name}: ${baseTitle}` : baseTitle,
+            description: baseDesc,
+            month: fMonth,
+            year,
+          }
+        })
+        await supabase.from("tasks").insert(rows)
+      }
     }
-    if (editing) await supabase.from("tasks").update(payload).eq("id", editing.id)
-    else await supabase.from("tasks").insert(payload)
     setShowForm(false)
     reload()
   }
-
   return (
     <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
       <header className="mb-6 flex flex-wrap items-center gap-3">
@@ -110,11 +134,41 @@ export default function TasksPage() {
             </select>
             <input value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Descripción (opcional)"
               className="rounded border border-emerald-300 px-3 py-2 text-sm md:col-span-2" />
-            <select value={fPlant} onChange={e => setFPlant(e.target.value)}
-              className="rounded border border-emerald-300 px-3 py-2 text-sm md:col-span-2">
-              <option value="">Sin planta asociada</option>
-              {plants.filter(p => p.status !== "dead").map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
+            <div className="md:col-span-2">
+              <p className="mb-1 text-xs text-emerald-700">
+                {editing
+                  ? "Planta asociada (solo una al editar):"
+                  : "Plantas asociadas (se creará una tarea por cada una):"}
+              </p>
+              <div className="max-h-40 overflow-y-auto rounded border border-emerald-300 p-2">
+                {plants.filter(p => p.status !== "dead").length === 0 ? (
+                  <p className="text-xs text-emerald-600">No hay plantas vivas en esta casa.</p>
+                ) : (
+                  plants.filter(p => p.status !== "dead").map(p => (
+                    <label key={p.id} className="flex items-center gap-2 py-0.5 text-sm text-emerald-900">
+                      <input
+                        type={editing ? "radio" : "checkbox"}
+                        name="task-plants"
+                        checked={fPlants.includes(p.id)}
+                        onChange={() => {
+                          if (editing) setFPlants([p.id])
+                          else setFPlants(
+                            fPlants.includes(p.id)
+                              ? fPlants.filter(x => x !== p.id)
+                              : [...fPlants, p.id]
+                          )
+                        }}
+                      />
+                      {p.name}
+                    </label>
+                  ))
+                )}
+              </div>
+              <button type="button" onClick={() => setFPlants([])}
+                className="mt-1 text-xs text-emerald-700 hover:underline">
+                {fPlants.length > 0 ? `Quitar selección (${fPlants.length})` : "Sin planta asociada"}
+              </button>
+            </div>
           </div>
           <div className="mt-3 flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)}
