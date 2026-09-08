@@ -8,7 +8,6 @@ import { findSpecies } from "@/lib/species"
 import { plantType, severityFor, rehydrateTip, startRecovery } from "@/lib/recovery"
 import PlantCard from "./PlantCard"
 import PlantForm from "./PlantForm"
-import EventForm from "./EventForm"
 import AppMenu from "./AppMenu"
 import SettingsModal from "./SettingsModal"
 import SyncModal from "./SyncModal"
@@ -312,9 +311,6 @@ export default function Home({ session }: { session: Session }) {
 
       {showPlantForm && householdId && (
         <PlantForm householdId={householdId} onClose={() => setShowPlantForm(false)} onSaved={reload} />
-      )}
-      {eventPlant && (
-        <EventForm plant={eventPlant} userId={userId} onClose={() => setEventPlant(null)} onSaved={reload} />
       )}
       {showSettings && householdId && (
         <SettingsModal

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { daysSince, effectiveFreq, isDue, type Plant } from "@/lib/plants"
 
-export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUrl, summerStart, summerEnd }: {
+export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summerStart, summerEnd }: {
   plant: Plant
   onWater: () => void
   onWaterMist: () => void
@@ -48,7 +48,6 @@ export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUr
             💧+🌫
           </button>
         )}
-
       </div>
     </div>
   )

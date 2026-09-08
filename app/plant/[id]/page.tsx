@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase"
 import { EVENT_LABELS, waterAmount, type Plant } from "@/lib/plants"
 import { compressToJpeg } from "@/lib/photos"
 import PlantForm from "@/components/PlantForm"
+import EventForm from "@/components/EventForm"
 import {
   findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
   SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
