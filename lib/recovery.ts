@@ -125,4 +125,31 @@ export async function resolveRecovery(plant: Plant, action: "ok" | "topup" | "st
       recovery_step: step + 1,
     }).eq("id", plant.id)
   }
+export function plantCategory(card: SpeciesCard | undefined): string {
+  if (!card) return "Planta de interior"
+  if (card.flags.includes("tanque")) return "Bromelia"
+  if (card.flags.includes("inmersion")) return "Planta de aire"
+  if (card.substrate === 4 && card.water === "B") return "Orquídea"
+  if (card.substrate === 4) return "Epífita"
+  if (card.substrate === 2 && card.water === "C") return "Cactus / Suculenta"
+  const sci = card.sci.toLowerCase()
+  if (sci.includes("ficus") || sci.includes("dracaena") || sci.includes("schefflera") || sci.includes("yucca") || sci.includes("pachira"))
+    return "Árbol / Arbusto"
+  if (sci.includes("philodendron") || sci.includes("epipremnum") || sci.includes("monstera") || sci.includes("hedera") || sci.includes("syngonium"))
+    return "Trepadora / Colgante"
+  if (sci.includes("nephrolepis") || sci.includes("asplenium") || sci.includes("adiantum") || sci.includes("pleopeltis") || sci.includes("davallia") || sci.includes("pteris") || sci.includes("blechnum"))
+    return "Helecho"
+  if (sci.includes("chamaedorea") || sci.includes("dypsis") || sci.includes("howea") || sci.includes("rhapis") || sci.includes("phoenix") || sci.includes("caryota"))
+    return "Palmera"
+  if (sci.includes("pelargonium") || sci.includes("begonia") || sci.includes("petunia") || sci.includes("zinnia") || sci.includes("viola") || sci.includes("cosmos") || sci.includes("tagetes"))
+    return "Flor / Herbácea"
+  if (sci.includes("ocimum") || sci.includes("mentha") || sci.includes("petroselinum") || sci.includes("origanum") || sci.includes("thymus") || sci.includes("salvia") || sci.includes("rosmarinus") || sci.includes("lavandula") || sci.includes("melissa"))
+    return "Aromática"
+  if (sci.includes("cyclamen") || sci.includes("hippeastrum") || sci.includes("tulipa") || sci.includes("narcissus") || sci.includes("hyacinthus") || sci.includes("crocus") || sci.includes("muscari") || sci.includes("dahlia") || sci.includes("gladiolus"))
+    return "Bulbosa"
+  if (sci.includes("hydrangea") || sci.includes("rhododendron") || sci.includes("camellia") || sci.includes("gardenia") || sci.includes("azalea"))
+    return "Arbusto de flor"
+  if (sci.includes("citrus") || sci.includes("olea") || sci.includes("vitis") || sci.includes("ficus carica") || sci.includes("punica"))
+    return "Frutal"
+  return "Planta de interior"
 }
