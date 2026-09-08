@@ -39,7 +39,6 @@ export default function Home({ session }: { session: Session }) {
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<Toast | null>(null)
   const [showPlantForm, setShowPlantForm] = useState(false)
-  const [eventPlant, setEventPlant] = useState<Plant | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showSync, setShowSync] = useState(false)
   const [summerStart, setSummerStart] = useState(5)
@@ -301,7 +300,6 @@ export default function Home({ session }: { session: Session }) {
               summerEnd={summerEnd}
               onWater={() => quickEvent(p, "watering")}
               onWaterMist={() => water([p], true)}
-              onMore={() => setEventPlant(p)}
             />
           ))}
           {visible.length === 0 && (

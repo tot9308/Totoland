@@ -50,6 +50,7 @@ const EVENT_ICONS: Record<string, string> = {
 
 const HEALTH_ICON: Record<string, string> = { green: "🟢", yellow: "🟡", red: "🔴" }
 
+
 function fmt(iso: string) {
   return new Date(iso).toLocaleString("es-ES", {
     day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
@@ -71,6 +72,7 @@ export default function PlantDetail() {
   const [editingTips, setEditingTips] = useState(false)
   const [tipsDraft, setTipsDraft] = useState("")
   const [showEdit, setShowEdit] = useState(false)
+  const [showEvent, setShowEvent] = useState(false)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -270,6 +272,10 @@ export default function PlantDetail() {
               💧+🌫
             </button>
           )}
+          <button onClick={() => setShowEvent(true)}
+            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            ＋ Más
+          </button>
           <button onClick={() => setShowEdit(true)}
             className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
             ✏️ Editar
@@ -284,50 +290,49 @@ export default function PlantDetail() {
           </button>
         </div>
       </header>
-
-      <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
-        <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
-          {!editingTips && (
-            <button
-              onClick={() => { setTipsDraft(plant.care_tips ?? ""); setEditingTips(true) }}
-              className="text-xs text-amber-800 hover:underline"
-            >
-              {plant.care_tips ? "editar" : "+ añadir"}
-            </button>
+      {(plant.care_tips || editingTips) && (
+        <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
+            {!editingTips && (
+              <button
+                onClick={() => { setTipsDraft(plant.care_tips ?? ""); setEditingTips(true) }}
+                className="text-xs text-amber-800 hover:underline"
+              >
+                editar
+              </button>
+            )}
+          </div>
+          {editingTips ? (
+            <>
+              <textarea
+                value={tipsDraft}
+                onChange={e => setTipsDraft(e.target.value)}
+                rows={3}
+                placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco"}
+                className="w-full rounded border border-amber-300 px-3 py-2 text-sm"
+              />
+              <div className="mt-2 flex gap-2">
+                <button onClick={saveTips}
+                  className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white">
+                  Guardar
+                </button>
+                <button onClick={() => setEditingTips(false)}
+                  className="rounded px-3 py-1.5 text-sm text-amber-800">
+                  Cancelar
+                </button>
+              </div>
+            </>
+          ) : (
+            <ul className="list-disc space-y-1 pl-5 text-sm text-amber-900">
+              {plant.care_tips!.split("\n").filter(t => t.trim()).map((t, i) => (
+                <li key={i}>{t.trim()}</li>
+              ))}
+            </ul>
           )}
-        </div>
-        {editingTips ? (
-          <>
-            <textarea
-              value={tipsDraft}
-              onChange={e => setTipsDraft(e.target.value)}
-              rows={3}
-              placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco"}
-              className="w-full rounded border border-amber-300 px-3 py-2 text-sm"
-            />
-            <div className="mt-2 flex gap-2">
-              <button onClick={saveTips}
-                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white">
-                Guardar
-              </button>
-              <button onClick={() => setEditingTips(false)}
-                className="rounded px-3 py-1.5 text-sm text-amber-800">
-                Cancelar
-              </button>
-            </div>
-          </>
-        ) : plant.care_tips ? (
-          <ul className="list-disc space-y-1 pl-5 text-sm text-amber-900">
-            {plant.care_tips.split("\n").filter(t => t.trim()).map((t, i) => (
-              <li key={i}>{t.trim()}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-amber-800">Aún no hay cuidados clave.</p>
-        )}
-      </section>
-      <RecoveryPanel plant={plant} userId={userId ?? ""} speciesCard={speciesCard} onChanged={reload} />
+        </section>
+      )}
+
       {speciesCard && (
         <section className="mb-6 rounded-xl bg-sky-50 p-4 shadow-sm">
           <h2 className="mb-2 text-lg font-semibold text-sky-900">
@@ -356,7 +361,9 @@ export default function PlantDetail() {
             Orientativo: manda lo que observes en tu casa.
           </p>
         </section>
-      )}      <section className="mb-6">
+      )}      
+      <RecoveryPanel plant={plant} userId={userId ?? ""} speciesCard={speciesCard} onChanged={reload} />
+<section className="mb-6">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-emerald-900">Fotos ({photos.length})</h2>
           <label className="cursor-pointer rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
@@ -422,6 +429,9 @@ export default function PlantDetail() {
 
       {showEdit && (
         <PlantForm householdId={plant.household_id} plant={plant} onClose={() => setShowEdit(false)} onSaved={reload} />
+      )}
+      {showEvent && (
+        <EventForm plant={plant} userId={userId ?? ""} onClose={() => setShowEvent(false)} onSaved={reload} />
       )}
     </main>
   )

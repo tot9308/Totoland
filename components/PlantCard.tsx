@@ -7,7 +7,6 @@ export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUr
   plant: Plant
   onWater: () => void
   onWaterMist: () => void
-  onMore: () => void
   photoUrl?: string
   summerStart: number
   summerEnd: number
@@ -49,10 +48,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, onMore, photoUr
             💧+🌫
           </button>
         )}
-        <button onClick={onMore}
-          className="rounded border border-emerald-300 px-3 py-1.5 text-sm text-emerald-800 hover:bg-emerald-50">
-          ＋
-        </button>
+
       </div>
     </div>
   )
