@@ -291,48 +291,61 @@ export default function PlantDetail() {
           </button>
         </div>
       </header>
-      {(plant.care_tips || editingTips) && (
-        <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
-            {!editingTips && (
+      <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
+        {editingTips ? (
+          <>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
+            </div>
+            <textarea
+              value={tipsDraft}
+              onChange={e => setTipsDraft(e.target.value)}
+              rows={3}
+              placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco\nAbonar cada 15 días en primavera"}
+              className="w-full rounded border border-amber-300 px-3 py-2 text-sm"
+            />
+            <div className="mt-2 flex gap-2">
+              <button onClick={saveTips}
+                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white">
+                Guardar
+              </button>
+              <button onClick={() => setEditingTips(false)}
+                className="rounded px-3 py-1.5 text-sm text-amber-800">
+                Cancelar
+              </button>
+            </div>
+          </>
+        ) : plant.care_tips ? (
+          <>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
               <button
                 onClick={() => { setTipsDraft(plant.care_tips ?? ""); setEditingTips(true) }}
                 className="text-xs text-amber-800 hover:underline"
               >
-                editar
+                ✏️ Editar
               </button>
-            )}
-          </div>
-          {editingTips ? (
-            <>
-              <textarea
-                value={tipsDraft}
-                onChange={e => setTipsDraft(e.target.value)}
-                rows={3}
-                placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco"}
-                className="w-full rounded border border-amber-300 px-3 py-2 text-sm"
-              />
-              <div className="mt-2 flex gap-2">
-                <button onClick={saveTips}
-                  className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white">
-                  Guardar
-                </button>
-                <button onClick={() => setEditingTips(false)}
-                  className="rounded px-3 py-1.5 text-sm text-amber-800">
-                  Cancelar
-                </button>
-              </div>
-            </>
-          ) : (
+            </div>
             <ul className="list-disc space-y-1 pl-5 text-sm text-amber-900">
-              {plant.care_tips!.split("\n").filter(t => t.trim()).map((t, i) => (
+              {plant.care_tips.split("\n").filter(t => t.trim()).map((t, i) => (
                 <li key={i}>{t.trim()}</li>
               ))}
             </ul>
-          )}
-        </section>
-      )}
+          </>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-amber-800">
+              Sin cuidados clave todavía.
+            </p>
+            <button
+              onClick={() => { setTipsDraft(""); setEditingTips(true) }}
+              className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700"
+            >
+              ＋ Añadir cuidados
+            </button>
+          </div>
+        )}
+      </section>      )}
 
       {speciesCard && (
         <section className="mb-6 rounded-xl bg-sky-50 p-4 shadow-sm">
