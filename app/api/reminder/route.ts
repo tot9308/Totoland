@@ -2,15 +2,21 @@ import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import webpush from "web-push"
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
+function initVapid() {
+  if (!webpush.vapidDetails?.publicKey) {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || "mailto:admin@totoland.local",
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    )
+  }
+}
 
 export async function POST(req: Request) {
   if (req.headers.get("x-cron-secret") !== process.env.CRON_SECRET)
     return NextResponse.json({ error: "forbidden" }, { status: 403 })
+
+  initVapid()
 
   const admin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,7 +25,6 @@ export async function POST(req: Request) {
 
   const now = new Date()
   const currentHour = now.getHours()
-  const currentHHMM = `${String(currentHour).padStart(2, "0")}:00`
 
   let sentCount = 0
 
@@ -40,7 +45,33 @@ export async function POST(req: Request) {
       .update({ status: ok ? "sent" : "failed" }).eq("id", s.id)
   }
 
-  // 2) Recordatorio diario para casas cuya hora coincide con la actual
+  // 2) Recordatorios personalizados que han vencido
+  const { data: customs } = await admin
+    .from("custom_reminders")
+    .select("*")
+    .eq("active", true)
+    .lte("next_run_at", now.toISOString())
+  for (const c of customs ?? []) {
+    const { data: members } = await admin
+      .from("household_members").select("user_id").eq("household_id", c.household_id)
+    for (const m of members ?? []) {
+      const ok = await sendPush(admin, m.user_id, {
+        title: "🔔 Recordatorio: " + c.title,
+        body: "Toca hacerlo hoy.",
+        tag: `custom-${c.id}`,
+      })
+      if (ok) sentCount++
+    }
+    if (c.recurrence === "once") {
+      await admin.from("custom_reminders").update({ active: false }).eq("id", c.id)
+    } else {
+      const days = c.recurrence === "daily" ? 1 : c.recurrence === "weekly" ? 7 : c.recurrence === "biweekly" ? 14 : 30
+      const next = new Date(new Date(c.next_run_at).getTime() + days * 86400000)
+      await admin.from("custom_reminders").update({ next_run_at: next.toISOString() }).eq("id", c.id)
+    }
+  }
+
+  // 3) Recordatorio diario para casas cuya hora coincide con la actual
   const { data: houses } = await admin
     .from("households")
     .select("id, reminder_time, name")
@@ -81,32 +112,6 @@ export async function POST(req: Request) {
       if (ok) sentCount++
     }
   }
-  // 3) Recordatorios personalizados que han vencido
-  const { data: customs } = await admin
-    .from("custom_reminders")
-    .select("*")
-    .eq("active", true)
-    .lte("next_run_at", now.toISOString())
-  for (const c of customs ?? []) {
-    const { data: members } = await admin
-      .from("household_members").select("user_id").eq("household_id", c.household_id)
-    for (const m of members ?? []) {
-      const ok = await sendPush(admin, m.user_id, {
-        title: "🔔 Recordatorio: " + c.title,
-        body: "Toca hacerlo hoy.",
-        tag: `custom-${c.id}`,
-      })
-      if (ok) sentCount++
-    }
-    if (c.recurrence === "once") {
-      await admin.from("custom_reminders").update({ active: false }).eq("id", c.id)
-    } else {
-      const days = c.recurrence === "daily" ? 1 : c.recurrence === "weekly" ? 7 : c.recurrence === "biweekly" ? 14 : 30
-      const next = new Date(c.next_run_at.getTime() + days * 86400000)
-      await admin.from("custom_reminders").update({ next_run_at: next.toISOString() }).eq("id", c.id)
-    }
-  }
-
 
   return NextResponse.json({ sent: sentCount })
 }
