@@ -5,7 +5,23 @@ import { supabase } from "@/lib/supabase"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-export default function SettingsModal({ householdId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, recoverySchedule, onRecoverySchedule, onClose }: {
+export default function SettingsModal({ householdId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, recoverySchedule, onRecoverySchedule, reminderTime, onReminderTime, onClose }: {
+  householdId: string
+  summerStart: number
+  summerEnd: number
+  onSeasonSaved: (s: number, e: number) => void
+  sortBy: "due" | "name" | "location"
+  onSortBy: (v: "due" | "name" | "location") => void
+  showPhotos: boolean
+  onShowPhotos: (v: boolean) => void
+  size: "grande" | "medio" | "pequeno"
+  onSize: (v: "grande" | "medio" | "pequeno") => void
+  recoverySchedule: "A" | "B"
+  onRecoverySchedule: (v: "A" | "B") => void
+  reminderTime: string
+  onReminderTime: (v: string) => void
+  onClose: () => void
+}) {
   householdId: string
   summerStart: number
   summerEnd: number
@@ -40,6 +56,13 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
       .from("households").update({ recovery_schedule: v }).eq("id", householdId)
     if (error) return alert("Error: " + error.message)
     onRecoverySchedule(v)
+  }
+
+  async function saveReminderTime(v: string) {
+    const { error } = await supabase
+      .from("households").update({ reminder_time: v }).eq("id", householdId)
+    if (error) return alert("Error: " + error.message)
+    onReminderTime(v)
   }
 
   function urlBase64ToUint8Array(base64String: string) {
@@ -139,6 +162,19 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
             <option value="grande">Grandes (1 columna en el móvil)</option>
             <option value="medio">Medias (1 en móvil, 3 en PC)</option>
             <option value="pequeno">Pequeñas (2 columnas en el móvil)</option>
+          </select>
+        </label>
+
+        <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🔔 Hora del aviso diario</h3>
+        <label className="mb-4 block text-sm text-emerald-900">
+          ¿A qué hora quieres recibir el recordatorio?
+          <select value={reminderTime} onChange={ev => saveReminderTime(ev.target.value)}
+            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            {Array.from({ length: 17 }, (_, i) => i + 6).map(h => (
+              <option key={h} value={`${String(h).padStart(2, "0")}:00`}>
+                {String(h).padStart(2, "0")}:00
+              </option>
+            ))}
           </select>
         </label>
 

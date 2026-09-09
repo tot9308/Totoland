@@ -49,6 +49,10 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 🏠 Mi casa
               </button>
+              <Link href="/year" onClick={() => setOpen(false)}
+                className="rounded px-3 py-2 text-left hover:bg-emerald-50">
+                📊 Tu año verde
+              </Link>
               <Link href="/tasks" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-emerald-50">
                 📋 Tareas

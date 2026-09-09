@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server"
-import webpush from "web-push"
 import { createClient } from "@supabase/supabase-js"
+import webpush from "web-push"
 
-export const dynamic = "force-dynamic"
+webpush.setVapidDetails(
+  process.env.VAPID_SUBJECT!,
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PRIVATE_KEY!
+)
 
 export async function POST(req: Request) {
   if (req.headers.get("x-cron-secret") !== process.env.CRON_SECRET)
@@ -13,52 +17,112 @@ export async function POST(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { data: plants } = await admin
-    .from("plants")
-    .select("name, watering_frequency_days, watering_frequency_winter_days, last_watered_at, status")
-    .neq("status", "dead")
+  const now = new Date()
+  const currentHour = now.getHours()
+  const currentHHMM = `${String(currentHour).padStart(2, "0")}:00`
 
-  const month = new Date().getMonth() + 1
-  const { data: hh } = await admin
+  let sentCount = 0
+
+  // 1) Recordatorios pospuestos que tocan en esta hora
+  const { data: scheduled } = await admin
+    .from("scheduled_notifications")
+    .select("*")
+    .eq("status", "pending")
+    .lte("scheduled_at", now.toISOString())
+  for (const s of scheduled ?? []) {
+    const ok = await sendPush(admin, s.user_id, {
+      title: s.title,
+      body: s.body,
+      tag: `sched-${s.id}`,
+    })
+    if (ok) sentCount++
+    await admin.from("scheduled_notifications")
+      .update({ status: ok ? "sent" : "failed" }).eq("id", s.id)
+  }
+
+  // 2) Recordatorio diario para casas cuya hora coincide con la actual
+  const { data: houses } = await admin
     .from("households")
-    .select("summer_start_month, summer_end_month")
-    .limit(1)
-    .single()
-  const s = hh?.summer_start_month ?? 5
-  const e = hh?.summer_end_month ?? 9
-  const summer = s <= e
-    ? (month >= s && month <= e)
-    : (month >= s || month <= e)
-  const due = (plants ?? []).filter(p => {
-    const f = summer
-      ? p.watering_frequency_days
-      : (p.watering_frequency_winter_days ?? p.watering_frequency_days)
-    if (f == null) return false
-    if (!p.last_watered_at) return true
-    const days = (Date.now() - new Date(p.last_watered_at).getTime()) / 86400000
-    return days >= f
-  })
+    .select("id, reminder_time, name")
+  for (const h of houses ?? []) {
+    const hh = h.reminder_time ?? "08:00"
+    if (hh.slice(0, 2) !== String(currentHour).padStart(2, "0")) continue
 
-  if (due.length === 0) return NextResponse.json({ sent: 0 })
+    const { data: members } = await admin
+      .from("household_members").select("user_id").eq("household_id", h.id)
+    const { data: plants } = await admin
+      .from("plants").select("*").eq("household_id", h.id).neq("status", "dead")
 
-  const { data: subs } = await admin.from("push_subscriptions").select("subscription")
+    const month = now.getMonth() + 1
+    const due: string[] = []
+    for (const p of plants ?? []) {
+      const freq = month >= 5 && month <= 9
+        ? p.watering_frequency_days
+        : p.watering_frequency_winter_days ?? p.watering_frequency_days
+      if (!freq) continue
+      const last = p.last_watered_at ? new Date(p.last_watered_at).getTime() : 0
+      const days = Math.floor((now.getTime() - last) / 86400000)
+      if (!p.last_watered_at || days >= freq) due.push(p.name)
+    }
+    if (due.length === 0) continue
 
-  webpush.setVapidDetails(
-    "mailto:totoland@example.com",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-  )
-
-  const body = "Toca regar: " + due.map(p => p.name).join(", ")
-  let sent = 0
-  for (const s of subs ?? []) {
-    const sub = s.subscription as { endpoint: string }
-    try {
-      await webpush.sendNotification(s.subscription as never, JSON.stringify({ title: "🌿 Totoland", body }))
-      sent++
-    } catch {
-      await admin.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+    const title = "🌿 Totoland: toca regar"
+    const body = due.slice(0, 5).join(", ") + (due.length > 5 ? "…" : "")
+    for (const m of members ?? []) {
+      const ok = await sendPush(admin, m.user_id, {
+        title, body, tag: `daily-${h.id}`,
+        actions: [
+          { action: "postpone-2", title: "Posponer 2h" },
+          { action: "postpone-4", title: "Posponer 4h" },
+          { action: "postpone-6", title: "Posponer 6h" },
+        ],
+        data: { household_id: h.id },
+      })
+      if (ok) sentCount++
     }
   }
-  return NextResponse.json({ sent })
+  // 3) Recordatorios personalizados que han vencido
+  const { data: customs } = await admin
+    .from("custom_reminders")
+    .select("*")
+    .eq("active", true)
+    .lte("next_run_at", now.toISOString())
+  for (const c of customs ?? []) {
+    const { data: members } = await admin
+      .from("household_members").select("user_id").eq("household_id", c.household_id)
+    for (const m of members ?? []) {
+      const ok = await sendPush(admin, m.user_id, {
+        title: "🔔 Recordatorio: " + c.title,
+        body: "Toca hacerlo hoy.",
+        tag: `custom-${c.id}`,
+      })
+      if (ok) sentCount++
+    }
+    if (c.recurrence === "once") {
+      await admin.from("custom_reminders").update({ active: false }).eq("id", c.id)
+    } else {
+      const days = c.recurrence === "daily" ? 1 : c.recurrence === "weekly" ? 7 : c.recurrence === "biweekly" ? 14 : 30
+      const next = new Date(c.next_run_at.getTime() + days * 86400000)
+      await admin.from("custom_reminders").update({ next_run_at: next.toISOString() }).eq("id", c.id)
+    }
+  }
+
+
+  return NextResponse.json({ sent: sentCount })
+}
+
+async function sendPush(admin: any, userId: string | null, payload: any): Promise<boolean> {
+  if (!userId) return false
+  const { data: subs } = await admin
+    .from("push_subscriptions").select("subscription").eq("user_id", userId)
+  let ok = false
+  for (const s of subs ?? []) {
+    try {
+      await webpush.sendNotification(s.subscription, JSON.stringify(payload))
+      ok = true
+    } catch {
+      await admin.from("push_subscriptions").delete().eq("subscription", s.subscription)
+    }
+  }
+  return ok
 }

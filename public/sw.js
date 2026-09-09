@@ -1,35 +1,42 @@
-self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
-
-self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-  if (event.request.method !== "GET" || url.origin !== location.origin) return;
-  event.respondWith(
-    (async () => {
-      try {
-        const res = await fetch(event.request);
-        const cache = await caches.open("totoland-v1");
-        cache.put(event.request, res.clone());
-        return res;
-      } catch {
-        const cached = await caches.match(event.request);
-        return cached || Response.error();
-      }
-    })()
-  );
-});
-
 self.addEventListener("push", (event) => {
-  let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch {}
-  const title = data.title || "🌿 Totoland";
-  const body = data.body || "Toca revisar las plantas";
+  let data = {}
+  try { data = event.data.json() } catch { data = { title: "Totoland", body: event.data?.text() ?? "" } }
   event.waitUntil(
-    self.registration.showNotification(title, { body, icon: "/icon.svg" })
-  );
-});
+    self.registration.showNotification(data.title ?? "🌿 Totoland", {
+      body: data.body ?? "",
+      icon: "/icon.svg",
+      badge: "/icon.svg",
+      tag: data.tag ?? undefined,
+      actions: data.actions ?? [],
+      data: data.data ?? {},
+      requireInteraction: false,
+    })
+  )
+})
 
 self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-  event.waitUntil(self.clients.openWindow("/"));
-});
+  event.notification.close()
+  const action = event.action
+  const data = event.notification.data ?? {}
+
+  if (action === "postpone-2" || action === "postpone-4" || action === "postpone-6") {
+    const hours = action === "postpone-2" ? 2 : action === "postpone-4" ? 4 : 6
+    event.waitUntil(
+      fetch("/api/postpone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ household_id: data.household_id, hours }),
+      })
+    )
+    return
+  }
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ("focus" in client) return client.focus()
+      }
+      if (clients.openWindow) return clients.openWindow("/")
+    })
+  )
+})
