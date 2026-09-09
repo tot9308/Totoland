@@ -22,20 +22,6 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
   onReminderTime: (v: string) => void
   onClose: () => void
 }) {
-  householdId: string
-  summerStart: number
-  summerEnd: number
-  onSeasonSaved: (s: number, e: number) => void
-  sortBy: "due" | "name" | "location"
-  onSortBy: (v: "due" | "name" | "location") => void
-  showPhotos: boolean
-  onShowPhotos: (v: boolean) => void
-  size: "grande" | "medio" | "pequeno"
-  onSize: (v: "grande" | "medio" | "pequeno") => void
-  recoverySchedule: "A" | "B"
-  onRecoverySchedule: (v: "A" | "B") => void
-  onClose: () => void
-}) {
   const [s, setS] = useState(summerStart)
   const [e, setE] = useState(summerEnd)
   const [busy, setBusy] = useState(false)
@@ -141,7 +127,7 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
           </button>
         </div>
 
-        <h3 className="mb-2 text-sm font-semibold text-emerald-800">🎨 Aspecto</h3>
+        <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🎨 Aspecto</h3>
         <label className="mb-2 block text-sm text-emerald-900">
           Orden por defecto
           <select value={sortBy} onChange={ev => onSortBy(ev.target.value as "due" | "name" | "location")}
@@ -165,6 +151,16 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
           </select>
         </label>
 
+        <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🩺 Recuperación post-sequía</h3>
+        <label className="mb-4 block text-sm text-emerald-900">
+          Seguimiento tras un riego con retraso
+          <select value={recoverySchedule} onChange={ev => saveRecovery(ev.target.value as "A" | "B")}
+            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            <option value="B">Dos chequeos: a los 3 y a los 7 días</option>
+            <option value="A">Un chequeo: a los 3 días</option>
+          </select>
+        </label>
+
         <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🔔 Hora del aviso diario</h3>
         <label className="mb-4 block text-sm text-emerald-900">
           ¿A qué hora quieres recibir el recordatorio?
@@ -175,16 +171,6 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
                 {String(h).padStart(2, "0")}:00
               </option>
             ))}
-          </select>
-        </label>
-
-        <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🩺 Recuperación post-sequía</h3>
-        <label className="mb-4 block text-sm text-emerald-900">
-          Seguimiento tras un riego con retraso
-          <select value={recoverySchedule} onChange={ev => saveRecovery(ev.target.value as "A" | "B")}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
-            <option value="B">Dos chequeos: a los 3 y a los 7 días</option>
-            <option value="A">Un chequeo: a los 3 días</option>
           </select>
         </label>
 

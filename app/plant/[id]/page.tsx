@@ -8,12 +8,12 @@ import { EVENT_LABELS, waterAmount, type Plant } from "@/lib/plants"
 import { compressToJpeg } from "@/lib/photos"
 import PlantForm from "@/components/PlantForm"
 import EventForm from "@/components/EventForm"
+import RecoveryPanel from "@/components/RecoveryPanel"
+import { TYPE_LABEL, plantType, plantCategory } from "@/lib/recovery"
 import {
   findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
   SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
 } from "@/lib/species"
-import RecoveryPanel from "@/components/RecoveryPanel"
-import { TYPE_LABEL, plantType, plantCategory } from "@/lib/recovery"
 
 type EventRow = {
   id: string
@@ -50,7 +50,6 @@ const EVENT_ICONS: Record<string, string> = {
 }
 
 const HEALTH_ICON: Record<string, string> = { green: "🟢", yellow: "🟡", red: "🔴" }
-
 
 function fmt(iso: string) {
   return new Date(iso).toLocaleString("es-ES", {
@@ -219,6 +218,7 @@ export default function PlantDetail() {
     `)
     w.document.close()
   }
+
   async function toCemetery() {
     if (!plant) return
     if (!confirm(`¿Mandar "${plant.name}" al cementerio? Dejará de salir en la home.`)) return
@@ -232,6 +232,7 @@ export default function PlantDetail() {
     alert("Descanse en paz 🪦")
     window.location.href = "/"
   }
+
   const batchCount: Record<string, number> = {}
   const firstEventOfBatch: Record<string, string> = {}
   for (const ev of events) {
@@ -261,7 +262,8 @@ export default function PlantDetail() {
               💦 Riego: ≈ {waterAmt.min}–{waterAmt.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
               {plant.has_saucer && " · vacía el plato a los 10-15 min"}
             </p>
-          )}        </div>
+          )}
+        </div>
         <div className="flex flex-wrap justify-end gap-2">
           <button onClick={() => quickWater(false)}
             className="rounded bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700">
@@ -291,6 +293,7 @@ export default function PlantDetail() {
           </button>
         </div>
       </header>
+
       <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
         {editingTips ? (
           <>
@@ -334,9 +337,7 @@ export default function PlantDetail() {
           </>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-amber-800">
-              Sin cuidados clave todavía.
-            </p>
+            <p className="text-sm text-amber-800">Sin cuidados clave todavía.</p>
             <button
               onClick={() => { setTipsDraft(""); setEditingTips(true) }}
               className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700"
@@ -345,7 +346,7 @@ export default function PlantDetail() {
             </button>
           </div>
         )}
-      </section>      )}
+      </section>
 
       {speciesCard && (
         <section className="mb-6 rounded-xl bg-sky-50 p-4 shadow-sm">
@@ -365,7 +366,7 @@ export default function PlantDetail() {
             <p>🐶 Tóxica para mascotas: {speciesCard.toxic ? "sí" : "no"}</p>
             <p>Dificultad: {DIFF_LABELS[speciesCard.difficulty]}</p>
             <p>🏷️ Categoría: {plantCategory(speciesCard)}</p>
-            <p>🧬 Tipo (para recuperación): {TYPE_LABEL[plantType(speciesCard, plant.plant_type)]}</p>
+            <p>🧬 Tipo (recuperación): {TYPE_LABEL[plantType(speciesCard, plant.plant_type)]}</p>
             <p>💧 Orientativo: {speciesCard.ws} d verano / {speciesCard.ww} d invierno</p>
           </div>
           {speciesCard.flags && FLAG_LABELS[speciesCard.flags] && (
@@ -375,9 +376,11 @@ export default function PlantDetail() {
             Orientativo: manda lo que observes en tu casa.
           </p>
         </section>
-      )}      
+      )}
+
       <RecoveryPanel plant={plant} userId={userId ?? ""} speciesCard={speciesCard} onChanged={reload} />
-<section className="mb-6">
+
+      <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-emerald-900">Fotos ({photos.length})</h2>
           <label className="cursor-pointer rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
