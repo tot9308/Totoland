@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Logo from "./Logo"
 
 export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onChangePassword, onLogout }: {
   email: string
@@ -30,7 +31,7 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
             className="absolute left-0 top-0 h-full w-72 bg-white p-4 shadow-xl"
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="mb-1 text-lg font-bold text-emerald-900">🌿 Totoland</h2>
+            <Logo size={28} textClass="text-lg font-bold text-emerald-900" />
             <p className="mb-4 truncate text-xs text-emerald-600">{email}</p>
             <div className="flex flex-col gap-1 text-sm text-emerald-900">
               <button onClick={() => { setOpen(false); onOpenSettings() }}
