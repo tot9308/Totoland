@@ -76,7 +76,7 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
   async function testPush() {
     if (!("serviceWorker" in navigator)) return alert("Este navegador no soporta avisos")
     const reg = await navigator.serviceWorker.ready
-    reg.showNotification("🌿 Totoland", { body: "Aviso de prueba: todo funciona ✅", icon: "/icon.svg" })
+    reg.showNotification("🌿 Totoland", { body: "Aviso de prueba: todo funciona ✅", icon: "/icon-192.png", badge: "/badge.png" })
   }
 
   return (

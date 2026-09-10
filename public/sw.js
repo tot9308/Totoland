@@ -4,8 +4,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title ?? "🌿 Totoland", {
       body: data.body ?? "",
-      icon: "/icon.svg",
-      badge: "/icon.svg",
+      icon: "/icon-192.png",
+      badge: "/badge.png",
       tag: data.tag ?? undefined,
       actions: data.actions ?? [],
       data: data.data ?? {},

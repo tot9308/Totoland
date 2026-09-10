@@ -1,16 +1,14 @@
-import type { MetadataRoute } from "next"
-
-export default function manifest(): MetadataRoute.Manifest {
-  return {
-    name: "Totoland",
-    short_name: "Totoland",
-    description: "Seguimiento de plantas de casa",
-    start_url: "/",
-    display: "standalone",
-    background_color: "#ecfdf5",
-    theme_color: "#059669",
-    icons: [
-      { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-    ],
-  }
+{
+  "name": "Totoland",
+  "short_name": "Totoland",
+  "description": "El cuidado de tus plantas, en casa y en el bolsillo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef4f6",
+  "theme_color": "#065f46",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }
