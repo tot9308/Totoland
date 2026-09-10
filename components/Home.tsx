@@ -14,6 +14,7 @@ import SyncModal from "./SyncModal"
 import TasksSection from "./TasksSection"
 import AchievementsModal from "./AchievementsModal"
 import HouseholdModal from "./HouseholdModal"
+import Logo from "./Logo"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -229,7 +230,7 @@ export default function Home({ session }: { session: Session }) {
                          onChangePassword={changePassword}
           onLogout={() => supabase.auth.signOut()}
         />
-        <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
+          <Logo size={36} />
       </header>
 
       {householdId && (

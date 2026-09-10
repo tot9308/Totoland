@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
+import Logo from "./Logo"
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
@@ -22,7 +23,9 @@ export default function LoginForm() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-emerald-50 p-4">
       <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-        <h1 className="mb-1 text-center text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
+        <div className="mb-1 flex justify-center">
+          <Logo size={44} />
+        </div>
         <p className="mb-4 text-center text-xs text-emerald-600">
           El cuidado de tus plantas, en casa y en el bolsillo
         </p>
