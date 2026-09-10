@@ -13,7 +13,6 @@ import SettingsModal from "./SettingsModal"
 import SyncModal from "./SyncModal"
 import TasksSection from "./TasksSection"
 import AchievementsModal from "./AchievementsModal"
-import RecoverySection from "./RecoverySection"
 import HouseholdModal from "./HouseholdModal"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
@@ -51,7 +50,6 @@ export default function Home({ session }: { session: Session }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [showAchievements, setShowAchievements] = useState(false)
   const [showHousehold, setShowHousehold] = useState(false)
-  const [recoverySchedule, setRecoverySchedule] = useState<"A" | "B">("B")
   const [reminderTime, setReminderTime] = useState("08:00")
 
   function setSortBy(v: "due" | "name" | "location") {
@@ -79,13 +77,12 @@ export default function Home({ session }: { session: Session }) {
 
     const { data: hh } = await supabase
       .from("households")
-      .select("summer_start_month, summer_end_month, recovery_schedule, reminder_time")
+      .select("summer_start_month, summer_end_month, reminder_time")
       .eq("id", mem.household_id)
       .single()
     if (hh) {
       setSummerStart(hh.summer_start_month)
       setSummerEnd(hh.summer_end_month)
-      setRecoverySchedule((hh.recovery_schedule as "A" | "B") ?? "B")
       setReminderTime(hh.reminder_time ?? "08:00")
     }
     const { data } = await supabase
@@ -235,7 +232,6 @@ export default function Home({ session }: { session: Session }) {
         <h1 className="text-2xl font-bold text-emerald-900">🌿 Totoland</h1>
       </header>
 
-      <RecoverySection plants={plants} userId={userId} onChanged={reload} />
       {householdId && (
         <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
       )}
@@ -326,8 +322,6 @@ export default function Home({ session }: { session: Session }) {
           onShowPhotos={setShowPhotos}
           size={size}
           onSize={setSize}
-          recoverySchedule={recoverySchedule}
-          onRecoverySchedule={setRecoverySchedule}
           reminderTime={reminderTime}
           onReminderTime={setReminderTime}
           onClose={() => setShowSettings(false)}
