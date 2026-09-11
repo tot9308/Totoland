@@ -103,10 +103,22 @@ export function waterAmount(plant: Plant): { min: number; max: number } | null {
   return waterAmountFor(plant.pot_diameter_cm, "B")
 }
 
+const REF: [number, number, number][] = [
+  [8, 40, 80], [10, 50, 100], [12, 70, 120], [14, 90, 140], [16, 150, 250],
+  [18, 220, 350], [20, 320, 480], [24, 500, 750], [28, 750, 1100],
+  [30, 1000, 1500], [35, 1400, 2100], [40, 1800, 2700],
+]
+
 export function waterAmountFor(diam: number, style: string): { min: number; max: number } {
-  const r = diam / 2
-  const h = diam * 0.85
-  const volMl = Math.round(Math.PI * r * r * h)
-  const ratio = style === "A" ? 0.25 : style === "C" ? 0.08 : 0.18
-  return { min: Math.round(volMl * ratio * 0.5), max: Math.round(volMl * ratio) }
+  const d = Math.max(REF[0][0], Math.min(REF[REF.length - 1][0], diam))
+  let i = 0
+  while (i < REF.length - 2 && REF[i + 1][0] < d) i++
+  const [d0, mn0, mx0] = REF[i]
+  const [d1, mn1, mx1] = REF[i + 1]
+  const t = d1 === d0 ? 0 : (d - d0) / (d1 - d0)
+  const mult = style === "A" ? 0.7 : style === "C" ? 1.2 : 1
+  return {
+    min: Math.round(((mn0 + (mn1 - mn0) * t) * mult) / 5) * 5,
+    max: Math.round(((mx0 + (mx1 - mx0) * t) * mult) / 5) * 5,
+  }
 }

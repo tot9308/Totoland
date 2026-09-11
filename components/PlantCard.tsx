@@ -15,6 +15,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
   const due = daysUntilDue(plant, summerStart, summerEnd)
   const freq = effectiveFreq(plant, summerStart, summerEnd)
   const days = daysSince(plant.last_watered_at)
+const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
 
   const overdue = due !== null && due < 0
   const dueSoon = due !== null && due >= 0 && due <= 2
@@ -63,7 +64,12 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
         ) : due === 0 ? (
           <span className="font-medium">💧 Toca regar hoy</span>
         ) : (
-          <span>Próximo riego en <b>{due} día{due !== 1 ? "s" : ""}</b></span>
+          <span>
+            Próximo riego en <b>{due} día{due !== 1 ? "s" : ""}</b>
+            {due <= 4 && (
+              <span className="font-medium"> ({DIA_NOMBRE[new Date(Date.now() + due * 86400000).getDay()]})</span>
+            )}
+          </span>
         )}
         {freq && <span className="block text-[10px] opacity-70">cada {freq} d</span>}
       </div>

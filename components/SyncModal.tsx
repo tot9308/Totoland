@@ -62,7 +62,12 @@ export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }:
 
   async function apply() {
     setBusy(true)
-    const lastWateredAt = new Date(lastWatered + "T12:00:00").toISOString()
+    const base = new Date(lastWatered + "T12:00:00")
+    let delta = (dow - base.getDay() + 7) % 7
+    if (delta > 3) delta -= 7
+    const anchored = new Date(base)
+    anchored.setDate(anchored.getDate() + delta)
+    const lastWateredAt = anchored.toISOString()
     for (const r of selRows) {
       if (r.mode === "mult") {
         await supabase.from("plants").update({
