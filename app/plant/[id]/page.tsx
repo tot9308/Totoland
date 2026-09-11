@@ -14,6 +14,7 @@ import {
   findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
   SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
 } from "@/lib/species"
+import { careTemplate } from "@/lib/careTemplate"
 
 type EventRow = {
   id: string
@@ -287,6 +288,10 @@ export default function PlantDetail() {
             className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
             🖨 PDF
           </button>
+          <Link href="/reminders"
+            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            🔔 Recordatorios
+          </Link>
           <button onClick={toCemetery}
             className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
             🪦 Cementerio
@@ -312,6 +317,12 @@ export default function PlantDetail() {
                 className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white">
                 Guardar
               </button>
+              {speciesCard && (
+                <button onClick={() => setTipsDraft(careTemplate(speciesCard))}
+                  className="rounded border border-amber-400 px-3 py-1.5 text-sm text-amber-800 hover:bg-amber-100">
+                  ✨ Plantilla
+                </button>
+              )}
               <button onClick={() => setEditingTips(false)}
                 className="rounded px-3 py-1.5 text-sm text-amber-800">
                 Cancelar
@@ -338,12 +349,22 @@ export default function PlantDetail() {
         ) : (
           <div className="flex items-center justify-between">
             <p className="text-sm text-amber-800">Sin cuidados clave todavía.</p>
-            <button
-              onClick={() => { setTipsDraft(""); setEditingTips(true) }}
-              className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700"
-            >
-              ＋ Añadir cuidados
-            </button>
+            <div className="flex gap-2">
+              {speciesCard && (
+                <button
+                  onClick={() => { setTipsDraft(careTemplate(speciesCard)); setEditingTips(true) }}
+                  className="rounded border border-amber-400 px-3 py-1.5 text-sm text-amber-800 hover:bg-amber-100"
+                >
+                  ✨ Plantilla
+                </button>
+              )}
+              <button
+                onClick={() => { setTipsDraft(""); setEditingTips(true) }}
+                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700"
+              >
+                ＋ Añadir cuidados
+              </button>
+            </div>
           </div>
         )}
       </section>
