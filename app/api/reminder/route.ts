@@ -78,8 +78,10 @@ export async function POST(req: Request) {
     .from("households")
     .select("id, reminder_time, name")
   for (const h of houses ?? []) {
-    const hh = h.reminder_time ?? "08:00"
-    if (hh.slice(0, 2) !== String(currentHour).padStart(2, "0")) continue
+    const hhmm = h.reminder_time ?? "08:00"
+    const [rh, rm] = hhmm.split(":").map(Number)
+    const curMM = Math.floor(now.getMinutes() / 5) * 5
+    if (rh !== currentHour || Math.floor(rm / 5) * 5 !== curMM) continue
 
     const { data: members } = await admin
       .from("household_members").select("user_id").eq("household_id", h.id)

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { type Plant } from "@/lib/plants"
+import { wateringDaySet, type Plant } from "@/lib/plants"
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 const DIAS = ["L","M","X","J","V","S","D"]
@@ -15,6 +15,7 @@ type TaskRow = { id: string; title: string; plant_id: string | null; type: strin
 export default function CalendarPage() {
   const router = useRouter()
   const today = new Date()
+  const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [plants, setPlants] = useState<Plant[]>([])
@@ -53,10 +54,10 @@ export default function CalendarPage() {
 
   useEffect(() => { setLoading(true); reload() }, [reload])
 
-  // Construir mapa día -> eventos y riegos previstos
-  const firstDay = new Date(year, month, 1).getDay() // 0=dom
-  const offset = (firstDay + 6) % 7 // convertir a lunes=0
+  const firstDay = new Date(year, month, 1).getDay()
+  const offset = (firstDay + 6) % 7
   const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const monthEnd = new Date(year, month, daysInMonth, 23, 59, 59)
 
   const byDay: Record<number, { events: EventRow[]; tasks: TaskRow[]; due: Plant[] }> = {}
   for (let d = 1; d <= daysInMonth; d++) byDay[d] = { events: [], tasks: [], due: [] }
@@ -66,27 +67,31 @@ export default function CalendarPage() {
     if (byDay[day]) byDay[day].events.push(e)
   }
   for (const t of tasks) {
-    const day = Math.min(t.type === "custom" ? 1 : 1, daysInMonth)
-    // tareas del mes sin fecha concreta → las ponemos en el día 1
     if (byDay[1]) byDay[1].tasks.push(t)
   }
 
-  // Próximos riegos previstos (para los días restantes del mes)
+  // Próximos riegos previstos (solo desde hoy en adelante)
   for (const p of plants) {
-    if (!p.last_watered_at || !p.watering_frequency_days) continue
+    const set = wateringDaySet(p)
+    if (set) {
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month, d)
+        if (date < todayMid) continue
+        if (set.includes(date.getDay()) && byDay[d]) byDay[d].due.push(p)
+      }
+      continue
+    }
     const f = month >= 4 && month <= 8
       ? Number(p.watering_frequency_days)
       : Number(p.watering_frequency_winter_days ?? p.watering_frequency_days)
     if (!f) continue
-    const last = new Date(p.last_watered_at)
-    // calcular primer riego previsto después del inicio del mes
-    const monthStart = new Date(year, month, 1, 0, 0, 0)
-    const diffDays = Math.floor((monthStart.getTime() - last.getTime()) / 86400000)
-    let nextDays = diffDays < f ? f - diffDays : f - (diffDays % f)
-    if (nextDays <= 0) nextDays += f
-    while (nextDays <= daysInMonth) {
-      if (byDay[nextDays]) byDay[nextDays].due.push(p)
-      nextDays += f
+    const last = p.last_watered_at ? new Date(p.last_watered_at) : null
+    let next = last ? new Date(last.getTime() + f * 86400000) : new Date(year, month, 1)
+    while (next < new Date(year, month, 1)) next = new Date(next.getTime() + f * 86400000)
+    while (next <= monthEnd) {
+      const d = next.getDate()
+      if (next >= todayMid && byDay[d]) byDay[d].due.push(p)
+      next = new Date(next.getTime() + f * 86400000)
     }
   }
 
@@ -112,13 +117,11 @@ export default function CalendarPage() {
         <p className="text-stone-600">Cargando…</p>
       ) : (
         <>
-          {/* Cabecera días */}
           <div className="mb-1 grid grid-cols-7 gap-1">
             {DIAS.map(d => (
               <div key={d} className="text-center text-xs font-medium text-stone-500">{d}</div>
             ))}
           </div>
-          {/* Grid de días */}
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: offset }).map((_, i) => <div key={"e" + i} />)}
             {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -149,7 +152,6 @@ export default function CalendarPage() {
             })}
           </div>
 
-          {/* Detalle del día seleccionado */}
           {selectedData && selDay && (
             <div className="mt-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm">
               <h2 className="mb-3 font-serif text-lg font-semibold text-stone-800">
@@ -200,8 +202,7 @@ export default function CalendarPage() {
             </div>
           )}
 
-          {/* Leyenda */}
-          <div className="mt-6 flex flex-wrap gap-3 rounded-lg bg-[#faf7f0] p-3 text-xs text-stone-600 shadow-sm">
+          <div className="mt-6 flex flex-wrap gap-3 rounded-lg bg-white p-3 text-xs text-stone-600 shadow-sm">
             <span>💧 riego hecho</span>
             <span>📝 otro evento</span>
             <span className="text-[#c97b5e]">⏰ riego previsto</span>

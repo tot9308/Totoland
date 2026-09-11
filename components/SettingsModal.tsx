@@ -147,12 +147,8 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
         </div>
         <label className="mb-2 block text-sm text-stone-800">
           ¿A qué hora quieres recibir el recordatorio?
-          <select value={reminderTime} onChange={ev => saveReminderTime(ev.target.value)}
-            className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
-            {Array.from({ length: 17 }, (_, i) => i + 6).map(h => (
-              <option key={h} value={`${String(h).padStart(2, "0")}:00`}>{String(h).padStart(2, "0")}:00</option>
-            ))}
-          </select>
+          <input type="time" step={300} value={reminderTime} onChange={ev => saveReminderTime(ev.target.value)}
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
         </label>
         <label className="mb-4 block text-sm text-stone-800">
           🔕 Silenciar avisos un tiempo
