@@ -70,10 +70,6 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 📅 Calendario
               </Link>
-              <Link href="/about" onClick={() => setOpen(false)}
-                className="rounded px-3 py-2 text-left hover:bg-stone-100">
-                💚 Acerca de
-              </Link>
               <Link href="/guide" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 📚 Guía
@@ -86,6 +82,10 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 🔑 Cambiar contraseña
               </button>
+              <Link href="/about" onClick={() => setOpen(false)}
+                className="rounded px-3 py-2 text-left hover:bg-stone-100">
+                💚 Acerca de
+              </Link>
               <button onClick={onLogout}
                 className="rounded px-3 py-2 text-left text-[#8a3a1a] hover:bg-red-50">
                 🚪 Salir

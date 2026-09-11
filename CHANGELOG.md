@@ -20,6 +20,40 @@ Registro de cambios de Totoland. Formato inspirado en \[Keep a Changelog](https:
 
 
 
+\## \[0.10.0] - 2026-09-11
+
+
+
+\### Añadido
+
+\- 🗓️ Modo de riego por días fijos de la semana, anclado al día del grupo
+
+\- 🔄 Sincronizador que convierte frecuencias no múltiplos en días fijos (p. ej. 4 d → martes + sábado)
+
+\- 🧭 Ajuste de comportamiento ante retrasos en días fijos (mantener o re-anclar según umbral)
+
+\- 🔕 Silenciar notificaciones push por 1, 3, 7, 14 o 30 días
+
+\- 📅 Vista de calendario mensual (riegos hechos, previstos y tareas)
+
+\- 🔔 Recordatorios personalizados recurrentes
+
+\- 🌱 Plantilla automática de cuidados al elegir especie (editable)
+
+\- 💚 Página "Acerca de" con licencia y autoría
+
+\- 🎨 Restyling completo al estilo orgánico natural (crema, oliva, terracota, serif)
+
+\- 🖼️ Nuevo logotipo en icono, launcher, notificaciones, login, cabeceras y menú
+
+
+
+\### Cambiado
+
+\- 🔄 El sincronizador ya no desfasa plantas de frecuencia no múltiplo: las ancla a días fijos
+
+
+
 \## \[0.9.0] - 2026-09-09
 
 

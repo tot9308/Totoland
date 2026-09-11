@@ -15,6 +15,7 @@ import {
   SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
 } from "@/lib/species"
 import { careTemplate } from "@/lib/careTemplate"
+import { applyDrift } from "@/lib/drift"
 
 type EventRow = {
   id: string
@@ -74,6 +75,7 @@ export default function PlantDetail() {
   const [tipsDraft, setTipsDraft] = useState("")
   const [showEdit, setShowEdit] = useState(false)
   const [showEvent, setShowEvent] = useState(false)
+  const [driftDays, setDriftDays] = useState(0)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -81,6 +83,11 @@ export default function PlantDetail() {
 
     const { data: p } = await supabase.from("plants").select("*").eq("id", plantId).single()
     setPlant(p as Plant)
+    if (p) {
+      const { data: hh } = await supabase.from("households")
+        .select("drift_days").eq("id", (p as Plant).household_id).single()
+      setDriftDays(hh?.drift_days ?? 0)
+    }
 
     const { data: evs } = await supabase
       .from("care_events")
@@ -122,6 +129,7 @@ export default function PlantDetail() {
       rows.push({ plant_id: plant.id, user_id: userId, type: "misting", batch_id: batch })
     const { error } = await supabase.from("care_events").insert(rows)
     if (error) return alert(error.message)
+    await applyDrift(plant, driftDays, 5, 9)
     await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", plant.id)
     await reload()
   }

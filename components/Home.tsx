@@ -15,6 +15,7 @@ import TasksSection from "./TasksSection"
 import AchievementsModal from "./AchievementsModal"
 import HouseholdModal from "./HouseholdModal"
 import Logo from "./Logo"
+import { applyDrift } from "@/lib/drift"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -52,6 +53,7 @@ export default function Home({ session }: { session: Session }) {
   const [showAchievements, setShowAchievements] = useState(false)
   const [showHousehold, setShowHousehold] = useState(false)
   const [reminderTime, setReminderTime] = useState("08:00")
+  const [driftDays, setDriftDays] = useState(0)
 
   function setSortBy(v: "due" | "name" | "location") {
     setSortByState(v)
@@ -78,13 +80,14 @@ export default function Home({ session }: { session: Session }) {
 
     const { data: hh } = await supabase
       .from("households")
-      .select("summer_start_month, summer_end_month, reminder_time")
+      .select("summer_start_month, summer_end_month, reminder_time, drift_days")
       .eq("id", mem.household_id)
       .single()
     if (hh) {
       setSummerStart(hh.summer_start_month)
       setSummerEnd(hh.summer_end_month)
       setReminderTime(hh.reminder_time ?? "08:00")
+      setDriftDays(hh.drift_days ?? 0)
     }
     const { data } = await supabase
       .from("plants")
@@ -154,6 +157,7 @@ export default function Home({ session }: { session: Session }) {
         e.push({ plant_id: p.id, user_id: userId, type: "misting", batch_id: batch })
       return e
     })
+    for (const p of list) await applyDrift(p, driftDays, summerStart, summerEnd)
     const { error } = await supabase.from("care_events").insert(events)
     if (error) return alert("Error al registrar: " + error.message)
     const now = new Date().toISOString()
@@ -325,6 +329,9 @@ export default function Home({ session }: { session: Session }) {
           onSize={setSize}
           reminderTime={reminderTime}
           onReminderTime={setReminderTime}
+          userId={userId}
+          driftDays={driftDays}
+          onDriftDays={setDriftDays}
           onClose={() => setShowSettings(false)}
         />
       )}
