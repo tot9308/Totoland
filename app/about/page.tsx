@@ -22,10 +22,6 @@ export default function AboutPage() {
 
       <section className="mb-6 rounded-xl bg-white p-5 shadow-sm">
         <h2 className="mb-2 text-lg font-semibold text-emerald-900">Quién lo hace</h2>
-        <p className="text-sm text-emerald-800">
-          Hecho con cariño en Bilbao por un profesor de primaria apasionado de las plantas,
-          la tecnología y los mapas. <!-- Cambia esta línea por tu nombre si quieres firmarlo -->
-        </p>
         <p className="mt-2 text-sm text-emerald-800">
           Es un proyecto personal y abierto: el código está disponible públicamente y cualquiera
           puede aprender de él o reutilizarlo.
