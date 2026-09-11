@@ -23,6 +23,7 @@ export async function POST(req: Request) {
 
   const now = new Date()
   const currentHour = now.getHours()
+
   const { data: mutedRows } = await admin.from("profiles")
     .select("id").gt("mute_until", now.toISOString())
   const muted = new Set<string>((mutedRows ?? []).map((m: any) => m.id))
@@ -88,7 +89,6 @@ export async function POST(req: Request) {
     const month = now.getMonth() + 1
     const due: string[] = []
     for (const p of plants ?? []) {
-      const freq = month >= 5 && month <= 9
       if (p.watering_days) {
         const set = p.watering_days.split(",").map(Number)
         const today = new Date(now); today.setHours(0, 0, 0, 0)
@@ -105,6 +105,7 @@ export async function POST(req: Request) {
         if (owed) due.push(p.name)
         continue
       }
+      const freq = month >= 5 && month <= 9
         ? p.watering_frequency_days
         : p.watering_frequency_winter_days ?? p.watering_frequency_days
       if (!freq) continue
