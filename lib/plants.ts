@@ -1,4 +1,4 @@
-import { findSpecies } from "./species"
+import { supabase } from "./supabase"
 
 export type Plant = {
   id: string
@@ -8,8 +8,9 @@ export type Plant = {
   location: string | null
   watering_frequency_days: number | null
   watering_frequency_winter_days: number | null
+  watering_days: string | null
   last_watered_at: string | null
-  status: string
+  status: "alive" | "dead"
   misting_enabled: boolean
   notes: string | null
   main_photo_path: string | null
@@ -24,10 +25,11 @@ export type Plant = {
   recovery_started_at: string | null
   plant_type: string | null
 }
+
 export const EVENT_LABELS: Record<string, string> = {
   watering: "Riego",
-  misting: "Pulverizar hojas",
-  cleaning: "Limpiar hojas",
+  misting: "Pulverizado",
+  cleaning: "Limpieza de hojas",
   fertilizing: "Abonado",
   pruning: "Poda",
   repotting: "Trasplante",
@@ -38,48 +40,73 @@ export const EVENT_LABELS: Record<string, string> = {
   location_change: "Cambio de ubicación",
 }
 
-export function daysSince(dateIso: string | null): number | null {
-  if (!dateIso) return null
-  return Math.floor((Date.now() - new Date(dateIso).getTime()) / 86400000)
+export function daysSince(iso: string | null): number | null {
+  if (!iso) return null
+  const diff = Date.now() - new Date(iso).getTime()
+  return Math.floor(diff / 86400000)
 }
 
-export function effectiveFreq(p: Plant, summerStart: number, summerEnd: number): number | null {
+export function summerNow(summerStart: number, summerEnd: number): boolean {
   const m = new Date().getMonth() + 1
-  const inSummer = summerStart <= summerEnd
-    ? (m >= summerStart && m <= summerEnd)
-    : (m >= summerStart || m <= summerEnd)
-  if (inSummer) return p.watering_frequency_days
-  return p.watering_frequency_winter_days ?? p.watering_frequency_days
+  return m >= summerStart && m <= summerEnd
 }
 
-export function isDue(p: Plant, summerStart: number, summerEnd: number): boolean {
-  if (p.status === "dead") return false
-  const f = effectiveFreq(p, summerStart, summerEnd)
-  if (f == null) return false
-  const d = daysSince(p.last_watered_at)
-  return d === null || d >= f
+export function effectiveFreq(plant: Plant, summerStart: number, summerEnd: number): number | null {
+  const inS = summerNow(summerStart, summerEnd)
+  const f = inS
+    ? plant.watering_frequency_days
+    : plant.watering_frequency_winter_days ?? plant.watering_frequency_days
+  return f ? Number(f) : null
 }
 
-export function daysUntilDue(p: Plant, summerStart: number, summerEnd: number): number | null {
-  const f = effectiveFreq(p, summerStart, summerEnd)
+export function wateringDaySet(plant: Plant): number[] | null {
+  if (!plant.watering_days) return null
+  const arr = plant.watering_days.split(",").map(x => parseInt(x, 10)).filter(n => !isNaN(n))
+  return arr.length ? arr : null
+}
+
+export function daysUntilDue(plant: Plant, summerStart: number, summerEnd: number): number | null {
+  const set = wateringDaySet(plant)
+  if (set) {
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const last = plant.last_watered_at ? new Date(plant.last_watered_at) : null
+    if (last) last.setHours(0, 0, 0, 0)
+    for (let i = 0; i <= 7; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i)
+      if (!set.includes(d.getDay())) continue
+      if (last && last.getTime() >= d.getTime()) {
+        for (let j = 1; j <= 8; j++) {
+          const f = new Date(last); f.setDate(f.getDate() + j)
+          if (set.includes(f.getDay()))
+            return Math.round((f.getTime() - today.getTime()) / 86400000)
+        }
+        return null
+      }
+      return -i
+    }
+    return null
+  }
+  const f = effectiveFreq(plant, summerStart, summerEnd)
   if (f == null) return null
-  const d = daysSince(p.last_watered_at)
-  if (d === null) return -1
+  const d = daysSince(plant.last_watered_at)
+  if (d == null) return 0
   return f - d
 }
 
-export function waterAmountFor(diameterCm: number, style: string): { min: number; max: number } {
-  const d = Math.max(4, diameterCm)
-  const r = d / 2 - 1
-  const h = Math.max(6, d * 0.75 - 2)
-  const vol = Math.PI * r * r * h * 0.8
-  const [a, b] = style === "A" ? [0.08, 0.12] : style === "C" ? [0.18, 0.28] : [0.12, 0.18]
-  const round10 = (x: number) => Math.max(30, Math.round(x / 10) * 10)
-  return { min: round10(vol * a), max: round10(vol * b) }
+export function isDue(plant: Plant, summerStart: number, summerEnd: number): boolean {
+  const du = daysUntilDue(plant, summerStart, summerEnd)
+  return du !== null && du <= 0
 }
 
-export function waterAmount(p: Plant): { min: number; max: number } | null {
-  if (!p.pot_diameter_cm) return null
-  const style = findSpecies(p.species ?? "")?.water ?? "B"
-  return waterAmountFor(p.pot_diameter_cm, style)
+export function waterAmount(plant: Plant): { min: number; max: number } | null {
+  if (!plant.pot_diameter_cm) return null
+  return waterAmountFor(plant.pot_diameter_cm, "B")
+}
+
+export function waterAmountFor(diam: number, style: string): { min: number; max: number } {
+  const r = diam / 2
+  const h = diam * 0.85
+  const volMl = Math.round((Math.PI * r * r * h) / 1000)
+  const ratio = style === "A" ? 0.25 : style === "C" ? 0.08 : 0.18
+  return { min: Math.round(volMl * ratio * 0.5), max: Math.round(volMl * ratio) }
 }

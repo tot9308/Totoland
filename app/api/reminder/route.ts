@@ -23,6 +23,9 @@ export async function POST(req: Request) {
 
   const now = new Date()
   const currentHour = now.getHours()
+  const { data: mutedRows } = await admin.from("profiles")
+    .select("id").gt("mute_until", now.toISOString())
+  const muted = new Set<string>((mutedRows ?? []).map((m: any) => m.id))
 
   let sentCount = 0
 
@@ -37,7 +40,7 @@ export async function POST(req: Request) {
       title: s.title,
       body: s.body,
       tag: `sched-${s.id}`,
-    })
+    }, muted)
     if (ok) sentCount++
     await admin.from("scheduled_notifications")
       .update({ status: ok ? "sent" : "failed" }).eq("id", s.id)
@@ -57,7 +60,7 @@ export async function POST(req: Request) {
         title: "🔔 Recordatorio: " + c.title,
         body: "Toca hacerlo hoy.",
         tag: `custom-${c.id}`,
-      })
+      }, muted)
       if (ok) sentCount++
     }
     if (c.recurrence === "once") {
@@ -86,6 +89,22 @@ export async function POST(req: Request) {
     const due: string[] = []
     for (const p of plants ?? []) {
       const freq = month >= 5 && month <= 9
+      if (p.watering_days) {
+        const set = p.watering_days.split(",").map(Number)
+        const today = new Date(now); today.setHours(0, 0, 0, 0)
+        const last = p.last_watered_at ? new Date(p.last_watered_at) : null
+        if (last) last.setHours(0, 0, 0, 0)
+        let owed = false
+        for (let i = 0; i <= 7; i++) {
+          const d = new Date(today); d.setDate(d.getDate() - i)
+          if (!set.includes(d.getDay())) continue
+          if (last && last.getTime() >= d.getTime()) break
+          owed = true
+          break
+        }
+        if (owed) due.push(p.name)
+        continue
+      }
         ? p.watering_frequency_days
         : p.watering_frequency_winter_days ?? p.watering_frequency_days
       if (!freq) continue
@@ -106,7 +125,7 @@ export async function POST(req: Request) {
           { action: "postpone-6", title: "Posponer 6h" },
         ],
         data: { household_id: h.id },
-      })
+      }, muted)
       if (ok) sentCount++
     }
   }
@@ -114,8 +133,8 @@ export async function POST(req: Request) {
   return NextResponse.json({ sent: sentCount })
 }
 
-async function sendPush(admin: any, userId: string | null, payload: any): Promise<boolean> {
-  if (!userId) return false
+async function sendPush(admin: any, userId: string | null, payload: any, muted: Set<string>): Promise<boolean> {
+  if (!userId || muted.has(userId)) return false
   const { data: subs } = await admin
     .from("push_subscriptions").select("subscription").eq("user_id", userId)
   let ok = false
