@@ -106,7 +106,7 @@ export function waterAmount(plant: Plant): { min: number; max: number } | null {
 export function waterAmountFor(diam: number, style: string): { min: number; max: number } {
   const r = diam / 2
   const h = diam * 0.85
-  const volMl = Math.round((Math.PI * r * r * h) / 1000)
+  const volMl = Math.round(Math.PI * r * r * h)
   const ratio = style === "A" ? 0.25 : style === "C" ? 0.08 : 0.18
   return { min: Math.round(volMl * ratio * 0.5), max: Math.round(volMl * ratio) }
 }
