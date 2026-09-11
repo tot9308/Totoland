@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -45,37 +45,37 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-emerald-50 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
-        <h1 className="mb-4 text-center text-2xl font-bold text-emerald-900">🌿 Crear cuenta</h1>
+    <main className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
+      <div className="w-full max-w-sm rounded-xl bg-[#faf7f0] p-6 shadow-xl">
+        <h1 className="mb-4 text-center text-2xl font-bold text-stone-800">🌿 Crear cuenta</h1>
         <form onSubmit={signup} className="space-y-3">
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Tu nombre (como te verán en casa)
             <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)}
               placeholder="Ej: María"
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Email
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Contraseña (mínimo 6 caracteres)
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-[#8a3a1a]">{error}</p>}
           <button disabled={busy}
-            className="w-full rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-40">
+            className="w-full rounded bg-[#5a7d4a] px-4 py-2 text-white hover:bg-[#4a6a3a] disabled:opacity-40">
             {busy ? "Creando…" : "Registrarme"}
           </button>
         </form>
-        <p className="mt-3 text-center text-xs text-emerald-600">
+        <p className="mt-3 text-center text-xs text-stone-500">
           Se creará una casa nueva solo para ti. Podrás invitar a otras personas más adelante.
         </p>
         <div className="mt-2 text-center text-sm">
-          <Link href="/" className="text-emerald-700 hover:underline">¿Ya tienes cuenta? Entra</Link>
+          <Link href="/" className="text-stone-600 hover:underline">¿Ya tienes cuenta? Entra</Link>
         </div>
       </div>
     </main>

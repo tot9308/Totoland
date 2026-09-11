@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -21,36 +21,36 @@ export default function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-emerald-50 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+    <main className="flex min-h-screen items-center justify-center bg-stone-50 p-4">
+      <div className="w-full max-w-sm rounded-xl bg-[#faf7f0] p-6 shadow-xl">
         <div className="mb-1 flex justify-center">
           <Logo size={44} />
         </div>
-        <p className="mb-4 text-center text-xs text-emerald-600">
+        <p className="mb-4 text-center text-xs text-stone-500">
           El cuidado de tus plantas, en casa y en el bolsillo
         </p>
         <form onSubmit={login} className="space-y-3">
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Email
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Contraseña
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-[#8a3a1a]">{error}</p>}
           <button disabled={busy}
-            className="w-full rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-40">
+            className="w-full rounded bg-[#5a7d4a] px-4 py-2 text-white hover:bg-[#4a6a3a] disabled:opacity-40">
             {busy ? "Entrando…" : "Entrar"}
           </button>
         </form>
         <div className="mt-4 flex flex-col gap-1 text-center text-sm">
-          <Link href="/forgot-password" className="text-emerald-700 hover:underline">
+          <Link href="/forgot-password" className="text-stone-600 hover:underline">
             ¿Olvidaste tu contraseña?
           </Link>
-          <Link href="/signup" className="text-emerald-700 hover:underline">
+          <Link href="/signup" className="text-stone-600 hover:underline">
             Crear una cuenta nueva
           </Link>
         </div>

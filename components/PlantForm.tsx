@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
@@ -64,97 +64,97 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
-      <form onSubmit={save} className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
-        <h2 className="mb-4 text-lg font-semibold text-emerald-900">
+      <form onSubmit={save} className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-[#faf7f0] p-5 shadow-xl">
+        <h2 className="mb-4 text-lg font-semibold text-stone-800">
           {plant ? "Editar planta" : "Añadir planta"}
         </h2>
-        <label className="mb-3 block text-sm text-emerald-900">
+        <label className="mb-3 block text-sm text-stone-800">
           Nombre *
           <input value={name} onChange={e => setName(e.target.value)} required
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
         </label>
-        <label className="relative mb-3 block text-sm text-emerald-900">
+        <label className="relative mb-3 block text-sm text-stone-800">
           Especie (científico o nombre común)
           <input
             value={species}
             onChange={e => { setSpecies(e.target.value); setShowSug(true) }}
             onFocus={() => setShowSug(true)}
             onBlur={() => setTimeout(() => setShowSug(false), 150)}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2"
             placeholder="Escribe: monstera, poto, hed…"
           />
           {showSug && suggestions.length > 0 && (
-            <ul className="absolute z-50 mt-1 w-full overflow-hidden rounded border border-emerald-200 bg-white shadow-lg">
+            <ul className="absolute z-50 mt-1 w-full overflow-hidden rounded border border-stone-200 bg-[#faf7f0] shadow-lg">
               {suggestions.map(s => (
                 <li key={s.sci}>
                   <button
                     type="button"
                     onMouseDown={() => pick(s)}
-                    className="w-full px-3 py-2 text-left hover:bg-emerald-50"
+                    className="w-full px-3 py-2 text-left hover:bg-stone-100"
                   >
                     <span className="font-medium">{s.sci}</span>
-                    <span className="ml-2 text-xs text-emerald-600">{s.common}</span>
+                    <span className="ml-2 text-xs text-stone-500">{s.common}</span>
                   </button>
                 </li>
               ))}
             </ul>
           )}
         </label>
-        <label className="mb-3 block text-sm text-emerald-900">
+        <label className="mb-3 block text-sm text-stone-800">
           Ubicación
           <input value={location} onChange={e => setLocation(e.target.value)}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
         </label>
         <div className="mb-3 grid grid-cols-2 gap-2">
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Riego verano (días)
             <input type="number" min={1} value={freqSummer} onChange={e => setFreqSummer(e.target.value)}
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Riego invierno (días)
             <input type="number" min={1} value={freqWinter} onChange={e => setFreqWinter(e.target.value)}
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
         </div>
-        <label className="mb-3 block text-sm text-emerald-900">
+        <label className="mb-3 block text-sm text-stone-800">
           Fecha de adquisición
           <input type="date" value={acquiredAt} onChange={e => setAcquiredAt(e.target.value)}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
         </label>
         <div className="mb-2 grid grid-cols-2 gap-2">
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Diámetro maceta (cm)
             <input type="number" min={1} value={potDiameter} onChange={e => setPotDiameter(e.target.value)}
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
           </label>
-          <label className="flex items-end gap-2 pb-2 text-sm text-emerald-900">
+          <label className="flex items-end gap-2 pb-2 text-sm text-stone-800">
             <input type="checkbox" checked={hasSaucer} onChange={e => setHasSaucer(e.target.checked)} />
             Tiene plato
           </label>
         </div>
         {potDiameter && (
-          <p className="mb-3 rounded bg-sky-50 p-2 text-xs text-sky-800">
+          <p className="mb-3 rounded bg-[#eaf1ee] p-2 text-xs text-stone-700">
             💦 Con esa maceta: ≈ {waterAmountFor(Number(potDiameter), style).min}–{waterAmountFor(Number(potDiameter), style).max} ml por riego.
             El plato no cambia la cantidad: vacíalo a los 10-15 min.
           </p>
         )}
-        <label className="mb-3 flex items-center gap-2 text-sm text-emerald-900">
+        <label className="mb-3 flex items-center gap-2 text-sm text-stone-800">
           <input type="checkbox" checked={misting} onChange={e => setMisting(e.target.checked)} />
           Le va bien la pulverización de hojas
         </label>
-        <label className="mb-4 block text-sm text-emerald-900">
+        <label className="mb-4 block text-sm text-stone-800">
           Cuidados clave (uno por línea)
           <textarea value={tips} onChange={e => setTips(e.target.value)} rows={3}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2"
             placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco"} />
         </label>
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose}
-            className="rounded px-3 py-2 text-emerald-800 hover:bg-emerald-50">
+            className="rounded px-3 py-2 text-stone-700 hover:bg-stone-100">
             Cancelar
           </button>
-          <button disabled={busy} className="rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">
+          <button disabled={busy} className="rounded bg-[#5a7d4a] px-4 py-2 text-white hover:bg-[#4a6a3a]">
             Guardar
           </button>
         </div>

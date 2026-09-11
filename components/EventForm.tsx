@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
@@ -78,22 +78,22 @@ export default function EventForm({ plant, userId, onClose, onSaved }: {
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
-      <form onSubmit={save} className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
-        <h2 className="mb-4 text-lg font-semibold text-emerald-900">＋ Registrar en {plant.name}</h2>
+      <form onSubmit={save} className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-[#faf7f0] p-5 shadow-xl">
+        <h2 className="mb-4 text-lg font-semibold text-stone-800">＋ Registrar en {plant.name}</h2>
 
-        <label className="mb-3 block text-sm text-emerald-900">
+        <label className="mb-3 block text-sm text-stone-800">
           Tipo de evento
           <select value={type} onChange={e => { setType(e.target.value); setDetail("") }}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
             {Object.entries(EVENT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </label>
 
         {needsDetail && (
-          <label className="mb-3 block text-sm text-emerald-900">
+          <label className="mb-3 block text-sm text-stone-800">
             {detailLabel}
             <select value={detail} onChange={e => setDetail(e.target.value)}
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
               <option value="">— elegir —</option>
               {detailOptions.map(o => <option key={o} value={o}>{o}</option>)}
               {type === "location_change" && <option value="__otra__">Otra (escríbela en notas)</option>}
@@ -103,15 +103,15 @@ export default function EventForm({ plant, userId, onClose, onSaved }: {
 
         {type === "observation" && (
           <div className="mb-3">
-            <p className="mb-1 text-sm text-emerald-900">Estado de salud</p>
+            <p className="mb-1 text-sm text-stone-800">Estado de salud</p>
             <div className="flex gap-2">
               {HEALTH.map(h => (
                 <button key={h.v} type="button"
                   onClick={() => setHealth(health === h.v ? "" : h.v)}
                   className={`flex-1 rounded px-2 py-2 text-sm ${
                     health === h.v
-                      ? "bg-emerald-600 text-white"
-                      : "border border-emerald-200 bg-emerald-50 text-emerald-800"
+                      ? "bg-[#5a7d4a] text-white"
+                      : "border border-stone-200 bg-stone-50 text-stone-700"
                   }`}>
                   {h.label}
                 </button>
@@ -120,24 +120,24 @@ export default function EventForm({ plant, userId, onClose, onSaved }: {
           </div>
         )}
 
-        <label className="mb-3 block text-sm text-emerald-900">
+        <label className="mb-3 block text-sm text-stone-800">
           Fecha
           <input type="date" value={occurredAt} onChange={e => setOccurredAt(e.target.value)}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2" />
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
         </label>
 
-        <label className="mb-4 block text-sm text-emerald-900">
+        <label className="mb-4 block text-sm text-stone-800">
           Notas
           <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2"
             placeholder="Ej: dos hojas amarillas abajo, brote nuevo con buena pinta…" />
         </label>
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose}
-            className="rounded px-3 py-2 text-emerald-800 hover:bg-emerald-50">Cancelar</button>
+            className="rounded px-3 py-2 text-stone-700 hover:bg-stone-100">Cancelar</button>
           <button disabled={busy}
-            className="rounded bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700">Guardar</button>
+            className="rounded bg-[#5a7d4a] px-4 py-2 text-white hover:bg-[#4a6a3a]">Guardar</button>
         </div>
       </form>
     </div>

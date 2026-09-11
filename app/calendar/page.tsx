@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
@@ -201,7 +201,7 @@ export default function CalendarPage() {
           )}
 
           {/* Leyenda */}
-          <div className="mt-6 flex flex-wrap gap-3 rounded-lg bg-white p-3 text-xs text-stone-600 shadow-sm">
+          <div className="mt-6 flex flex-wrap gap-3 rounded-lg bg-[#faf7f0] p-3 text-xs text-stone-600 shadow-sm">
             <span>💧 riego hecho</span>
             <span>📝 otro evento</span>
             <span className="text-[#c97b5e]">⏰ riego previsto</span>

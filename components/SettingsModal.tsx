@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
@@ -81,72 +81,72 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
-        <h2 className="mb-4 text-lg font-semibold text-emerald-900">⚙️ Ajustes</h2>
+      <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-xl bg-[#faf7f0] p-5 shadow-xl">
+        <h2 className="mb-4 text-lg font-semibold text-stone-800">⚙️ Ajustes</h2>
 
-        <h3 className="mb-2 text-sm font-semibold text-emerald-800">🗓️ Temporada de riego</h3>
+        <h3 className="mb-2 text-sm font-semibold text-stone-700">🗓️ Temporada de riego</h3>
         <div className="mb-2 grid grid-cols-2 gap-3">
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Empieza el verano
             <select value={s} onChange={ev => setS(Number(ev.target.value))}
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
               {MESES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
             </select>
           </label>
-          <label className="block text-sm text-emerald-900">
+          <label className="block text-sm text-stone-800">
             Termina el verano
             <select value={e} onChange={ev => setE(Number(ev.target.value))}
-              className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
               {MESES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
             </select>
           </label>
         </div>
         <button onClick={saveSeason} disabled={busy}
-          className="mb-4 rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700">
+          className="mb-4 rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
           Guardar temporada
         </button>
 
-        <h3 className="mb-2 text-sm font-semibold text-emerald-800">🔔 Notificaciones</h3>
+        <h3 className="mb-2 text-sm font-semibold text-stone-700">🔔 Notificaciones</h3>
         <div className="mb-4 flex flex-wrap gap-2">
           <button onClick={enablePush}
-            className="rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700">
+            className="rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
             Activar avisos en este dispositivo
           </button>
           <button onClick={testPush}
-            className="rounded border border-emerald-300 px-3 py-1.5 text-sm text-emerald-800">
+            className="rounded border border-stone-300 px-3 py-1.5 text-sm text-stone-700">
             🧪 Probar aviso
           </button>
         </div>
 
-        <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🎨 Aspecto</h3>
-        <label className="mb-2 block text-sm text-emerald-900">
+        <h3 className="mb-2 mt-4 text-sm font-semibold text-stone-700">🎨 Aspecto</h3>
+        <label className="mb-2 block text-sm text-stone-800">
           Orden por defecto
           <select value={sortBy} onChange={ev => onSortBy(ev.target.value as "due" | "name" | "location")}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
             <option value="due">Próximo riego</option>
             <option value="name">Nombre</option>
             <option value="location">Ubicación</option>
           </select>
         </label>
-        <label className="mb-2 flex items-center gap-2 text-sm text-emerald-900">
+        <label className="mb-2 flex items-center gap-2 text-sm text-stone-800">
           <input type="checkbox" checked={showPhotos} onChange={ev => onShowPhotos(ev.target.checked)} />
           Mostrar fotos en las tarjetas
         </label>
-        <label className="mb-4 block text-sm text-emerald-900">
+        <label className="mb-4 block text-sm text-stone-800">
           Tamaño de las tarjetas
           <select value={size} onChange={ev => onSize(ev.target.value as "grande" | "medio" | "pequeno")}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
             <option value="grande">Grandes (1 columna en el móvil)</option>
             <option value="medio">Medias (1 en móvil, 3 en PC)</option>
             <option value="pequeno">Pequeñas (2 columnas en el móvil)</option>
           </select>
         </label>
 
-        <h3 className="mb-2 mt-4 text-sm font-semibold text-emerald-800">🔔 Hora del aviso diario</h3>
-        <label className="mb-4 block text-sm text-emerald-900">
+        <h3 className="mb-2 mt-4 text-sm font-semibold text-stone-700">🔔 Hora del aviso diario</h3>
+        <label className="mb-4 block text-sm text-stone-800">
           ¿A qué hora quieres recibir el recordatorio?
           <select value={reminderTime} onChange={ev => saveReminderTime(ev.target.value)}
-            className="mt-1 w-full rounded border border-emerald-300 px-3 py-2">
+            className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
             {Array.from({ length: 17 }, (_, i) => i + 6).map(h => (
               <option key={h} value={`${String(h).padStart(2, "0")}:00`}>
                 {String(h).padStart(2, "0")}:00
@@ -157,7 +157,7 @@ export default function SettingsModal({ householdId, summerStart, summerEnd, onS
 
         <div className="flex justify-end">
           <button onClick={onClose}
-            className="rounded px-3 py-2 text-emerald-800 hover:bg-emerald-50">
+            className="rounded px-3 py-2 text-stone-700 hover:bg-stone-100">
             Cerrar
           </button>
         </div>

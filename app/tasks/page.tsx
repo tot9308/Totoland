@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
@@ -108,44 +108,44 @@ export default function TasksPage() {
     reload()
   }
   return (
-    <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
+    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
       <header className="mb-6 flex flex-wrap items-center gap-3">
-        <Link href="/" className="text-sm text-emerald-700 hover:underline">← Volver</Link>
-        <h1 className="text-2xl font-bold text-emerald-900">📋 Tareas</h1>
+        <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
+        <h1 className="text-2xl font-bold text-stone-800">📋 Tareas</h1>
         <select value={month} onChange={e => setMonth(Number(e.target.value))}
-          className="rounded border border-emerald-300 px-2 py-1 text-sm">
+          className="rounded border border-stone-300 px-2 py-1 text-sm">
           {MESES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
         </select>
         <button onClick={openAdd}
-          className="ml-auto rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700">
+          className="ml-auto rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
           + Añadir tarea
         </button>
       </header>
 
       {showForm && (
-        <form onSubmit={saveForm} className="mb-6 rounded-xl bg-white p-4 shadow-sm">
-          <h2 className="mb-2 font-semibold text-emerald-900">{editing ? "Editar tarea" : "Nueva tarea"}</h2>
+        <form onSubmit={saveForm} className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm">
+          <h2 className="mb-2 font-semibold text-stone-800">{editing ? "Editar tarea" : "Nueva tarea"}</h2>
           <div className="grid gap-2 md:grid-cols-2">
             <input value={fTitle} onChange={e => setFTitle(e.target.value)} placeholder="Título *" required
-              className="rounded border border-emerald-300 px-3 py-2 text-sm" />
+              className="rounded border border-stone-300 px-3 py-2 text-sm" />
             <select value={fMonth} onChange={e => setFMonth(Number(e.target.value))}
-              className="rounded border border-emerald-300 px-3 py-2 text-sm">
+              className="rounded border border-stone-300 px-3 py-2 text-sm">
               {MESES.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
             </select>
             <input value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Descripción (opcional)"
-              className="rounded border border-emerald-300 px-3 py-2 text-sm md:col-span-2" />
+              className="rounded border border-stone-300 px-3 py-2 text-sm md:col-span-2" />
             <div className="md:col-span-2">
-              <p className="mb-1 text-xs text-emerald-700">
+              <p className="mb-1 text-xs text-stone-600">
                 {editing
                   ? "Planta asociada (solo una al editar):"
                   : "Plantas asociadas (se creará una tarea por cada una):"}
               </p>
-              <div className="max-h-40 overflow-y-auto rounded border border-emerald-300 p-2">
+              <div className="max-h-40 overflow-y-auto rounded border border-stone-300 p-2">
                 {plants.filter(p => p.status !== "dead").length === 0 ? (
-                  <p className="text-xs text-emerald-600">No hay plantas vivas en esta casa.</p>
+                  <p className="text-xs text-stone-500">No hay plantas vivas en esta casa.</p>
                 ) : (
                   plants.filter(p => p.status !== "dead").map(p => (
-                    <label key={p.id} className="flex items-center gap-2 py-0.5 text-sm text-emerald-900">
+                    <label key={p.id} className="flex items-center gap-2 py-0.5 text-sm text-stone-800">
                       <input
                         type={editing ? "radio" : "checkbox"}
                         name="task-plants"
@@ -165,31 +165,31 @@ export default function TasksPage() {
                 )}
               </div>
               <button type="button" onClick={() => setFPlants([])}
-                className="mt-1 text-xs text-emerald-700 hover:underline">
+                className="mt-1 text-xs text-stone-600 hover:underline">
                 {fPlants.length > 0 ? `Quitar selección (${fPlants.length})` : "Sin planta asociada"}
               </button>
             </div>
           </div>
           <div className="mt-3 flex justify-end gap-2">
             <button type="button" onClick={() => setShowForm(false)}
-              className="rounded px-3 py-2 text-sm text-emerald-800 hover:bg-emerald-50">Cancelar</button>
-            <button className="rounded bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700">Guardar</button>
+              className="rounded px-3 py-2 text-sm text-stone-700 hover:bg-stone-100">Cancelar</button>
+            <button className="rounded bg-[#5a7d4a] px-4 py-2 text-sm text-white hover:bg-[#4a6a3a]">Guardar</button>
           </div>
         </form>
       )}
 
-      {loading ? <p className="text-emerald-800">Cargando…</p> : (
+      {loading ? <p className="text-stone-700">Cargando…</p> : (
         <ul className="space-y-2">
           {tasks.map(t => (
             <li key={t.id}
-              className={`rounded-xl p-3 shadow-sm ${t.status === "done" ? "bg-emerald-50 opacity-70" : t.status === "dismissed" ? "bg-slate-100 opacity-60" : "bg-white"}`}>
+              className={`rounded-xl p-3 shadow-sm ${t.status === "done" ? "bg-stone-50 opacity-70" : t.status === "dismissed" ? "bg-slate-100 opacity-60" : "bg-[#faf7f0]"}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-emerald-900">
+                  <p className="text-sm font-medium text-stone-800">
                     <span className="mr-1">{TASK_ICONS[t.type] ?? "📋"}</span>{t.title}
-                    {t.type === "custom" && <span className="ml-2 rounded bg-sky-100 px-1.5 text-[10px] text-sky-700">propia</span>}
+                    {t.type === "custom" && <span className="ml-2 rounded bg-[#dfe9e4] px-1.5 text-[10px] text-stone-600">propia</span>}
                   </p>
-                  {t.description && <p className="mt-1 text-xs text-emerald-700">{t.description}</p>}
+                  {t.description && <p className="mt-1 text-xs text-stone-600">{t.description}</p>}
                   <p className="mt-1 text-[11px] text-emerald-500">
                     {t.status === "done" ? "✓ hecha" : t.status === "dismissed" ? "✗ saltada" : "pendiente"}
                   </p>
@@ -197,23 +197,23 @@ export default function TasksPage() {
                 <div className="flex flex-col gap-1">
                   {t.status === "pending" ? (
                     <>
-                      <button onClick={() => setStatus(t, "done")} className="rounded bg-emerald-600 px-2 py-1 text-xs text-white">✓ Hecho</button>
-                      <button onClick={() => setStatus(t, "dismissed")} className="rounded bg-white px-2 py-1 text-xs text-emerald-700">✗ Saltar</button>
+                      <button onClick={() => setStatus(t, "done")} className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white">✓ Hecho</button>
+                      <button onClick={() => setStatus(t, "dismissed")} className="rounded bg-[#faf7f0] px-2 py-1 text-xs text-stone-600">✗ Saltar</button>
                     </>
                   ) : (
-                    <button onClick={() => setStatus(t, "pending")} className="rounded bg-white px-2 py-1 text-xs text-emerald-700">Reabrir</button>
+                    <button onClick={() => setStatus(t, "pending")} className="rounded bg-[#faf7f0] px-2 py-1 text-xs text-stone-600">Reabrir</button>
                   )}
                   {t.type === "custom" && (
                     <>
-                      <button onClick={() => openEdit(t)} className="rounded bg-white px-2 py-1 text-xs text-emerald-700">✏️ Editar</button>
-                      <button onClick={() => remove(t)} className="rounded bg-red-600 px-2 py-1 text-xs text-white">🗑 Borrar</button>
+                      <button onClick={() => openEdit(t)} className="rounded bg-[#faf7f0] px-2 py-1 text-xs text-stone-600">✏️ Editar</button>
+                      <button onClick={() => remove(t)} className="rounded bg-[#b5603d] px-2 py-1 text-xs text-white">🗑 Borrar</button>
                     </>
                   )}
                 </div>
               </div>
             </li>
           ))}
-          {tasks.length === 0 && <p className="text-emerald-800">No hay tareas en {MESES[month - 1]}.</p>}
+          {tasks.length === 0 && <p className="text-stone-700">No hay tareas en {MESES[month - 1]}.</p>}
         </ul>
       )}
     </main>

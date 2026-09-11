@@ -1,4 +1,4 @@
-export default function Logo({ size = 40, showText = true, textClass = "text-2xl font-bold text-emerald-900" }: {
+﻿export default function Logo({ size = 40, showText = true, textClass = "text-2xl font-bold text-stone-800" }: {
   size?: number
   showText?: boolean
   textClass?: string

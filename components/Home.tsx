@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
@@ -241,7 +241,7 @@ export default function Home({ session }: { session: Session }) {
         <button
           onClick={() => water(due, false)}
           disabled={due.length === 0}
-          className="rounded-xl bg-emerald-600 p-5 text-left text-white shadow hover:bg-emerald-700 disabled:opacity-40"
+          className="rounded-xl bg-[#5a7d4a] p-5 text-left text-white shadow hover:bg-[#4a6a3a] disabled:opacity-40"
         >
           <div className="text-lg font-semibold">💧 Regar pendientes ({due.length})</div>
           <div className="text-sm text-emerald-100">
@@ -250,43 +250,43 @@ export default function Home({ session }: { session: Session }) {
         </button>
         <button
           onClick={() => water(active, false)}
-          className="rounded-xl bg-white p-5 text-left text-emerald-900 shadow hover:bg-emerald-100"
+          className="rounded-xl bg-[#faf7f0] p-5 text-left text-stone-800 shadow hover:bg-stone-200"
         >
           <div className="text-lg font-semibold">💧💧 He regado todas ({active.length})</div>
-          <div className="text-sm text-emerald-700">Ronda completa</div>
+          <div className="text-sm text-stone-600">Ronda completa</div>
         </button>
       </section>
 
       <section className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-emerald-900">Mis plantas</h2>
-        <div className="flex flex-wrap items-center gap-2 text-sm text-emerald-800">
+        <h2 className="text-lg font-semibold text-stone-800">Mis plantas</h2>
+        <div className="flex flex-wrap items-center gap-2 text-sm text-stone-700">
           <label className="flex items-center gap-1">
             <span aria-hidden>🔍</span>
             <input
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Buscar planta…"
-              className="rounded border border-emerald-300 px-2 py-1"
+              className="rounded border border-stone-300 px-2 py-1"
             />
           </label>
           <label>
             Ordenar:{" "}
             <select value={sortBy} onChange={e => setSortBy(e.target.value as "due" | "name" | "location")}
-              className="rounded border border-emerald-300 px-2 py-1">
+              className="rounded border border-stone-300 px-2 py-1">
               <option value="due">próximo riego</option>
               <option value="name">nombre</option>
               <option value="location">ubicación</option>
             </select>
           </label>
           <button onClick={() => setShowPlantForm(true)}
-            className="rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
+            className="rounded bg-[#5a7d4a] px-3 py-1.5 text-white hover:bg-[#4a6a3a]">
             + Añadir planta
           </button>
         </div>
       </section>
 
       {loading ? (
-        <p className="text-emerald-800">Cargando…</p>
+        <p className="text-stone-700">Cargando…</p>
       ) : (
         <section className={`grid gap-3 ${GRID[size]}`}>
           {visible.map(p => (
@@ -301,7 +301,7 @@ export default function Home({ session }: { session: Session }) {
             />
           ))}
           {visible.length === 0 && (
-            <p className="text-emerald-800">
+            <p className="text-stone-700">
               {q ? `Nada coincide con “${query}”.` : "Aún no hay plantas. Añade la primera 🌱"}
             </p>
           )}

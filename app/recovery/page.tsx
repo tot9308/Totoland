@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
@@ -52,14 +52,14 @@ export default function RecoveryPage() {
   const now = Date.now()
 
   return (
-    <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
+    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
       <header className="mb-6 flex items-center gap-3">
-        <Link href="/" className="text-sm text-emerald-700 hover:underline">← Volver</Link>
-        <h1 className="text-2xl font-bold text-emerald-900">🩺 Seguimiento de recuperación</h1>
+        <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
+        <h1 className="text-2xl font-bold text-stone-800">🩺 Seguimiento de recuperación</h1>
       </header>
 
-      <section className="mb-6 rounded-xl bg-white p-4 text-sm text-emerald-800 shadow-sm">
-        <h2 className="mb-2 text-lg font-semibold text-emerald-900">Cómo funciona</h2>
+      <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 text-sm text-stone-700 shadow-sm">
+        <h2 className="mb-2 text-lg font-semibold text-stone-800">Cómo funciona</h2>
         <p className="mb-1">
           Cuando una planta sufre sequía (o la marcas manualmente), Totoland calcula la{" "}
           <b>severidad</b> según su tipo y los días sin agua, y programa chequeos en los días
@@ -74,11 +74,11 @@ export default function RecoveryPage() {
       </section>
 
       <section className="mb-6">
-        <h2 className="mb-2 text-lg font-semibold text-emerald-900">
+        <h2 className="mb-2 text-lg font-semibold text-stone-800">
           En recuperación ahora ({inRecovery.length})
         </h2>
-        {loading ? <p className="text-emerald-800">Cargando…</p> : inRecovery.length === 0 ? (
-          <p className="rounded-xl bg-white p-4 text-sm text-emerald-700 shadow-sm">
+        {loading ? <p className="text-stone-700">Cargando…</p> : inRecovery.length === 0 ? (
+          <p className="rounded-xl bg-[#faf7f0] p-4 text-sm text-stone-600 shadow-sm">
             Ninguna planta en recuperación ahora mismo 🎉
           </p>
         ) : (
@@ -90,8 +90,8 @@ export default function RecoveryPage() {
               const t = new Date(p.recovery_check_at!).getTime()
               const due = t <= now
               return (
-                <li key={p.id} className="rounded-xl bg-rose-50 p-3 shadow-sm">
-                  <p className="mb-2 text-sm text-emerald-900">
+                <li key={p.id} className="rounded-xl bg-[#f5ece6] p-3 shadow-sm">
+                  <p className="mb-2 text-sm text-stone-800">
                     <Link href={`/plant/${p.id}`} className="font-semibold hover:underline">{p.name}</Link>
                     {" · "}{SEV_LABEL[sev]}
                     {p.plant_type && <span> · {TYPE_LABEL[p.plant_type as PType]}</span>}
@@ -99,15 +99,15 @@ export default function RecoveryPage() {
                   </p>
                   <div className="flex flex-wrap gap-1">
                     <button onClick={() => resolveRecovery(p, "ok", userId).then(reload)}
-                      className="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-700">
+                      className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white hover:bg-[#4a6a3a]">
                       ✅ Recuperada
                     </button>
                     <button onClick={() => resolveRecovery(p, "topup", userId).then(reload)}
-                      className="rounded bg-sky-600 px-2 py-1 text-xs text-white hover:bg-sky-700">
+                      className="rounded bg-[#5a8ca6] px-2 py-1 text-xs text-white hover:bg-[#497691]">
                       💧 Apoyo
                     </button>
                     <button onClick={() => resolveRecovery(p, "still", userId).then(reload)}
-                      className="rounded bg-rose-600 px-2 py-1 text-xs text-white hover:bg-rose-700">
+                      className="rounded bg-[#b5603d] px-2 py-1 text-xs text-white hover:bg-[#9c4f31]">
                       🩺 Maltrecha
                     </button>
                   </div>
@@ -120,10 +120,10 @@ export default function RecoveryPage() {
 
       {history.length > 0 && (
         <section>
-          <h2 className="mb-2 text-lg font-semibold text-emerald-900">Historial reciente</h2>
+          <h2 className="mb-2 text-lg font-semibold text-stone-800">Historial reciente</h2>
           <ul className="space-y-1">
             {history.map(e => (
-              <li key={e.id} className="rounded-lg bg-white p-2 text-xs text-emerald-700 shadow-sm">
+              <li key={e.id} className="rounded-lg bg-[#faf7f0] p-2 text-xs text-stone-600 shadow-sm">
                 {new Date(e.occurred_at).toLocaleDateString("es-ES")} · <b>{e.plantName}</b> · {e.notes}
               </li>
             ))}

@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
@@ -41,22 +41,22 @@ export default function TasksSection({ householdId, plants, onChanged }: {
 
   return (
     <section className="mb-6">
-      <h2 className="mb-2 text-lg font-semibold text-emerald-900">🗓️ Tareas del mes</h2>
+      <h2 className="mb-2 text-lg font-semibold text-stone-800">🗓️ Tareas del mes</h2>
       <ul className="space-y-2">
         {pending.map(t => (
-          <li key={t.id} className="rounded-xl bg-amber-50 p-3 shadow-sm">
+          <li key={t.id} className="rounded-xl bg-[#f7f0e3] p-3 shadow-sm">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
-                <p className="text-sm font-medium text-emerald-900">
+                <p className="text-sm font-medium text-stone-800">
                   <span className="mr-1">{TASK_ICONS[t.type] ?? "📋"}</span>{t.title}
                 </p>
-                {t.description && <p className="mt-1 text-xs text-emerald-700">{t.description}</p>}
+                {t.description && <p className="mt-1 text-xs text-stone-600">{t.description}</p>}
               </div>
               <div className="flex flex-col gap-1">
                 <button onClick={() => setStatus(t, "done")}
-                  className="rounded bg-emerald-600 px-2 py-1 text-xs text-white hover:bg-emerald-700">✓ Hecho</button>
+                  className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white hover:bg-[#4a6a3a]">✓ Hecho</button>
                 <button onClick={() => setStatus(t, "dismissed")}
-                  className="rounded bg-white px-2 py-1 text-xs text-emerald-700 hover:bg-emerald-100">✗ Saltar</button>
+                  className="rounded bg-[#faf7f0] px-2 py-1 text-xs text-stone-600 hover:bg-stone-200">✗ Saltar</button>
               </div>
             </div>
           </li>

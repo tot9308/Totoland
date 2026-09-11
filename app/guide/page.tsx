@@ -1,20 +1,20 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 
 function S({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="mb-6 rounded-xl bg-white p-4 shadow-sm">
-      <h2 className="mb-2 text-lg font-semibold text-emerald-900">{title}</h2>
-      <div className="space-y-2 text-sm text-emerald-800">{children}</div>
+    <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm">
+      <h2 className="mb-2 text-lg font-semibold text-stone-800">{title}</h2>
+      <div className="space-y-2 text-sm text-stone-700">{children}</div>
     </section>
   )
 }
 
 export default function GuidePage() {
   return (
-    <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
+    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
       <header className="mb-6 flex items-center gap-3">
-        <Link href="/" className="text-sm text-emerald-700 hover:underline">← Volver</Link>
-        <h1 className="text-2xl font-bold text-emerald-900">📚 Guía de Totoland</h1>
+        <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
+        <h1 className="text-2xl font-bold text-stone-800">📚 Guía de Totoland</h1>
       </header>
 
       <S title="☀️ Luz: los 4 niveles en tu casa">
@@ -85,7 +85,7 @@ export default function GuidePage() {
         <p>Cuando una planta pasa sed, ocurren cosas en cadena: cierra estomas (deja de hacer fotosíntesis), pierde turgencia (hojas mustias), sufre daño oxidativo, y si la sequía es larga, se forman burbujas en los vasos del xilema (cavitación) que son parcialmente irreversibles.</p>
         <p><b>La clave:</b> rehidratar de golpe una planta muy seca puede ser peor que dejarla seca un poco más. El shock osmótico rompe células, y las raíces dañadas no pueden absorber el exceso → pudrición.</p>
 
-        <h3 className="mt-4 font-semibold text-emerald-900">⏱️ Escala de severidad según días sin agua</h3>
+        <h3 className="mt-4 font-semibold text-stone-800">⏱️ Escala de severidad según días sin agua</h3>
         <ul className="list-disc pl-5">
           <li><b>🟢 Leve (1-3 días):</b> cierre estomático, hojas algo mustias. Recuperación en horas-días.</li>
           <li><b>🟡 Moderada (4-14 días):</b> hojas amarillas/marrones en bordes, turgencia perdida. Recuperación en 1-3 semanas.</li>
@@ -93,14 +93,14 @@ export default function GuidePage() {
           <li><b>🔴 Crítica (&gt;30 días):</b> cavitación extensa, raíz parcialmente muerta. Incierta.</li>
         </ul>
 
-        <h3 className="mt-4 font-semibold text-emerald-900">🌿 Diferencias por tipo de planta</h3>
+        <h3 className="mt-4 font-semibold text-stone-800">🌿 Diferencias por tipo de planta</h3>
         <p><b>Suculentas y cactus:</b> aguantan semanas-meses. Tras sequía: riego poco, sin remojo. Exceso = pudrición rápida.</p>
         <p><b>Epífitas (orquídeas, tillandsias):</b> rehidratación por inmersión breve o pulverizado abundante. Escurre bien.</p>
         <p><b>Tropicales de selva (calathea, helechos):</b> tolerancia muy baja. Rehidratación gradual + humedad alta + sombra 2-3 días.</p>
         <p><b>Todoterreno (monstera, poto):</b> tolerancia media. Rehidratación en dos tandas, sin sol directo 1-2 días.</p>
         <p><b>Mediterráneas (romero, lavanda):</b> aguantan bien. Riego moderado, buen drenaje.</p>
 
-        <h3 className="mt-4 font-semibold text-emerald-900">📋 Protocolo paso a paso</h3>
+        <h3 className="mt-4 font-semibold text-stone-800">📋 Protocolo paso a paso</h3>
         <ol className="list-decimal pl-5">
           <li><b>Evaluación:</b> toca el sustrato. Si está muy seco y compacto, se ha vuelto hidrofóbico (repele el agua).</li>
           <li><b>Rehidratación gradual:</b>
@@ -127,7 +127,7 @@ export default function GuidePage() {
           </li>
         </ol>
 
-        <h3 className="mt-4 font-semibold text-emerald-900">🔍 Chequeos progresivos</h3>
+        <h3 className="mt-4 font-semibold text-stone-800">🔍 Chequeos progresivos</h3>
         <ul className="list-disc pl-5">
           <li><b>Día 3:</b> ¿se han erguido las hojas? ¿hay nuevas hojas mustias?</li>
           <li><b>Día 7:</b> ¿están brotando yemas nuevas?</li>

@@ -1,1 +1,9 @@
 @import "tailwindcss";
+h1, h2, h3 {
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+  letter-spacing: -0.01em;
+}
+
+body {
+  background-color: #f5f2ea;
+}

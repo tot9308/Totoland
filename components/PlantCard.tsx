@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useRouter } from "next/navigation"
 import { daysSince, daysUntilDue, effectiveFreq, type Plant } from "@/lib/plants"
@@ -53,7 +53,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
         overdue
           ? "bg-[#c97b5e]/15 text-[#8a3a1a]"
           : dueSoon
-            ? "bg-amber-100 text-amber-800"
+            ? "bg-[#efe3c8] text-stone-700"
             : "bg-stone-100 text-stone-600"
       }`}>
         {due === null ? (

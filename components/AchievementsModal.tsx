@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
@@ -100,26 +100,26 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-5 shadow-xl">
-        <h2 className="mb-1 text-lg font-semibold text-emerald-900">🏆 Logros</h2>
-        <p className="mb-4 text-xs text-emerald-600">Desbloqueados: {unlockedCount} de {ach.length}.</p>
-        {loading ? <p className="text-sm text-emerald-700">Cargando…</p> : (
+      <div className="max-h-[88vh] w-full max-w-md overflow-y-auto rounded-xl bg-[#faf7f0] p-5 shadow-xl">
+        <h2 className="mb-1 text-lg font-semibold text-stone-800">🏆 Logros</h2>
+        <p className="mb-4 text-xs text-stone-500">Desbloqueados: {unlockedCount} de {ach.length}.</p>
+        {loading ? <p className="text-sm text-stone-600">Cargando…</p> : (
           <ul className="space-y-2">
             {ach.map(a => (
               <li key={a.code}
-                className={`rounded-lg p-3 ${a.unlocked ? "bg-emerald-50" : "bg-slate-100 opacity-70"}`}>
-                <p className="flex items-center justify-between gap-2 font-medium text-emerald-900">
+                className={`rounded-lg p-3 ${a.unlocked ? "bg-stone-50" : "bg-slate-100 opacity-70"}`}>
+                <p className="flex items-center justify-between gap-2 font-medium text-stone-800">
                   <span className="flex items-center gap-2">
                     <span className="text-xl">{a.icon}</span>{a.title}
-                    {a.unlocked && <span className="text-xs text-emerald-600">✓</span>}
+                    {a.unlocked && <span className="text-xs text-stone-500">✓</span>}
                   </span>
-                  <span className="text-xs text-emerald-700">
+                  <span className="text-xs text-stone-600">
                     {Math.min(a.cur, a.target)}/{a.target}
                   </span>
                 </p>
-                <p className="mt-1 text-xs text-emerald-700">{a.description}</p>
-                <div className="mt-2 h-1.5 w-full rounded bg-emerald-100">
-                  <div className="h-1.5 rounded bg-emerald-500"
+                <p className="mt-1 text-xs text-stone-600">{a.description}</p>
+                <div className="mt-2 h-1.5 w-full rounded bg-stone-100">
+                  <div className="h-1.5 rounded bg-stone-500"
                     style={{ width: `${Math.min(100, (a.cur / a.target) * 100)}%` }} />
                 </div>
               </li>
@@ -127,7 +127,7 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
           </ul>
         )}
         <div className="mt-4 flex justify-end">
-          <button onClick={onClose} className="rounded px-3 py-2 text-emerald-800 hover:bg-emerald-50">
+          <button onClick={onClose} className="rounded px-3 py-2 text-stone-700 hover:bg-stone-100">
             Cerrar
           </button>
         </div>
