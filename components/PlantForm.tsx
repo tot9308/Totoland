@@ -4,6 +4,7 @@ import { useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { waterAmountFor, type Plant } from "@/lib/plants"
 import { searchSpecies, LIGHT_LABELS, WATER_LABELS, findSpecies, type SpeciesCard } from "@/lib/species"
+import { careTemplate } from "@/lib/careTemplate"
 
 export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   householdId: string
@@ -33,8 +34,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
     if (!freqSummer) setFreqSummer(String(s.ws))
     if (!freqWinter) setFreqWinter(String(s.ww))
     setMisting(s.mist === "Sí")
-    if (!tips)
-      setTips(`Luz: ${LIGHT_LABELS[s.light]}\nRiego: ${WATER_LABELS[s.water].label} (${WATER_LABELS[s.water].check})`)
+    if (!tips) setTips(careTemplate(s))
   }
 
   async function save(e: React.FormEvent) {

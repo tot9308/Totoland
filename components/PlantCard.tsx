@@ -1,7 +1,7 @@
 "use client"
 
-import Link from "next/link"
-import { daysSince, effectiveFreq, isDue, type Plant } from "@/lib/plants"
+import { useRouter } from "next/navigation"
+import { daysSince, daysUntilDue, effectiveFreq, type Plant } from "@/lib/plants"
 
 export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summerStart, summerEnd }: {
   plant: Plant
@@ -11,40 +11,76 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
   summerStart: number
   summerEnd: number
 }) {
-  const d = daysSince(plant.last_watered_at)
-  const f = effectiveFreq(plant, summerStart, summerEnd)
+  const router = useRouter()
+  const due = daysUntilDue(plant, summerStart, summerEnd)
+  const freq = effectiveFreq(plant, summerStart, summerEnd)
+  const days = daysSince(plant.last_watered_at)
+
+  const overdue = due !== null && due < 0
+  const dueSoon = due !== null && due >= 0 && due <= 2
+
   return (
-    <div className="rounded-xl bg-white p-4 shadow">
+    <div
+      onClick={() => router.push(`/plant/${plant.id}`)}
+      className="group relative cursor-pointer overflow-hidden rounded-2xl border border-stone-200/60 bg-[#faf7f0] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      {/* Foto */}
       {photoUrl && (
-        <Link href={`/plant/${plant.id}`}>
-          <img src={photoUrl} alt={plant.name} className="mb-2 aspect-video w-full rounded object-cover hover:opacity-90" />
-        </Link>
+        <img
+          src={photoUrl}
+          alt={plant.name}
+          className="mb-3 aspect-[4/3] w-full rounded-xl object-cover"
+        />
       )}
-      <div className="mb-1 flex items-start justify-between">
-        <h3 className="font-semibold text-emerald-900">
-          <Link href={`/plant/${plant.id}`} className="hover:underline">{plant.name}</Link>
+
+      {/* Contenido */}
+      <div className="mb-3">
+        <h3 className="font-serif text-xl font-semibold text-stone-800 leading-tight">
+          {plant.name}
         </h3>
-        {isDue(plant, summerStart, summerEnd) && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
-            le toca
-          </span>
+        <p className="mt-0.5 text-xs italic text-stone-500">
+          {plant.species ? <em>{plant.species}</em> : <span className="text-stone-400">—</span>}
+        </p>
+        {plant.location && (
+          <p className="mt-1 flex items-center gap-1 text-xs text-stone-600">
+            <span>📍</span>{plant.location}
+          </p>
         )}
       </div>
-      <p className="mb-2 text-sm text-emerald-700">
-        {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
-      </p>
-      <p className="mb-3 text-xs text-emerald-600">
-        {d === null ? "Sin riegos registrados" : `Último riego hace ${d} días`}
-        {f ? ` · cada ${f} días` : ""}
-      </p>
+
+      {/* Próximo riego */}
+      <div className={`mb-3 rounded-lg px-2.5 py-1.5 text-xs ${
+        overdue
+          ? "bg-[#c97b5e]/15 text-[#8a3a1a]"
+          : dueSoon
+            ? "bg-amber-100 text-amber-800"
+            : "bg-stone-100 text-stone-600"
+      }`}>
+        {due === null ? (
+          <span>Sin riegos registrados</span>
+        ) : overdue ? (
+          <span className="font-medium">⚠ Toca regar · {Math.abs(due)} día{Math.abs(due) !== 1 ? "s" : ""} de retraso</span>
+        ) : due === 0 ? (
+          <span className="font-medium">💧 Toca regar hoy</span>
+        ) : (
+          <span>Próximo riego en <b>{due} día{due !== 1 ? "s" : ""}</b></span>
+        )}
+        {freq && <span className="block text-[10px] opacity-70">cada {freq} d</span>}
+      </div>
+
+      {/* Botones (no propagan el click de la tarjeta) */}
       <div className="flex gap-2">
-        <button onClick={onWater}
-          className="flex-1 rounded bg-emerald-600 px-2 py-1.5 text-sm text-white hover:bg-emerald-700">
+        <button
+          onClick={(e) => { e.stopPropagation(); onWater() }}
+          className="flex-1 rounded-lg bg-[#5a7d4a] px-2 py-2 text-sm font-medium text-white transition hover:bg-[#4a6a3a]"
+        >
           💧 Regar
         </button>
         {plant.misting_enabled && (
-          <button onClick={onWaterMist}
-            className="flex-1 rounded bg-sky-600 px-2 py-1.5 text-sm text-white hover:bg-sky-700">
+          <button
+            onClick={(e) => { e.stopPropagation(); onWaterMist() }}
+            className="flex-1 rounded-lg bg-[#5a8ca6] px-2 py-2 text-sm font-medium text-white transition hover:bg-[#497691]"
+          >
             💧+🌫
           </button>
         )}

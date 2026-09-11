@@ -218,7 +218,7 @@ export default function Home({ session }: { session: Session }) {
   }
 
   return (
-    <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
+    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
       <header className="mb-6 flex items-center gap-2">
         <AppMenu
           email={session.user.email ?? ""}
