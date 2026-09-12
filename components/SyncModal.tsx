@@ -83,35 +83,39 @@ export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }:
     if (delta > 3) delta -= 7
     const anchored = new Date(base); anchored.setDate(anchored.getDate() + delta)
     const anchorIso = anchored.toISOString()
-    for (const r of selRows) {
-      if (r.mode === "mult") {
-        await supabase.from("plants").update({
-          watering_days: r.days.join(","),
-          watering_week_interval: r.interval,
-          watering_anchor: anchorIso,
-          last_watered_at: anchorIso,
-          watering_frequency_days: r.k * cycle,
-        }).eq("id", r.p.id)
-      } else if (r.mode === "days") {
-        await supabase.from("plants").update({
-          watering_days: r.days.join(","),
-          watering_week_interval: 1,
-          watering_anchor: anchorIso,
-          last_watered_at: anchorIso,
-        }).eq("id", r.p.id)
-      } else {
-        await supabase.from("plants").update({
-          watering_days: null,
-          watering_week_interval: null,
-          watering_anchor: null,
-          watering_frequency_days: r.k * cycle,
-          last_watered_at: new Date(lastWatered + "T12:00:00").toISOString(),
-        }).eq("id", r.p.id)
+    try {
+      for (const r of selRows) {
+        const payload = r.mode === "mult"
+          ? {
+              watering_days: r.days.join(","),
+              watering_week_interval: r.interval,
+              watering_anchor: anchorIso,
+              last_watered_at: anchorIso,
+              watering_frequency_days: r.k * cycle,
+            }
+          : r.mode === "days"
+            ? {
+                watering_days: r.days.join(","),
+                watering_week_interval: 1,
+                watering_anchor: anchorIso,
+                last_watered_at: anchorIso,
+              }
+            : {
+                watering_days: null,
+                watering_week_interval: null,
+                watering_anchor: null,
+                watering_frequency_days: r.k * cycle,
+                last_watered_at: new Date(lastWatered + "T12:00:00").toISOString(),
+              }
+        const { error } = await supabase.from("plants").update(payload).eq("id", r.p.id)
+        if (error) throw new Error(error.message)
       }
+      setApplied(true)
+      await onSaved()
+    } catch (e: any) {
+      alert("Error al aplicar la sincronización: " + (e?.message ?? e))
     }
     setBusy(false)
-    setApplied(true)
-    await onSaved()
   }
 
   return (
