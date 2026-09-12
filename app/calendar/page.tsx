@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { wateringDaySet, type Plant } from "@/lib/plants"
+import { dueDatesInRange, wateringDaySet, type Plant } from "@/lib/plants"
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 const DIAS = ["L","M","X","J","V","S","D"]
@@ -74,10 +75,9 @@ export default function CalendarPage() {
   for (const p of plants) {
     const set = wateringDaySet(p)
     if (set) {
-      for (let d = 1; d <= daysInMonth; d++) {
-        const date = new Date(year, month, d)
-        if (date < todayMid) continue
-        if (set.includes(date.getDay()) && byDay[d]) byDay[d].due.push(p)
+      for (const date of dueDatesInRange(p, new Date(year, month, 1), new Date(year, month, daysInMonth))) {
+        const d = date.getDate()
+        if (date >= todayMid && byDay[d]) byDay[d].due.push(p)
       }
       continue
     }

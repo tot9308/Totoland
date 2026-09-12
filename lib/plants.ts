@@ -1,5 +1,3 @@
-import { supabase } from "./supabase"
-
 export type Plant = {
   id: string
   household_id: string
@@ -9,6 +7,8 @@ export type Plant = {
   watering_frequency_days: number | null
   watering_frequency_winter_days: number | null
   watering_days: string | null
+  watering_week_interval: number | null
+  watering_anchor: string | null
   last_watered_at: string | null
   status: "alive" | "dead"
   misting_enabled: boolean
@@ -42,8 +42,7 @@ export const EVENT_LABELS: Record<string, string> = {
 
 export function daysSince(iso: string | null): number | null {
   if (!iso) return null
-  const diff = Date.now() - new Date(iso).getTime()
-  return Math.floor(diff / 86400000)
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000)
 }
 
 export function summerNow(summerStart: number, summerEnd: number): boolean {
@@ -52,11 +51,14 @@ export function summerNow(summerStart: number, summerEnd: number): boolean {
 }
 
 export function effectiveFreq(plant: Plant, summerStart: number, summerEnd: number): number | null {
-  const inS = summerNow(summerStart, summerEnd)
-  const f = inS
+  const f = summerNow(summerStart, summerEnd)
     ? plant.watering_frequency_days
     : plant.watering_frequency_winter_days ?? plant.watering_frequency_days
   return f ? Number(f) : null
+}
+
+function mid(d: Date): Date {
+  const x = new Date(d); x.setHours(0, 0, 0, 0); return x
 }
 
 export function wateringDaySet(plant: Plant): number[] | null {
@@ -65,20 +67,44 @@ export function wateringDaySet(plant: Plant): number[] | null {
   return arr.length ? arr : null
 }
 
+function weekParity(dateMid: Date, anchorMid: Date, interval: number): boolean {
+  const w = Math.round((dateMid.getTime() - anchorMid.getTime()) / 604800000)
+  return ((w % interval) + interval) % interval === 0
+}
+
+export function isDueDay(plant: Plant, date: Date): boolean {
+  const set = wateringDaySet(plant)
+  if (!set || !set.includes(date.getDay())) return false
+  const interval = plant.watering_week_interval || 1
+  const anchor = plant.watering_anchor ? mid(new Date(plant.watering_anchor)) : null
+  if (!anchor) return true
+  return weekParity(mid(date), anchor, interval)
+}
+
+export function dueDatesInRange(plant: Plant, start: Date, end: Date): Date[] {
+  const out: Date[] = []
+  if (!wateringDaySet(plant)) return out
+  const d = mid(start); const e = mid(end)
+  while (d <= e) {
+    if (isDueDay(plant, d)) out.push(new Date(d))
+    d.setDate(d.getDate() + 1)
+  }
+  return out
+}
+
 export function daysUntilDue(plant: Plant, summerStart: number, summerEnd: number): number | null {
   const set = wateringDaySet(plant)
   if (set) {
-    const today = new Date(); today.setHours(0, 0, 0, 0)
-    const last = plant.last_watered_at ? new Date(plant.last_watered_at) : null
-    if (last) last.setHours(0, 0, 0, 0)
-    for (let i = 0; i <= 7; i++) {
+    const span = 7 * (plant.watering_week_interval || 1)
+    const today = mid(new Date())
+    const last = plant.last_watered_at ? mid(new Date(plant.last_watered_at)) : null
+    for (let i = 0; i <= span; i++) {
       const d = new Date(today); d.setDate(d.getDate() - i)
-      if (!set.includes(d.getDay())) continue
+      if (!isDueDay(plant, d)) continue
       if (last && last.getTime() >= d.getTime()) {
-        for (let j = 1; j <= 8; j++) {
+        for (let j = 1; j <= span + 7; j++) {
           const f = new Date(last); f.setDate(f.getDate() + j)
-          if (set.includes(f.getDay()))
-            return Math.round((f.getTime() - today.getTime()) / 86400000)
+          if (isDueDay(plant, f)) return Math.round((f.getTime() - today.getTime()) / 86400000)
         }
         return null
       }
@@ -96,11 +122,6 @@ export function daysUntilDue(plant: Plant, summerStart: number, summerEnd: numbe
 export function isDue(plant: Plant, summerStart: number, summerEnd: number): boolean {
   const du = daysUntilDue(plant, summerStart, summerEnd)
   return du !== null && du <= 0
-}
-
-export function waterAmount(plant: Plant): { min: number; max: number } | null {
-  if (!plant.pot_diameter_cm) return null
-  return waterAmountFor(plant.pot_diameter_cm, "B")
 }
 
 const REF: [number, number, number][] = [
@@ -121,4 +142,9 @@ export function waterAmountFor(diam: number, style: string): { min: number; max:
     min: Math.round(((mn0 + (mn1 - mn0) * t) * mult) / 5) * 5,
     max: Math.round(((mx0 + (mx1 - mx0) * t) * mult) / 5) * 5,
   }
+}
+
+export function waterAmount(plant: Plant): { min: number; max: number } | null {
+  if (!plant.pot_diameter_cm) return null
+  return waterAmountFor(plant.pot_diameter_cm, "B")
 }

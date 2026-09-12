@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import webpush from "web-push"
+import { daysUntilDue } from "@/lib/plants"
 
 function initVapid() {
   webpush.setVapidDetails(
@@ -92,19 +93,8 @@ export async function POST(req: Request) {
     const due: string[] = []
     for (const p of plants ?? []) {
       if (p.watering_days) {
-        const set = p.watering_days.split(",").map(Number)
-        const today = new Date(now); today.setHours(0, 0, 0, 0)
-        const last = p.last_watered_at ? new Date(p.last_watered_at) : null
-        if (last) last.setHours(0, 0, 0, 0)
-        let owed = false
-        for (let i = 0; i <= 7; i++) {
-          const d = new Date(today); d.setDate(d.getDate() - i)
-          if (!set.includes(d.getDay())) continue
-          if (last && last.getTime() >= d.getTime()) break
-          owed = true
-          break
-        }
-        if (owed) due.push(p.name)
+        const du = daysUntilDue(p as any, 5, 9)
+        if (du !== null && du <= 0) due.push(p.name)
         continue
       }
       const freq = month >= 5 && month <= 9
