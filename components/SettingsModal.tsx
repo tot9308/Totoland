@@ -78,6 +78,26 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
     return out
   }
 
+  async function enablePush() {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window))
+      return alert("Este navegador no soporta avisos")
+    const perm = await Notification.requestPermission()
+    if (perm !== "granted") return alert("Permiso de avisos denegado")
+    const reg = await navigator.serviceWorker.ready
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+    })
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from("push_subscriptions").delete().eq("user_id", user.id)
+    const { error } = await supabase.from("push_subscriptions").insert({
+      user_id: user.id, endpoint: sub.endpoint, subscription: sub.toJSON(),
+    })
+    if (error) return alert("Error al guardar el aviso: " + error.message)
+    alert("Avisos activados en este dispositivo ✅")
+  }
+
   async function testPush() {
     if (!("serviceWorker" in navigator)) return alert("Este navegador no soporta service workers.")
     if (!("PushManager" in window)) return alert("Este navegador no soporta push.")
