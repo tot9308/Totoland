@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import SWRegister from "@/components/SWRegister";
+import SwRegister from "@/components/SwRegister"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,10 +32,9 @@ export default function RootLayout({
 <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body
-<SwRegister />
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <SWRegister />
+        <SwRegister />
         {children}
       </body>
     </html>
