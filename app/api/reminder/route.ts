@@ -102,8 +102,9 @@ export async function POST(req: Request) {
         : p.watering_frequency_winter_days ?? p.watering_frequency_days
       if (!freq) continue
       const last = p.last_watered_at ? new Date(p.last_watered_at).getTime() : 0
-      const days = Math.floor((now.getTime() - last) / 86400000)
-      if (!p.last_watered_at || days >= freq) due.push(p.name)
+      const dExact = (now.getTime() - last) / 86400000
+      const dueExact = freq - dExact
+      if (!p.last_watered_at || dueExact < 1) due.push(p.name)
     }
     if (due.length === 0) continue
 

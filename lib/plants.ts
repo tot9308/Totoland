@@ -114,9 +114,12 @@ export function daysUntilDue(plant: Plant, summerStart: number, summerEnd: numbe
   }
   const f = effectiveFreq(plant, summerStart, summerEnd)
   if (f == null) return null
-  const d = daysSince(plant.last_watered_at)
-  if (d == null) return 0
-  return f - d
+  if (!plant.last_watered_at) return 0
+  const dExact = (Date.now() - new Date(plant.last_watered_at).getTime()) / 86400000
+  const dueExact = f - dExact
+  if (dueExact <= 0) return Math.floor(dueExact)
+  if (dueExact < 1) return 0
+  return Math.ceil(dueExact)
 }
 
 export function isDue(plant: Plant, summerStart: number, summerEnd: number): boolean {
