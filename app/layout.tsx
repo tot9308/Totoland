@@ -32,6 +32,7 @@ export default function RootLayout({
 <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body
+<SwRegister />
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <SWRegister />

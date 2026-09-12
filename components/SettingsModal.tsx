@@ -99,12 +99,30 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   }
 
   async function testPush() {
-    if (!("serviceWorker" in navigator)) return alert("Este navegador no soporta avisos")
-    const reg = await navigator.serviceWorker.ready
-    reg.showNotification("🌿 Totoland", {
-      body: "Aviso de prueba: todo funciona ✅",
-      icon: "/icon-192.png", badge: "/badge.png",
-    })
+    if (!("serviceWorker" in navigator)) return alert("Este navegador no soporta service workers.")
+    if (!("PushManager" in window)) return alert("Este navegador no soporta push.")
+    const perm = Notification.permission
+    if (perm !== "granted") return alert("Permiso de notificaciones: " + perm + ". Concédelo primero.")
+    const reg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise(res => setTimeout(() => res(null), 3000)),
+    ])
+    if (!reg) return alert("No hay service worker activo. Recarga la página (o reinstala la app) y vuelve a probar.")
+    const { data: { user } } = await supabase.auth.getUser()
+    let subInfo = "SIN suscripción push guardada"
+    if (user) {
+      const { data } = await supabase.from("push_subscriptions").select("id").eq("user_id", user.id).limit(1)
+      if (data && data.length) subInfo = "con suscripción push guardada"
+    }
+    try {
+      await reg.showNotification("🌿 Totoland", {
+        body: "Aviso de prueba ✅ (" + subInfo + ")",
+        icon: "/icon-192.png", badge: "/badge.png",
+      })
+      alert("Notificación local mostrada. " + subInfo + ".")
+    } catch (e) {
+      alert("Error al mostrar la notificación: " + e)
+    }
   }
 
   return (

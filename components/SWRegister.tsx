@@ -2,10 +2,11 @@
 
 import { useEffect } from "react"
 
-export default function SWRegister() {
+export default function SwRegister() {
   useEffect(() => {
-    if ("serviceWorker" in navigator)
-      navigator.serviceWorker.register("/sw.js").catch(() => {})
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(err => console.error("SW register error:", err))
+    }
   }, [])
   return null
 }
