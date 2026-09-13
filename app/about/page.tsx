@@ -50,7 +50,7 @@ export default function AboutPage() {
       <section className="rounded-xl bg-[#faf7f0] p-5 shadow-sm">
         <h2 className="mb-2 text-lg font-semibold text-stone-800">Detalles</h2>
         <p className="text-sm text-stone-700">
-          Versión 0.10 · Código fuente en{" "}
+          Versión 0.11 · Código fuente en{" "}
           <a href="https://github.com/tot9308/Totoland" className="underline" target="_blank" rel="noopener">
             github.com/tot9308/Totoland
           </a>

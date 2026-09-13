@@ -20,6 +20,58 @@ Registro de cambios de Totoland. Formato inspirado en \[Keep a Changelog](https:
 
 
 
+\## \[0.11.0] - 2026-09-13
+
+
+
+\### Añadido
+
+\- 🌙 Modo oscuro con tres opciones: Claro, Oscuro y Automático (según el sistema)
+
+\- 🔔 Hora del aviso diario \*\*por usuario\*\* (cada miembro tiene la suya)
+
+\- 🤫 El siguiente usuario solo recibe el aviso si aún quedan riegos pendientes
+
+\- 📅 Fecha de último riego configurable en el sincronizador
+
+\- 🕐 Notificaciones con minutos (cron cada 5 minutos, selector con pasos de 5)
+
+\- 📝 El badge de próximo riego muestra el día de la semana cuando faltan ≤4 días
+
+\- ⚓ Anclaje del patrón de riego a fecha + intervalo semanal, para que no se desfasen
+
+\- 🌀 Modo frecuencia pura para ciclos no semanales (5, 10, 12…), con aviso de que el patrón rotará
+
+\- 🌨️ Los días fijos respetan la temporada (en invierno se riega menos automáticamente)
+
+\- 🔧 Registro del service worker al cargar la app (imprescindible para las push)
+
+\- 🩺 "Probar aviso" con diagnóstico: permiso, service worker y suscripción push
+
+
+
+\### Cambiado
+
+\- 💧 Cantidades de riego por tabla de referencia interpolada, coherente con la guía
+
+\- 📅 Calendario y cron respetan el intervalo semanal anclado y la temporada
+
+
+
+\### Corregido
+
+\- 🐛 Cálculo de ml de riego (daba 0-1 ml)
+
+\- 🐛 El calendario no respetaba los días fijos del sincronizador
+
+\- 🐛 El sincronizador no anclaba bien al día del grupo y fallaba en silencio sin las columnas de BD
+
+\- ⏱️ Las fracciones de día (<1) ya cuentan como "pendiente hoy" (frecuencias como 3,5 d)
+
+\- 🐛 Varios errores de build (manifest.ts, import duplicado, case-sensitive en Linux, tipos de push)
+
+
+
 \## \[0.10.0] - 2026-09-11
 
 

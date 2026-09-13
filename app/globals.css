@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 h1, h2, h3 {
   font-family: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
   letter-spacing: -0.01em;
@@ -6,4 +7,38 @@ h1, h2, h3 {
 
 body {
   background-color: #f5f2ea;
+}
+
+/* ===== MODO OSCURO: remapeo de tokens bajo .dark ===== */
+html.dark body { background-color: #1c1917; color: #e7e5e4; }
+
+.dark .bg-stone-50 { background-color: #1c1917; }
+.dark .bg-white { background-color: #292524; }
+.dark .bg-\[\#faf7f0\] { background-color: #292524; }
+.dark .bg-stone-100 { background-color: #44403c; }
+.dark .bg-stone-200 { background-color: #57534e; }
+.dark .bg-\[\#f7f0e3\] { background-color: #37301f; }
+.dark .bg-\[\#eaf1ee\] { background-color: #23302c; }
+.dark .bg-\[\#f5ece6\] { background-color: #362822; }
+.dark .bg-\[\#efe3c8\] { background-color: #3d3421; }
+.dark .bg-\[\#dfe9e4\] { background-color: #26332f; }
+.dark .bg-\[\#ecd9cd\] { background-color: #3a2c24; }
+
+.dark .text-stone-800 { color: #f5f5f4; }
+.dark .text-stone-700 { color: #e7e5e4; }
+.dark .text-stone-600 { color: #d6d3d1; }
+.dark .text-stone-500 { color: #a8a29e; }
+.dark .text-\[\#8a3a1a\] { color: #e8a684; }
+.dark .text-\[\#c97b5e\] { color: #e8a684; }
+
+.dark .border-stone-200,
+.dark .border-stone-300 { border-color: #57534e; }
+
+.dark .hover\:bg-stone-100:hover { background-color: #44403c; }
+.dark .hover\:bg-stone-200:hover { background-color: #57534e; }
+
+.dark input, .dark select, .dark textarea {
+  background-color: #44403c;
+  color: #f5f5f4;
+  border-color: #57534e;
 }

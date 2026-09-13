@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import ThemeToggle from "./ThemeToggle"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
@@ -214,6 +215,7 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
         </label>
 
         <h3 className="mb-2 text-sm font-semibold text-stone-700">🎨 Aspecto</h3>
+        <div className="mb-4"><ThemeToggle /></div>
         <label className="mb-2 block text-sm text-stone-800">
           Orden por defecto
           <select value={sortBy} onChange={ev => onSortBy(ev.target.value as "due" | "name" | "location")}
