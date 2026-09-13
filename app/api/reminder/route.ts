@@ -24,6 +24,7 @@ export async function POST(req: Request) {
 
   const now = new Date()
   const currentHour = now.getHours()
+  const currentMM = Math.floor(now.getMinutes() / 5) * 5
 
   const { data: mutedRows } = await admin.from("profiles")
     .select("id").gt("mute_until", now.toISOString())
@@ -39,9 +40,7 @@ export async function POST(req: Request) {
     .lte("scheduled_at", now.toISOString())
   for (const s of scheduled ?? []) {
     const ok = await sendPush(admin, s.user_id, {
-      title: s.title,
-      body: s.body,
-      tag: `sched-${s.id}`,
+      title: s.title, body: s.body, tag: `sched-${s.id}`,
     }, muted)
     if (ok) sentCount++
     await admin.from("scheduled_notifications")
@@ -74,22 +73,28 @@ export async function POST(req: Request) {
     }
   }
 
-  // 3) Recordatorio diario para casas cuya hora coincide con la actual
-  const { data: houses } = await admin
-    .from("households")
-    .select("id, reminder_time, name, summer_start_month, summer_end_month")
-  for (const h of houses ?? []) {
-    const hhmm = h.reminder_time ?? "08:00"
+  // 3) Recordatorio diario POR USUARIO a su hora.
+  //    Como recalculamos las pendientes en el momento, si el primer usuario
+  //    ya regó todo, el segundo no recibirá aviso (lista vacía).
+  const { data: profs } = await admin.from("profiles")
+    .select("id, reminder_time").not("reminder_time", "is", null)
+  for (const pr of profs ?? []) {
+    const hhmm = pr.reminder_time ?? "08:00"
     const [rh, rm] = hhmm.split(":").map(Number)
-    const curMM = Math.floor(now.getMinutes() / 5) * 5
-    if (rh !== currentHour || Math.floor(rm / 5) * 5 !== curMM) continue
+    if (rh !== currentHour || Math.floor(rm / 5) * 5 !== currentMM) continue
+    if (muted.has(pr.id)) continue
 
-    const { data: members } = await admin
-      .from("household_members").select("user_id").eq("household_id", h.id)
-    const { data: plants } = await admin
-      .from("plants").select("*").eq("household_id", h.id).neq("status", "dead")
+    const { data: mem } = await admin.from("household_members")
+      .select("household_id").eq("user_id", pr.id).limit(1).single()
+    if (!mem) continue
+    const { data: h } = await admin.from("households")
+      .select("id, name, summer_start_month, summer_end_month").eq("id", mem.household_id).single()
+    if (!h) continue
+    const { data: plants } = await admin.from("plants")
+      .select("*").eq("household_id", h.id).neq("status", "dead")
 
     const month = now.getMonth() + 1
+    const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
     const due: string[] = []
     for (const p of plants ?? []) {
       if (p.watering_days) {
@@ -97,31 +102,28 @@ export async function POST(req: Request) {
         if (du !== null && du <= 0) due.push(p.name)
         continue
       }
-      const freq = month >= 5 && month <= 9
+      const freq = inSummer
         ? p.watering_frequency_days
         : p.watering_frequency_winter_days ?? p.watering_frequency_days
       if (!freq) continue
       const last = p.last_watered_at ? new Date(p.last_watered_at).getTime() : 0
       const dExact = (now.getTime() - last) / 86400000
-      const dueExact = freq - dExact
-      if (!p.last_watered_at || dueExact < 1) due.push(p.name)
+      if (!p.last_watered_at || freq - dExact < 1) due.push(p.name)
     }
     if (due.length === 0) continue
 
     const title = "🌿 Totoland: toca regar"
     const body = due.slice(0, 5).join(", ") + (due.length > 5 ? "…" : "")
-    for (const m of members ?? []) {
-      const ok = await sendPush(admin, m.user_id, {
-        title, body, tag: `daily-${h.id}`,
-        actions: [
-          { action: "postpone-2", title: "Posponer 2h" },
-          { action: "postpone-4", title: "Posponer 4h" },
-          { action: "postpone-6", title: "Posponer 6h" },
-        ],
-        data: { household_id: h.id },
-      }, muted)
-      if (ok) sentCount++
-    }
+    const ok = await sendPush(admin, pr.id, {
+      title, body, tag: `daily-${pr.id}`,
+      actions: [
+        { action: "postpone-2", title: "Posponer 2h" },
+        { action: "postpone-4", title: "Posponer 4h" },
+        { action: "postpone-6", title: "Posponer 6h" },
+      ],
+      data: { household_id: h.id },
+    }, muted)
+    if (ok) sentCount++
   }
 
   return NextResponse.json({ sent: sentCount })

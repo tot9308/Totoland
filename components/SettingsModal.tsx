@@ -17,8 +17,6 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   onShowPhotos: (v: boolean) => void
   size: "grande" | "medio" | "pequeno"
   onSize: (v: "grande" | "medio" | "pequeno") => void
-  reminderTime: string
-  onReminderTime: (v: string) => void
   driftDays: number
   onDriftDays: (v: number) => void
   onClose: () => void
@@ -28,6 +26,14 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   const [busy, setBusy] = useState(false)
   const [muteUntil, setMuteUntil] = useState<string | null>(null)
   const [muteSel, setMuteSel] = useState("")
+  const [myTime, setMyTime] = useState("08:00")
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("profiles").select("reminder_time").eq("id", userId).single()
+      setMyTime(data?.reminder_time ?? "08:00")
+    })()
+  }, [userId])
 
   useEffect(() => {
     (async () => {
@@ -46,9 +52,9 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   }
 
   async function saveReminderTime(v: string) {
-    const { error } = await supabase.from("households").update({ reminder_time: v }).eq("id", householdId)
+    const { error } = await supabase.from("profiles").update({ reminder_time: v }).eq("id", userId)
     if (error) return alert("Error: " + error.message)
-    onReminderTime(v)
+    setMyTime(v)
   }
 
   async function saveDrift(v: number) {
@@ -165,7 +171,7 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
         </div>
         <label className="mb-2 block text-sm text-stone-800">
           ¿A qué hora quieres recibir el recordatorio?
-          <input type="time" step={300} value={reminderTime} onChange={ev => saveReminderTime(ev.target.value)}
+          <input type="time" step={300} value={myTime} onChange={ev => saveReminderTime(ev.target.value)}
             className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
         </label>
         <label className="mb-4 block text-sm text-stone-800">

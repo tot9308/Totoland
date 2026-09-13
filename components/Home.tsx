@@ -52,7 +52,6 @@ export default function Home({ session }: { session: Session }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [showAchievements, setShowAchievements] = useState(false)
   const [showHousehold, setShowHousehold] = useState(false)
-  const [reminderTime, setReminderTime] = useState("08:00")
   const [driftDays, setDriftDays] = useState(0)
 
   function setSortBy(v: "due" | "name" | "location") {
@@ -86,7 +85,6 @@ export default function Home({ session }: { session: Session }) {
     if (hh) {
       setSummerStart(hh.summer_start_month)
       setSummerEnd(hh.summer_end_month)
-      setReminderTime(hh.reminder_time ?? "08:00")
       setDriftDays(hh.drift_days ?? 0)
     }
     const { data } = await supabase
@@ -327,8 +325,6 @@ export default function Home({ session }: { session: Session }) {
           onShowPhotos={setShowPhotos}
           size={size}
           onSize={setSize}
-          reminderTime={reminderTime}
-          onReminderTime={setReminderTime}
           userId={userId}
           driftDays={driftDays}
           onDriftDays={setDriftDays}
