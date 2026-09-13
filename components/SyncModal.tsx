@@ -85,12 +85,13 @@ export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }:
     const anchorIso = anchored.toISOString()
     try {
       for (const r of selRows) {
+        const keepLast = r.p.last_watered_at ?? anchorIso
         const payload = r.mode === "mult"
           ? {
               watering_days: r.days.join(","),
               watering_week_interval: r.interval,
               watering_anchor: anchorIso,
-              last_watered_at: anchorIso,
+              last_watered_at: keepLast,
               watering_frequency_days: r.k * cycle,
             }
           : r.mode === "days"
@@ -98,14 +99,14 @@ export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }:
                 watering_days: r.days.join(","),
                 watering_week_interval: 1,
                 watering_anchor: anchorIso,
-                last_watered_at: anchorIso,
+                last_watered_at: keepLast,
               }
             : {
                 watering_days: null,
                 watering_week_interval: null,
                 watering_anchor: null,
                 watering_frequency_days: r.k * cycle,
-                last_watered_at: new Date(lastWatered + "T12:00:00").toISOString(),
+                last_watered_at: keepLast,
               }
         const { error } = await supabase.from("plants").update(payload).eq("id", r.p.id)
         if (error) throw new Error(error.message)
