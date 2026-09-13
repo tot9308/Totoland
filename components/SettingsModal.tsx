@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-export default function SettingsModal({ householdId, userId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, reminderTime, onReminderTime, driftDays, onDriftDays, onClose }: {
+export default function SettingsModal({ householdId, userId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, driftDays, onDriftDays, onClose }: {
   householdId: string
   userId: string
   summerStart: number
