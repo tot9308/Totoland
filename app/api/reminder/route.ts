@@ -77,7 +77,7 @@ export async function POST(req: Request) {
   // 3) Recordatorio diario para casas cuya hora coincide con la actual
   const { data: houses } = await admin
     .from("households")
-    .select("id, reminder_time, name")
+    .select("id, reminder_time, name, summer_start_month, summer_end_month")
   for (const h of houses ?? []) {
     const hhmm = h.reminder_time ?? "08:00"
     const [rh, rm] = hhmm.split(":").map(Number)
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
     const due: string[] = []
     for (const p of plants ?? []) {
       if (p.watering_days) {
-        const du = daysUntilDue(p as any, 5, 9)
+        const du = daysUntilDue(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 9)
         if (du !== null && du <= 0) due.push(p.name)
         continue
       }

@@ -23,6 +23,8 @@ export default function CalendarPage() {
   const [tasks, setTasks] = useState<TaskRow[]>([])
   const [loading, setLoading] = useState(true)
   const [selDay, setSelDay] = useState<number | null>(null)
+  const [summerStart, setSummerStart] = useState(5)
+  const [summerEnd, setSummerEnd] = useState(9)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -33,6 +35,9 @@ export default function CalendarPage() {
     const { data: pl } = await supabase.from("plants").select("*")
       .eq("household_id", mem.household_id).neq("status", "dead").order("name")
     setPlants((pl as Plant[]) ?? [])
+    const { data: hh } = await supabase.from("households")
+      .select("summer_start_month, summer_end_month").eq("id", mem.household_id).single()
+    if (hh) { setSummerStart(hh.summer_start_month ?? 5); setSummerEnd(hh.summer_end_month ?? 9) }
 
     const start = new Date(year, month, 1).toISOString()
     const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
@@ -74,13 +79,14 @@ export default function CalendarPage() {
   for (const p of plants) {
     const set = wateringDaySet(p)
     if (set) {
-      for (const date of dueDatesInRange(p, new Date(year, month, 1), new Date(year, month, daysInMonth))) {
+      for (const date of dueDatesInRange(p, new Date(year, month, 1), new Date(year, month, daysInMonth), summerStart, summerEnd)) {
         const d = date.getDate()
         if (date >= todayMid && byDay[d]) byDay[d].due.push(p)
       }
       continue
     }
-    const f = month >= 4 && month <= 8
+    const inSummer = (month + 1) >= summerStart && (month + 1) <= summerEnd
+    const f = inSummer
       ? Number(p.watering_frequency_days)
       : Number(p.watering_frequency_winter_days ?? p.watering_frequency_days)
     if (!f) continue

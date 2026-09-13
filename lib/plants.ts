@@ -71,22 +71,30 @@ function weekParity(dateMid: Date, anchorMid: Date, interval: number): boolean {
   const w = Math.round((dateMid.getTime() - anchorMid.getTime()) / 604800000)
   return ((w % interval) + interval) % interval === 0
 }
+function seasonMultiplier(plant: Plant, dateMid: Date, ss: number, se: number): number {
+  const m = dateMid.getMonth() + 1
+  if (m >= ss && m <= se) return 1
+  const summer = Number(plant.watering_frequency_days) || 0
+  const winter = Number(plant.watering_frequency_winter_days ?? plant.watering_frequency_days) || 0
+  if (!summer || !winter) return 1
+  return Math.max(1, Math.round(winter / summer))
+}
 
-export function isDueDay(plant: Plant, date: Date): boolean {
+export function isDueDay(plant: Plant, date: Date, ss: number, se: number): boolean {
   const set = wateringDaySet(plant)
   if (!set || !set.includes(date.getDay())) return false
-  const interval = plant.watering_week_interval || 1
+  const interval = (plant.watering_week_interval || 1) * seasonMultiplier(plant, mid(date), ss, se)
   const anchor = plant.watering_anchor ? mid(new Date(plant.watering_anchor)) : null
   if (!anchor) return true
   return weekParity(mid(date), anchor, interval)
 }
 
-export function dueDatesInRange(plant: Plant, start: Date, end: Date): Date[] {
+export function dueDatesInRange(plant: Plant, start: Date, end: Date, ss: number, se: number): Date[] {
   const out: Date[] = []
   if (!wateringDaySet(plant)) return out
   const d = mid(start); const e = mid(end)
   while (d <= e) {
-    if (isDueDay(plant, d)) out.push(new Date(d))
+    if (isDueDay(plant, d, ss, se)) out.push(new Date(d))
     d.setDate(d.getDate() + 1)
   }
   return out
@@ -100,11 +108,11 @@ export function daysUntilDue(plant: Plant, summerStart: number, summerEnd: numbe
     const last = plant.last_watered_at ? mid(new Date(plant.last_watered_at)) : null
     for (let i = 0; i <= span; i++) {
       const d = new Date(today); d.setDate(d.getDate() - i)
-      if (!isDueDay(plant, d)) continue
+      if (!isDueDay(plant, d, summerStart, summerEnd)) continue
       if (last && last.getTime() >= d.getTime()) {
         for (let j = 1; j <= span + 7; j++) {
           const f = new Date(last); f.setDate(f.getDate() + j)
-          if (isDueDay(plant, f)) return Math.round((f.getTime() - today.getTime()) / 86400000)
+          if (isDueDay(plant, f, summerStart, summerEnd)) return Math.round((f.getTime() - today.getTime()) / 86400000)
         }
         return null
       }
