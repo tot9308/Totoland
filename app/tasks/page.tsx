@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { ensureMonthlyTasks, TASK_ICONS, type Task } from "@/lib/tasks"
 import { type Plant } from "@/lib/plants"
+import { useConfirm } from "@/components/UiProvider"
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
 export default function TasksPage() {
   const router = useRouter()
+  const { confirm: confirmAsync } = useConfirm()
   const [householdId, setHouseholdId] = useState<string | null>(null)
   const [plants, setPlants] = useState<Plant[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
@@ -53,7 +55,7 @@ export default function TasksPage() {
   }
 
   async function remove(t: Task) {
-    if (!confirm("¿Borrar esta tarea?")) return
+    if (!await confirmAsync("¿Borrar esta tarea?")) return
     await supabase.from("tasks").delete().eq("id", t.id)
     reload()
   }

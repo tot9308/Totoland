@@ -5,11 +5,13 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { type Plant } from "@/lib/plants"
+import { useConfirm } from "@/components/UiProvider"
 
 type Memorial = Plant & { thumbUrl: string; eventsCount: number; waterings: number }
 
 export default function CemeteryPage() {
   const router = useRouter()
+  const { confirm: confirmAsync } = useConfirm()
   const [items, setItems] = useState<Memorial[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -59,7 +61,7 @@ export default function CemeteryPage() {
   }
 
   async function del(id: string) {
-    if (!confirm("¿Borrar DEFINITIVAMENTE esta planta con su historial y sus fotos? No se puede deshacer.")) return
+    if (!await confirmAsync("¿Borrar DEFINITIVAMENTE esta planta con su historial y sus fotos? No se puede deshacer.")) return
     const { error } = await supabase.from("plants").delete().eq("id", id)
     if (error) return alert("Error: " + error.message)
     await reload()

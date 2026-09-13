@@ -16,6 +16,7 @@ import {
 } from "@/lib/species"
 import { careTemplate } from "@/lib/careTemplate"
 import { applyDrift } from "@/lib/drift"
+import { useConfirm } from "@/components/UiProvider"
 
 type EventRow = {
   id: string
@@ -76,6 +77,7 @@ export default function PlantDetail() {
   const [showEdit, setShowEdit] = useState(false)
   const [showEvent, setShowEvent] = useState(false)
   const [driftDays, setDriftDays] = useState(0)
+  const { confirm: confirmAsync } = useConfirm()
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -186,7 +188,7 @@ export default function PlantDetail() {
   }
 
   async function undoBatch(batch: string) {
-    if (!confirm("¿Eliminar esta acción/ronda completa del historial?")) return
+    if (!await confirmAsync("¿Eliminar esta acción/ronda completa del historial?")) return
     const { error } = await supabase.from("care_events").delete().eq("batch_id", batch)
     if (error) return alert(error.message)
     const { data } = await supabase
@@ -230,7 +232,7 @@ export default function PlantDetail() {
 
   async function toCemetery() {
     if (!plant) return
-    if (!confirm(`¿Mandar "${plant.name}" al cementerio? Dejará de salir en la home.`)) return
+    if (!await confirmAsync(`¿Mandar "${plant.name}" al cementerio? Dejaría de salir en la home.`)) return
     const epitaph = window.prompt("Epitafio o causa (opcional):") ?? ""
     const { error } = await supabase.from("plants").update({
       status: "dead",
