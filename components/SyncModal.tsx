@@ -128,7 +128,7 @@ export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }:
         </p>
 
         {!weekly && (
-          <p className="mb-3 rounded bg-amber-100 p-2 text-xs text-amber-800">
+          <p className="mb-3 rounded bg-[#efe3c8] p-2 text-xs text-stone-700">
             ⚠️ El ciclo de {cycle} días no es semanal: los riegos rotarán por los días de la semana
             y no se anclarán a un día fijo.
           </p>

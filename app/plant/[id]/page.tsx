@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
@@ -258,16 +258,16 @@ export default function PlantDetail() {
   const waterAmt = waterAmount(plant)
 
   return (
-    <main className="min-h-screen bg-emerald-50 p-4 md:p-8">
+    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
       <header className="mb-6 flex items-start justify-between gap-3">
         <div>
-          <Link href="/" className="text-sm text-emerald-700 hover:underline">← Volver</Link>
-          <h1 className="text-2xl font-bold text-emerald-900">🪴 {plant.name}</h1>
-          <p className="text-sm text-emerald-700">
+          <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
+          <h1 className="text-2xl font-bold text-stone-800">🪴 {plant.name}</h1>
+          <p className="text-sm text-stone-600">
             {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
           </p>
           {waterAmt && (
-            <p className="text-xs text-emerald-600">
+            <p className="text-xs text-stone-500">
               💦 Riego: ≈ {waterAmt.min}–{waterAmt.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
               {plant.has_saucer && " · vacía el plato a los 10-15 min"}
             </p>
@@ -275,64 +275,64 @@ export default function PlantDetail() {
         </div>
         <div className="flex flex-wrap justify-end gap-2">
           <button onClick={() => quickWater(false)}
-            className="rounded bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-700">
+            className="rounded bg-[#5a7d4a] px-3 py-2 text-white hover:bg-[#4a6a3a]">
             💧 Regar
           </button>
           {plant.misting_enabled && (
             <button onClick={() => quickWater(true)}
-              className="rounded bg-sky-600 px-3 py-2 text-white hover:bg-sky-700">
+              className="rounded bg-[#5a8ca6] px-3 py-2 text-white hover:bg-[#497691]">
               💧+🌫
             </button>
           )}
           <button onClick={() => setShowEvent(true)}
-            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
             ＋ Más
           </button>
           <button onClick={() => setShowEdit(true)}
-            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
             ✏️ Editar
           </button>
           <button onClick={exportPdf}
-            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
             🖨 PDF
           </button>
           <Link href="/reminders"
-            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
             🔔 Recordatorios
           </Link>
           <button onClick={toCemetery}
-            className="rounded border border-emerald-300 px-3 py-2 text-emerald-800">
+            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
             🪦 Cementerio
           </button>
         </div>
       </header>
 
-      <section className="mb-6 rounded-xl bg-amber-50 p-4 shadow-sm">
+      <section className="mb-6 rounded-xl bg-[#f7f0e3] p-4 shadow-sm">
         {editingTips ? (
           <>
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
+              <h2 className="text-lg font-semibold text-stone-800">📌 Cuidados clave</h2>
             </div>
             <textarea
               value={tipsDraft}
               onChange={e => setTipsDraft(e.target.value)}
               rows={3}
               placeholder={"Luz indirecta\nRegar cuando el sustrato esté seco\nAbonar cada 15 días en primavera"}
-              className="w-full rounded border border-amber-300 px-3 py-2 text-sm"
+              className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
             />
             <div className="mt-2 flex gap-2">
               <button onClick={saveTips}
-                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white">
+                className="rounded bg-[#c9a45a] px-3 py-1.5 text-sm text-white">
                 Guardar
               </button>
               {speciesCard && (
                 <button onClick={() => setTipsDraft(careTemplate(speciesCard))}
-                  className="rounded border border-amber-400 px-3 py-1.5 text-sm text-amber-800 hover:bg-amber-100">
+                  className="rounded border border-[#c9a45a] px-3 py-1.5 text-sm text-stone-700 hover:bg-[#efe3c8]">
                   ✨ Plantilla
                 </button>
               )}
               <button onClick={() => setEditingTips(false)}
-                className="rounded px-3 py-1.5 text-sm text-amber-800">
+                className="rounded px-3 py-1.5 text-sm text-stone-700">
                 Cancelar
               </button>
             </div>
@@ -340,15 +340,15 @@ export default function PlantDetail() {
         ) : plant.care_tips ? (
           <>
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-amber-900">📌 Cuidados clave</h2>
+              <h2 className="text-lg font-semibold text-stone-800">📌 Cuidados clave</h2>
               <button
                 onClick={() => { setTipsDraft(plant.care_tips ?? ""); setEditingTips(true) }}
-                className="text-xs text-amber-800 hover:underline"
+                className="text-xs text-stone-700 hover:underline"
               >
                 ✏️ Editar
               </button>
             </div>
-            <ul className="list-disc space-y-1 pl-5 text-sm text-amber-900">
+            <ul className="list-disc space-y-1 pl-5 text-sm text-stone-800">
               {plant.care_tips.split("\n").filter(t => t.trim()).map((t, i) => (
                 <li key={i}>{t.trim()}</li>
               ))}
@@ -356,19 +356,19 @@ export default function PlantDetail() {
           </>
         ) : (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-amber-800">Sin cuidados clave todavía.</p>
+            <p className="text-sm text-stone-700">Sin cuidados clave todavía.</p>
             <div className="flex gap-2">
               {speciesCard && (
                 <button
                   onClick={() => { setTipsDraft(careTemplate(speciesCard)); setEditingTips(true) }}
-                  className="rounded border border-amber-400 px-3 py-1.5 text-sm text-amber-800 hover:bg-amber-100"
+                  className="rounded border border-[#c9a45a] px-3 py-1.5 text-sm text-stone-700 hover:bg-[#efe3c8]"
                 >
                   ✨ Plantilla
                 </button>
               )}
               <button
                 onClick={() => { setTipsDraft(""); setEditingTips(true) }}
-                className="rounded bg-amber-600 px-3 py-1.5 text-sm text-white hover:bg-amber-700"
+                className="rounded bg-[#c9a45a] px-3 py-1.5 text-sm text-white hover:bg-[#b08f47]"
               >
                 ＋ Añadir cuidados
               </button>
@@ -378,12 +378,12 @@ export default function PlantDetail() {
       </section>
 
       {speciesCard && (
-        <section className="mb-6 rounded-xl bg-sky-50 p-4 shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold text-sky-900">
+        <section className="mb-6 rounded-xl bg-[#eaf1ee] p-4 shadow-sm">
+          <h2 className="mb-2 text-lg font-semibold text-stone-800">
             📖 {speciesCard.sci}{" "}
-            <span className="text-sm font-normal text-sky-700">({speciesCard.common})</span>
+            <span className="text-sm font-normal text-stone-600">({speciesCard.common})</span>
           </h2>
-          <div className="grid grid-cols-1 gap-1 text-sm text-sky-900 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-1 text-sm text-stone-800 md:grid-cols-2">
             <p>{LIGHT_LABELS[speciesCard.light]}</p>
             <p>
               {WATER_LABELS[speciesCard.water].label} · {WATER_LABELS[speciesCard.water].check}
@@ -399,9 +399,9 @@ export default function PlantDetail() {
             <p>💧 Orientativo: {speciesCard.ws} d verano / {speciesCard.ww} d invierno</p>
           </div>
           {speciesCard.flags && FLAG_LABELS[speciesCard.flags] && (
-            <p className="mt-2 text-sm text-sky-800">{FLAG_LABELS[speciesCard.flags]}</p>
+            <p className="mt-2 text-sm text-stone-700">{FLAG_LABELS[speciesCard.flags]}</p>
           )}
-          <p className="mt-1 text-[11px] text-sky-600">
+          <p className="mt-1 text-[11px] text-stone-500">
             Orientativo: manda lo que observes en tu casa.
           </p>
         </section>
@@ -411,8 +411,8 @@ export default function PlantDetail() {
 
       <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-emerald-900">Fotos ({photos.length})</h2>
-          <label className="cursor-pointer rounded bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-700">
+          <h2 className="text-lg font-semibold text-stone-800">Fotos ({photos.length})</h2>
+          <label className="cursor-pointer rounded bg-[#5a7d4a] px-3 py-1.5 text-white hover:bg-[#4a6a3a]">
             {uploading ? "Subiendo…" : "+ Añadir foto"}
             <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={onFile} />
           </label>
@@ -423,53 +423,53 @@ export default function PlantDetail() {
               <a href={ph.fullUrl} target="_blank" rel="noopener">
                 <img src={ph.thumbUrl} alt={fmt(ph.taken_at)} className="aspect-square w-full rounded object-cover" />
               </a>
-              <p className="mt-1 text-center text-[11px] text-emerald-700">
+              <p className="mt-1 text-center text-[11px] text-stone-600">
                 {fmt(ph.taken_at)}{" "}
                 <button
                   onClick={() => setMain(ph.storage_path)}
                   title="Foto principal"
-                  className="ml-1 rounded px-1 hover:bg-emerald-100"
+                  className="ml-1 rounded px-1 hover:bg-stone-200"
                 >
                   {plant.main_photo_path === ph.storage_path ? "⭐" : "☆"}
                 </button>
               </p>
             </div>
           ))}
-          {photos.length === 0 && <p className="text-sm text-emerald-700">Aún no hay fotos.</p>}
+          {photos.length === 0 && <p className="text-sm text-stone-600">Aún no hay fotos.</p>}
         </div>
       </section>
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold text-emerald-900">Historial</h2>
+        <h2 className="mb-2 text-lg font-semibold text-stone-800">Historial</h2>
         <ul className="space-y-2">
           {events.map(ev => (
-            <li key={ev.id} className="rounded-lg bg-white p-3 shadow-sm">
+            <li key={ev.id} className="rounded-lg bg-[#faf7f0] p-3 shadow-sm">
               <div className="flex items-center justify-between gap-2">
-                <div className="text-sm text-emerald-900">
+                <div className="text-sm text-stone-800">
                   <span className="mr-1">{EVENT_ICONS[ev.type] ?? "•"}</span>
                   <strong>{EVENT_LABELS[ev.type] ?? ev.type}</strong>
-                  {ev.detail && <span className="text-emerald-700"> · {ev.detail}</span>}
+                  {ev.detail && <span className="text-stone-600"> · {ev.detail}</span>}
                   {ev.health && <span className="ml-1">{HEALTH_ICON[ev.health] ?? ""}</span>}
                   {ev.batch_id && (batchCount[ev.batch_id] ?? 0) > 1 && (
-                    <span className="ml-2 rounded-full bg-sky-100 px-2 py-0.5 text-[11px] text-sky-800">
+                    <span className="ml-2 rounded-full bg-[#dfe9e4] px-2 py-0.5 text-[11px] text-stone-700">
                       ronda de {batchCount[ev.batch_id]}
                     </span>
                   )}
                 </div>
                 {ev.batch_id && firstEventOfBatch[ev.batch_id] === ev.id && (
                   <button onClick={() => undoBatch(ev.batch_id!)}
-                    className="text-xs text-red-600 hover:underline">
+                    className="text-xs text-[#8a3a1a] hover:underline">
                     ↩ deshacer
                   </button>
                 )}
               </div>
-              <p className="text-xs text-emerald-700">
+              <p className="text-xs text-stone-600">
                 {fmt(ev.occurred_at)} · {names[ev.user_id] ?? "alguien"}
               </p>
-              {ev.notes && <p className="mt-1 text-sm text-emerald-800">{ev.notes}</p>}
+              {ev.notes && <p className="mt-1 text-sm text-stone-700">{ev.notes}</p>}
             </li>
           ))}
-          {events.length === 0 && <p className="text-sm text-emerald-700">Sin eventos todavía.</p>}
+          {events.length === 0 && <p className="text-sm text-stone-600">Sin eventos todavía.</p>}
         </ul>
       </section>
 
