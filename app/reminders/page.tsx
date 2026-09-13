@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { type Plant } from "@/lib/plants"
+import { useConfirm } from "@/components/UiProvider"
 
 type Reminder = {
   id: string
@@ -35,6 +36,7 @@ export default function RemindersPage() {
   const [fPlant, setFPlant] = useState("")
   const [fRec, setFRec] = useState("weekly")
   const [fDate, setFDate] = useState(new Date().toISOString().slice(0, 10))
+  const { confirm: confirmAsync } = useConfirm()
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -86,7 +88,7 @@ export default function RemindersPage() {
   }
 
   async function remove(r: Reminder) {
-    if (!confirm("¿Borrar este recordatorio?")) return
+    if (!await confirmAsync("¿Borrar este recordatorio?")) return
     await supabase.from("custom_reminders").delete().eq("id", r.id)
     reload()
   }
