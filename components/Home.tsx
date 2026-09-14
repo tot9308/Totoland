@@ -36,6 +36,7 @@ function lsGet(key: string, def: string): string {
 
 export default function Home({ session }: { session: Session }) {
   const router = useRouter()
+  const { confirm: confirmAsync } = useConfirm()
   const userId = session.user.id
   const [householdId, setHouseholdId] = useState<string | null>(null)
   const [plants, setPlants] = useState<Plant[]>([])
@@ -57,7 +58,6 @@ export default function Home({ session }: { session: Session }) {
   const [showAchievements, setShowAchievements] = useState(false)
   const [showHousehold, setShowHousehold] = useState(false)
   const [driftDays, setDriftDays] = useState(0)
-  const { confirm: confirmAsync } = useConfirm()
   const [showPw, setShowPw] = useState(false)
   const [pwCurrent, setPwCurrent] = useState("")
   const [pwNew, setPwNew] = useState("")
@@ -125,7 +125,7 @@ export default function Home({ session }: { session: Session }) {
     )
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
-      if (sortBy === "location") return (a.location ?? "∞").localeCompare(b.location ?? "∞")
+      if (sortBy === "location") return (a.location ?? "").localeCompare(b.location ?? "")
       const da = daysUntilDue(a, summerStart, summerEnd)
       const db = daysUntilDue(b, summerStart, summerEnd)
       if (da === null && db === null) return a.name.localeCompare(b.name)
@@ -139,6 +139,7 @@ export default function Home({ session }: { session: Session }) {
     setToast({ message, batch, plantIds })
     toastTimer.current = setTimeout(() => setToast(null), 10000)
   }
+
   async function water(list: Plant[], withMisting: boolean) {
     if (list.length === 0) return
     const late = list
@@ -172,7 +173,9 @@ export default function Home({ session }: { session: Session }) {
     }
     await reload()
     showToast(`Riego registrado (${list.length})`, batch, list.map(p => p.id))
-  }  async function quickEvent(p: Plant, type: string) {
+  }
+
+  async function quickEvent(p: Plant, type: string) {
     const batch = crypto.randomUUID()
     const { error } = await supabase.from("care_events").insert({
       plant_id: p.id, user_id: userId, type, batch_id: batch,
@@ -220,6 +223,23 @@ export default function Home({ session }: { session: Session }) {
     setShowPw(false); setPwCurrent(""); setPwNew("")
     alert("Contraseña cambiada ✅")
   }
+
+  return (
+    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
+      <header className="mb-6 flex items-center gap-2">
+        <AppMenu
+          email={session.user.email ?? ""}
+          cemeteryCount={dead.length}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenSync={() => setShowSync(true)}
+          onOpenAchievements={() => setShowAchievements(true)}
+          onOpenHousehold={() => setShowHousehold(true)}
+          onChangePassword={changePassword}
+          onLogout={() => supabase.auth.signOut()}
+        />
+        <Logo size={36} />
+      </header>
+
       {householdId && (
         <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
       )}
@@ -339,12 +359,6 @@ export default function Home({ session }: { session: Session }) {
         />
       )}
 
-      {toast && (
-        <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full bg-emerald-900 px-5 py-3 text-white shadow-lg">
-          <span>{toast.message}</span>
-          <button onClick={undo} className="font-semibold underline">Deshacer</button>
-        </div>
-      )}
       {showPw && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-xs rounded-xl bg-[#faf7f0] p-5 shadow-xl dark:bg-stone-800">
@@ -358,6 +372,13 @@ export default function Home({ session }: { session: Session }) {
               <button onClick={submitPw} className="rounded bg-[#5a7d4a] px-4 py-2 text-white hover:bg-[#4a6a3a]">Guardar</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full bg-emerald-900 px-5 py-3 text-white shadow-lg">
+          <span>{toast.message}</span>
+          <button onClick={undo} className="font-semibold underline">Deshacer</button>
         </div>
       )}
     </main>
