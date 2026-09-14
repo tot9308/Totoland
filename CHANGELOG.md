@@ -20,6 +20,78 @@ Registro de cambios de Totoland. Formato inspirado en \[Keep a Changelog](https:
 
 
 
+\## \[0.12.0] - 2026-09-14
+
+
+
+\### Añadido
+
+\- 🩺 Motor de protocolos de recuperación: 7 tipos de problema (sequía, exceso de riego, plaga, enfermedad, daño físico, luz, térmico) con planes guiados por días, culpables específicos (oruga, pulgón, cochinilla, araña roja, mosca blanca, trips, mosca del sustrato, caracol, oídio, mildiu, podredumbre, manchas, botrytis) y severidad (leve/moderado/grave)
+
+\- 📋 Panel de recuperación rediseñado con línea de tiempo, paso actual destacado, botones "mejor / igual / peor" en los chequeos y botón "Recuperada"
+
+\- ⚠ Aislamiento estricto añadido automáticamente si la severidad es grave
+
+
+
+\### Corregido
+
+\- 🐛 Sincronizar respeta el último riego real de cada planta (ya no pisa riegos al re-anclar)
+
+\- 🐛 Rutas con corchetes aplican el restyling orgánico correctamente
+
+\- 🐛 Build limpio tras varios parches de tipado
+
+
+
+\### Cambiado
+
+\- 🔔 Hora del aviso diario por usuario (no por casa)
+
+\- 🤫 El siguiente usuario solo recibe aviso si aún quedan riegos pendientes
+
+\- 📅 Fecha de último riego configurable en el sincronizador
+
+\- 🕐 Notificaciones con minutos (cron cada 5 min, selector con pasos de 5)
+
+\- 📝 Badge de próximo riego muestra día de la semana cuando faltan ≤4 días
+
+\- ⚓ Anclaje del patrón de riego a fecha + intervalo semanal
+
+\- 🌨️ Los días fijos respetan la temporada (en invierno se riega menos)
+
+\- 🌙 Modo oscuro (claro / oscuro / automático)
+
+\- 🏠 Multi-casa con casa activa y selector en el menú
+
+\- 🍞 Toasts globales (sin `alert()` nativos)
+
+\- 💬 Confirmaciones bonitas (sin `confirm()` nativos)
+
+\- ✨ Animaciones sutiles en modales y toasts
+
+\- 💧 Agua regada por planta y total anual en "Mi año verde"
+
+\- 📊 Gráficas de salud con instantáneas diarias en la ficha
+
+\- 🏖️ Modo vacaciones (sin avisos diarios durante el viaje)
+
+\- 📋 Tareas y recordatorios fusionados en una única página
+
+\- 📜 Historial reorganizado: observaciones primero, riegos agrupados por ronda, botón "Ver más"
+
+\- 🔑 Modal bonito para cambiar contraseña
+
+\- 🚦 Puntito de semáforo (🟢🟡🔴) en las tarjetas de la home
+
+\- 💬 Nudge "¿Sigue igual?" tras 4+ días en 🟡/🔴
+
+\- 🗑 Botón para borrar eventos individuales del historial
+
+\- 🚦 Semáforo manual persistente (dura hasta que lo cambies; solo alertas objetivas graves lo sobrescriben)
+
+
+
 \## \[0.11.0] - 2026-09-13
 
 

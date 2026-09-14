@@ -13,6 +13,9 @@ import {
   findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
   SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
 } from "@/lib/species"
+import { TYPE_LABEL, plantType, plantCategory } from "@/lib/recovery"
+import { careTemplate } from "@/lib/careTemplate"
+import { applyDrift } from "@/lib/drift"
 import { useConfirm } from "@/components/UiProvider"
 import HealthChart from "@/components/HealthChart"
 
