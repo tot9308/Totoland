@@ -28,7 +28,7 @@ export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
   const day0 = startedAt ? Math.floor((Date.now() - startedAt.getTime()) / 86400000) : 0
 
   async function startRecovery() {
-    if (!startedAt) return
+    if (startedAt) return
     const plan = buildPlan(kind, culprit, severity)
     const firstCheck = plan.steps.find(s => s.type === "check")
     await supabase.from("plants").update({
