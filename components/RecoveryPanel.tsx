@@ -30,9 +30,8 @@ export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
   async function startRecovery() {
     if (startedAt) return
     const plan = buildPlan(kind, culprit, severity)
-    const firstCheck = plan.steps.find(s => s.type === "check")
     await supabase.from("plants").update({
-      recovery_step: firstCheck ? plan.steps.indexOf(firstCheck) : 0,
+      recovery_step: 0,
       recovery_severity: severity,
       recovery_kind: kind,
       recovery_culprit: culprit,
@@ -169,7 +168,7 @@ export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
         </button>
       </div>
 
-      {currentStep && (
+      {currentStep && day0 >= currentStep.day ? (
         <div className="mb-3 rounded-lg bg-white p-3 shadow-sm">
           <p className="mb-1 text-xs font-medium text-[#b5603d]">
             {currentStep.type === "check" ? "🔎 Chequeo de hoy" : "📌 Toca hoy"} · día {currentStep.day}
@@ -192,8 +191,14 @@ export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
             </button>
           )}
         </div>
-      )}
-
+      ) : currentStep ? (
+        <div className="mb-3 rounded-lg bg-white/60 p-3 text-sm text-stone-600">
+          ⏳ Próximo paso: <b>día {currentStep.day}</b> — {currentStep.title}
+          <span className="ml-1 text-xs">
+            (faltan {currentStep.day - day0} día{currentStep.day - day0 !== 1 ? "s" : ""})
+          </span>
+        </div>
+      ) : null}
       {future.length > 0 && (
         <details className="mb-2">
           <summary className="cursor-pointer text-xs font-medium text-stone-600">
