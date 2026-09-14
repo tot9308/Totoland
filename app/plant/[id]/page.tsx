@@ -79,6 +79,7 @@ export default function PlantDetail() {
   const [showEvent, setShowEvent] = useState(false)
   const [driftDays, setDriftDays] = useState(0)
   const [showAll, setShowAll] = useState(false)
+  const [showMore, setShowMore] = useState(false)
   const { confirm: confirmAsync } = useConfirm()
 
   const reload = useCallback(async () => {
@@ -135,6 +136,15 @@ export default function PlantDetail() {
     if (error) return alert(error.message)
     await applyDrift(plant, driftDays, 5, 9)
     await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", plant.id)
+    await reload()
+  }
+
+  async function markHealth(level: string) {
+    if (!plant || !userId) return
+    const { error } = await supabase.from("care_events").insert({
+      plant_id: plant.id, user_id: userId, type: "observation", health: level,
+    })
+    if (error) return alert(error.message)
     await reload()
   }
 
@@ -254,6 +264,8 @@ export default function PlantDetail() {
       if (!firstEventOfBatch[ev.batch_id]) firstEventOfBatch[ev.batch_id] = ev.id
     }
   }
+  const lastHealth = events.find(e => e.health) ?? null
+
   const IMPORTANT = new Set(["observation", "pest_detection", "disease_detection", "treatment", "repotting", "pruning", "fertilizing"])
   type Item = { key: string; at: string; important: boolean; ev: EventRow; count?: number }
   const seenBatch = new Set<string>()
@@ -280,54 +292,73 @@ export default function PlantDetail() {
 
   return (
     <main className="min-h-screen bg-stone-50 p-4 md:p-8">
-      <header className="mb-6 flex items-start justify-between gap-3">
-        <div>
-          <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
-          <h1 className="text-2xl font-bold text-stone-800">🪴 {plant.name}</h1>
-          <p className="text-sm text-stone-600">
-            {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
-          </p>
-          {waterAmt && (
-            <p className="text-xs text-stone-500">
-              💦 Riego: ≈ {waterAmt.min}–{waterAmt.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
-              {plant.has_saucer && " · vacía el plato a los 10-15 min"}
+      <header className="mb-6">
+        <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
+        <div className="mt-1 flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-stone-800">🪴 {plant.name}</h1>
+            <p className="text-sm text-stone-600">
+              {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
             </p>
-          )}
+            {waterAmt && (
+              <p className="text-xs text-stone-500">
+                💦 Riego: ≈ {waterAmt.min}–{waterAmt.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
+                {plant.has_saucer && " · vacía el plato a los 10-15 min"}
+              </p>
+            )}
+          </div>
+          <div className="relative">
+            <button onClick={() => setShowMore(m => !m)}
+              className="rounded border border-stone-300 px-3 py-2 text-lg leading-none text-stone-700 hover:bg-stone-100">
+              ⋮
+            </button>
+            {showMore && (
+              <div className="absolute right-0 z-20 mt-1 w-56 overflow-hidden rounded-lg bg-[#faf7f0] shadow-xl">
+                <button onClick={() => { setShowMore(false); setShowEdit(true) }}
+                  className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100">✏️ Editar planta</button>
+                <button onClick={() => { setShowMore(false); setShowEvent(true) }}
+                  className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100">＋ Añadir otro evento</button>
+                <button onClick={() => { setShowMore(false); exportPdf() }}
+                  className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100">🖨 Ficha PDF</button>
+                <Link href="/tasks" onClick={() => setShowMore(false)}
+                  className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100">📋 Tareas y recordatorios</Link>
+                <button onClick={() => { setShowMore(false); toCemetery() }}
+                  className="block w-full px-4 py-2 text-left text-sm text-[#8a3a1a] hover:bg-red-50">🪦 Mandar al cementerio</button>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap justify-end gap-2">
+
+        <div className="mt-3 flex flex-wrap gap-2">
           <button onClick={() => quickWater(false)}
-            className="rounded bg-[#5a7d4a] px-3 py-2 text-white hover:bg-[#4a6a3a]">
+            className="rounded-lg bg-[#5a7d4a] px-5 py-2.5 text-white hover:bg-[#4a6a3a]">
             💧 Regar
           </button>
           {plant.misting_enabled && (
             <button onClick={() => quickWater(true)}
-              className="rounded bg-[#5a8ca6] px-3 py-2 text-white hover:bg-[#497691]">
-              💧+🌫
+              className="rounded-lg bg-[#5a8ca6] px-5 py-2.5 text-white hover:bg-[#497691]">
+              💧 + 🌫 Pulverizar
             </button>
           )}
-          <button onClick={() => setShowEvent(true)}
-            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
-            ＋ Más
-          </button>
-          <button onClick={() => setShowEdit(true)}
-            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
-            ✏️ Editar
-          </button>
-          <button onClick={exportPdf}
-            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
-            🖨 PDF
-          </button>
-          <Link href="/reminders"
-            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
-            🔔 Recordatorios
-          </Link>
-          <button onClick={toCemetery}
-            className="rounded border border-stone-300 px-3 py-2 text-stone-700">
-            🪦 Cementerio
-          </button>
+        </div>
+
+        <div className="mt-3 rounded-xl bg-[#faf7f0] p-3 shadow-sm">
+          <p className="mb-2 text-sm font-medium text-stone-700">¿Cómo está hoy?</p>
+          <div className="flex gap-2">
+            <button onClick={() => markHealth("green")}
+              className="flex-1 rounded-lg bg-[#dfe9e4] px-3 py-2 text-sm text-stone-800 hover:bg-[#c9dccf]">🟢 Bien</button>
+            <button onClick={() => markHealth("yellow")}
+              className="flex-1 rounded-lg bg-[#efe3c8] px-3 py-2 text-sm text-stone-800 hover:bg-[#e3d3ae]">🟡 Vigilante</button>
+            <button onClick={() => markHealth("red")}
+              className="flex-1 rounded-lg bg-[#ecd9cd] px-3 py-2 text-sm text-stone-800 hover:bg-[#e0c3b0]">🔴 Estrés</button>
+          </div>
+          {lastHealth && (
+            <p className="mt-2 text-xs text-stone-600">
+              Último estado: {HEALTH_ICON[lastHealth.health!]} · {fmt(lastHealth.occurred_at)}
+            </p>
+          )}
         </div>
       </header>
-
       <section className="mb-6 rounded-xl bg-[#f7f0e3] p-4 shadow-sm">
         {editingTips ? (
           <>
