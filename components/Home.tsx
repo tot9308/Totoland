@@ -18,6 +18,7 @@ import Logo from "./Logo"
 import { applyDrift } from "@/lib/drift"
 import { getActiveHouseholdId } from "@/lib/household"
 import { useRouter } from "next/navigation"
+import { useConfirm } from "@/components/UiProvider"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -56,6 +57,10 @@ export default function Home({ session }: { session: Session }) {
   const [showAchievements, setShowAchievements] = useState(false)
   const [showHousehold, setShowHousehold] = useState(false)
   const [driftDays, setDriftDays] = useState(0)
+  const { confirm: confirmAsync } = useConfirm()
+  const [showPw, setShowPw] = useState(false)
+  const [pwCurrent, setPwCurrent] = useState("")
+  const [pwNew, setPwNew] = useState("")
 
   function setSortBy(v: "due" | "name" | "location") {
     setSortByState(v)
@@ -143,8 +148,8 @@ export default function Home({ session }: { session: Session }) {
       const first = late[0]
       const t = plantType(findSpecies(first.p.species ?? ""), first.p.plant_type)
       const names = late.map(x => `${x.p.name} (${(x.d ?? 0) - (x.f ?? 0)} días de retraso)`).join(", ")
-      if (!confirm(
-        `Con retraso: ${names}.\n\n${rehydrateTip(t)}\n\n¿Registrar el riego e iniciar la recuperación?`
+      if (!await confirmAsync(
+        `Con retraso: ${names}. ${rehydrateTip(t)} ¿Registrar el riego e iniciar la recuperación?`
       )) return
     }
     const batch = crypto.randomUUID()
@@ -201,39 +206,20 @@ export default function Home({ session }: { session: Session }) {
     await reload()
   }
 
-  async function changePassword() {
-    const current = window.prompt("Contraseña actual:")
-    if (!current) return
+  function changePassword() { setShowPw(true) }
+
+  async function submitPw() {
+    if (!pwCurrent) return alert("Introduce la contraseña actual")
     const { error: authError } = await supabase.auth.signInWithPassword({
-      email: session.user.email!,
-      password: current,
+      email: session.user.email!, password: pwCurrent,
     })
-    if (authError) return alert("Contraseña actual incorrecta: " + authError.message)
-
-    const newPw = window.prompt("Nueva contraseña (mínimo 6 caracteres):")
-    if (!newPw) return
-    if (newPw.length < 6) return alert("La contraseña debe tener al menos 6 caracteres")
-
-    const { error } = await supabase.auth.updateUser({ password: newPw })
-    alert(error ? "Error: " + error.message : "Contraseña cambiada ✅")
+    if (authError) return alert("Contraseña actual incorrecta")
+    if (pwNew.length < 6) return alert("La contraseña debe tener al menos 6 caracteres")
+    const { error } = await supabase.auth.updateUser({ password: pwNew })
+    if (error) return alert("Error: " + error.message)
+    setShowPw(false); setPwCurrent(""); setPwNew("")
+    alert("Contraseña cambiada ✅")
   }
-
-  return (
-    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
-      <header className="mb-6 flex items-center gap-2">
-        <AppMenu
-          email={session.user.email ?? ""}
-          cemeteryCount={dead.length}
-          onOpenSettings={() => setShowSettings(true)}
-          onOpenSync={() => setShowSync(true)}
-                         onOpenAchievements={() => setShowAchievements(true)}
-                         onOpenHousehold={() => setShowHousehold(true)}
-                         onChangePassword={changePassword}
-          onLogout={() => supabase.auth.signOut()}
-        />
-          <Logo size={36} />
-      </header>
-
       {householdId && (
         <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
       )}
@@ -357,6 +343,21 @@ export default function Home({ session }: { session: Session }) {
         <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full bg-emerald-900 px-5 py-3 text-white shadow-lg">
           <span>{toast.message}</span>
           <button onClick={undo} className="font-semibold underline">Deshacer</button>
+        </div>
+      )}
+      {showPw && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-xs rounded-xl bg-[#faf7f0] p-5 shadow-xl dark:bg-stone-800">
+            <h2 className="mb-3 text-lg font-semibold text-stone-800 dark:text-stone-100">🔑 Cambiar contraseña</h2>
+            <input type="password" value={pwCurrent} onChange={e => setPwCurrent(e.target.value)} placeholder="Contraseña actual"
+              className="mb-2 w-full rounded border border-stone-300 px-3 py-2 dark:border-stone-600 dark:bg-stone-700" />
+            <input type="password" value={pwNew} onChange={e => setPwNew(e.target.value)} placeholder="Nueva contraseña (mín. 6)"
+              className="mb-3 w-full rounded border border-stone-300 px-3 py-2 dark:border-stone-600 dark:bg-stone-700" />
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowPw(false)} className="rounded px-3 py-2 text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-700">Cancelar</button>
+              <button onClick={submitPw} className="rounded bg-[#5a7d4a] px-4 py-2 text-white hover:bg-[#4a6a3a]">Guardar</button>
+            </div>
+          </div>
         </div>
       )}
     </main>
