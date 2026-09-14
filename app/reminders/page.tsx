@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { type Plant } from "@/lib/plants"
 import { useConfirm } from "@/components/UiProvider"
+import { getActiveHouseholdId } from "@/lib/household"
 
 type Reminder = {
   id: string
@@ -41,9 +42,9 @@ export default function RemindersPage() {
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace("/"); return }
-    const { data: mem } = await supabase.from("household_members")
-      .select("household_id").eq("user_id", user.id).limit(1).single()
-    if (!mem) { router.replace("/"); return }
+    const household_id = await getActiveHouseholdId(user.id)
+    if (!household_id) { router.replace("/"); return }
+    const mem = { household_id }
     setHouseholdId(mem.household_id)
     const { data: pl } = await supabase.from("plants").select("*")
       .eq("household_id", mem.household_id).neq("status", "dead").order("name")

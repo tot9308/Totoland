@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { dueDatesInRange, wateringDaySet, type Plant } from "@/lib/plants"
+import { getActiveHouseholdId } from "@/lib/household"
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 const DIAS = ["L","M","X","J","V","S","D"]
@@ -29,9 +30,9 @@ export default function CalendarPage() {
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace("/"); return }
-    const { data: mem } = await supabase.from("household_members")
-      .select("household_id").eq("user_id", user.id).limit(1).single()
-    if (!mem) { router.replace("/"); return }
+    const household_id = await getActiveHouseholdId(user.id)
+    if (!household_id) { router.replace("/"); return }
+    const mem = { household_id }
     const { data: pl } = await supabase.from("plants").select("*")
       .eq("household_id", mem.household_id).neq("status", "dead").order("name")
     setPlants((pl as Plant[]) ?? [])

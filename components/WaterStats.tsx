@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { waterAmountFor, type Plant } from "@/lib/plants"
 import { findSpecies } from "@/lib/species"
+import { getActiveHouseholdId } from "@/lib/household"
 
 type Ev = { plant_id: string; occurred_at: string }
 
@@ -16,9 +17,9 @@ export default function WaterStats() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      const { data: mem } = await supabase.from("household_members")
-        .select("household_id").eq("user_id", user.id).limit(1).single()
-      if (!mem) return
+      const household_id = await getActiveHouseholdId(user.id)
+      if (!household_id) return
+      const mem = { household_id }
       const { data: pl } = await supabase.from("plants")
         .select("*").eq("household_id", mem.household_id)
       const plants = (pl as Plant[]) ?? []

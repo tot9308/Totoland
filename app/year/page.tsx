@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import WaterStats from "@/components/WaterStats"
+import { getActiveHouseholdId } from "@/lib/household"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
@@ -16,9 +17,9 @@ export default function YearPage() {
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace("/"); return }
-    const { data: mem } = await supabase.from("household_members")
-      .select("household_id").eq("user_id", user.id).limit(1).single()
-    if (!mem) { router.replace("/"); return }
+    const household_id = await getActiveHouseholdId(user.id)
+    if (!household_id) { router.replace("/"); return }
+    const mem = { household_id }
 
     const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
     const { data: plants } = await supabase.from("plants").select("*").eq("household_id", mem.household_id)

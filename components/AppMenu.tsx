@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Logo from "./Logo"
+import HouseSwitcher from "./HouseSwitcher"
 
 export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onChangePassword, onLogout }: {
   email: string
@@ -66,6 +67,7 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 🩺 Seguimiento
               </Link>
+              <HouseSwitcher />
               <Link href="/calendar" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 📅 Calendario

@@ -16,6 +16,7 @@ import AchievementsModal from "./AchievementsModal"
 import HouseholdModal from "./HouseholdModal"
 import Logo from "./Logo"
 import { applyDrift } from "@/lib/drift"
+import { getActiveHouseholdId } from "@/lib/household"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -68,13 +69,9 @@ export default function Home({ session }: { session: Session }) {
   }
 
   const reload = useCallback(async () => {
-    const { data: mem } = await supabase
-      .from("household_members")
-      .select("household_id")
-      .eq("user_id", userId)
-      .limit(1)
-      .single()
-    if (!mem) return
+    const household_id = await getActiveHouseholdId(user.id)
+    if (!household_id) { router.replace("/"); return }
+    const mem = { household_id }
     setHouseholdId(mem.household_id)
 
     const { data: hh } = await supabase
