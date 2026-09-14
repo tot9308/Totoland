@@ -64,10 +64,6 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 📋 Tareas
               </Link>
-              <Link href="/reminders" onClick={() => setOpen(false)}
-                className="rounded px-3 py-2 text-left hover:bg-stone-100">
-                🔔 Recordatorios
-              </Link>
               <Link href="/recovery" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 🩺 Seguimiento
