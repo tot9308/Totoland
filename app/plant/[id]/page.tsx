@@ -78,6 +78,7 @@ export default function PlantDetail() {
   const [showEdit, setShowEdit] = useState(false)
   const [showEvent, setShowEvent] = useState(false)
   const [driftDays, setDriftDays] = useState(0)
+  const [showAll, setShowAll] = useState(false)
   const { confirm: confirmAsync } = useConfirm()
 
   const reload = useCallback(async () => {
@@ -253,6 +254,23 @@ export default function PlantDetail() {
       if (!firstEventOfBatch[ev.batch_id]) firstEventOfBatch[ev.batch_id] = ev.id
     }
   }
+  const IMPORTANT = new Set(["observation", "pest_detection", "disease_detection", "treatment", "repotting", "pruning", "fertilizing"])
+  type Item = { key: string; at: string; important: boolean; ev: EventRow; count?: number }
+  const seenBatch = new Set<string>()
+  const items: Item[] = []
+  for (const ev of events) {
+    if (IMPORTANT.has(ev.type)) {
+      items.push({ key: ev.id, at: ev.occurred_at, important: true, ev })
+    } else if (ev.batch_id) {
+      if (seenBatch.has(ev.batch_id)) continue
+      seenBatch.add(ev.batch_id)
+      items.push({ key: ev.batch_id, at: ev.occurred_at, important: false, ev, count: batchCount[ev.batch_id] })
+    } else {
+      items.push({ key: ev.id, at: ev.occurred_at, important: false, ev })
+    }
+  }
+  const ordered = [...items.filter(i => i.important), ...items.filter(i => !i.important)]
+  const visibleItems = showAll ? ordered : ordered.slice(0, 3)
 
   if (!plant) return <main className="p-6">Cargando…</main>
 
@@ -443,39 +461,51 @@ export default function PlantDetail() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-lg font-semibold text-stone-800">Historial</h2>
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-stone-800">Historial</h2>
+          {ordered.length > 3 && (
+            <button onClick={() => setShowAll(s => !s)} className="text-xs text-stone-600 hover:underline">
+              {showAll ? "Ver menos" : `Ver más (${ordered.length - 3} más)`}
+            </button>
+          )}
+        </div>
         <ul className="space-y-2">
-          {events.map(ev => (
-            <li key={ev.id} className="rounded-lg bg-[#faf7f0] p-3 shadow-sm">
+          {visibleItems.map(it => (
+            <li key={it.key} className={`rounded-lg p-3 shadow-sm ${it.important ? "bg-[#f5ece6]" : "bg-[#faf7f0]"}`}>
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm text-stone-800">
-                  <span className="mr-1">{EVENT_ICONS[ev.type] ?? "•"}</span>
-                  <strong>{EVENT_LABELS[ev.type] ?? ev.type}</strong>
-                  {ev.detail && <span className="text-stone-600"> · {ev.detail}</span>}
-                  {ev.health && <span className="ml-1">{HEALTH_ICON[ev.health] ?? ""}</span>}
-                  {ev.batch_id && (batchCount[ev.batch_id] ?? 0) > 1 && (
-                    <span className="ml-2 rounded-full bg-[#dfe9e4] px-2 py-0.5 text-[11px] text-stone-700">
-                      ronda de {batchCount[ev.batch_id]}
-                    </span>
+                  {it.count && it.count > 1 ? (
+                    <>
+                      <span className="mr-1">💧</span>
+                      <strong>Riego</strong>
+                      <span className="ml-2 rounded-full bg-[#dfe9e4] px-2 py-0.5 text-[11px] text-stone-700">
+                        ronda de {it.count}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="mr-1">{EVENT_ICONS[it.ev.type] ?? "•"}</span>
+                      <strong>{EVENT_LABELS[it.ev.type] ?? it.ev.type}</strong>
+                      {it.ev.detail && <span className="text-stone-600"> · {it.ev.detail}</span>}
+                      {it.ev.health && <span className="ml-1">{HEALTH_ICON[it.ev.health] ?? ""}</span>}
+                    </>
                   )}
                 </div>
-                {ev.batch_id && firstEventOfBatch[ev.batch_id] === ev.id && (
-                  <button onClick={() => undoBatch(ev.batch_id!)}
-                    className="text-xs text-[#8a3a1a] hover:underline">
+                {it.ev.batch_id && (
+                  <button onClick={() => undoBatch(it.ev.batch_id!)} className="text-xs text-[#8a3a1a] hover:underline">
                     ↩ deshacer
                   </button>
                 )}
               </div>
               <p className="text-xs text-stone-600">
-                {fmt(ev.occurred_at)} · {names[ev.user_id] ?? "alguien"}
+                {fmt(it.at)} · {names[it.ev.user_id] ?? "alguien"}
               </p>
-              {ev.notes && <p className="mt-1 text-sm text-stone-700">{ev.notes}</p>}
+              {it.ev.notes && <p className="mt-1 text-sm text-stone-700">{it.ev.notes}</p>}
             </li>
           ))}
-          {events.length === 0 && <p className="text-sm text-stone-600">Sin eventos todavía.</p>}
+          {ordered.length === 0 && <p className="text-sm text-stone-600">Sin eventos todavía.</p>}
         </ul>
       </section>
-
       {showEdit && (
         <PlantForm householdId={plant.household_id} plant={plant} onClose={() => setShowEdit(false)} onSaved={reload} />
       )}
