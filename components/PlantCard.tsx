@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { daysSince, daysUntilDue, effectiveFreq, type Plant } from "@/lib/plants"
 
-export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summerStart, summerEnd }: {
+export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summerStart, summerEnd, health }: {
   plant: Plant
   onWater: () => void
   onWaterMist: () => void
@@ -16,7 +16,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
   const due = daysUntilDue(plant, summerStart, summerEnd)
   const freq = effectiveFreq(plant, summerStart, summerEnd)
   const days = daysSince(plant.last_watered_at)
-const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
+  const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
 
   const overdue = due !== null && due < 0
   const dueSoon = due !== null && due >= 0 && due <= 2
@@ -34,11 +34,11 @@ const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viern
           className="mb-3 aspect-[4/3] w-full rounded-xl object-cover"
         />
       )}
-{health && <span className="mr-1">{health === "green" ? "🟢" : health === "yellow" ? "🟡" : "🔴"}</span>}
-{plant.name}
+
       {/* Contenido */}
       <div className="mb-3">
         <h3 className="font-serif text-xl font-semibold text-stone-800 leading-tight">
+          {health && <span className="mr-1">{health === "green" ? "🟢" : health === "yellow" ? "🟡" : "🔴"}</span>}
           {plant.name}
         </h3>
         <p className="mt-0.5 text-xs italic text-stone-500">
