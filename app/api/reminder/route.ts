@@ -141,11 +141,14 @@ export async function POST(req: Request) {
       const { data: lastObs } = await admin.from("care_events")
         .select("health, occurred_at").eq("plant_id", p.id).not("health", "is", null)
         .order("occurred_at", { ascending: false }).limit(1)
+      const objective = healthLevel(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 9)
       let lvl: number
-      if (lastObs && lastObs.length && (now.getTime() - new Date(lastObs[0].occurred_at).getTime()) < 3 * 86400000) {
+      if (objective === 2) {
+        lvl = 2
+      } else if (lastObs && lastObs.length) {
         lvl = lastObs[0].health === "green" ? 0 : lastObs[0].health === "yellow" ? 1 : 2
       } else {
-        lvl = healthLevel(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 9)
+        lvl = objective
       }
       await admin.from("health_snapshots").insert({ plant_id: p.id, day: today, level: lvl })
     }

@@ -61,6 +61,7 @@ export default function Home({ session }: { session: Session }) {
   const [showPw, setShowPw] = useState(false)
   const [pwCurrent, setPwCurrent] = useState("")
   const [pwNew, setPwNew] = useState("")
+  const [healthByPlant, setHealthByPlant] = useState<Record<string, { health: string; occurred_at: string }>>({})
 
   function setSortBy(v: "due" | "name" | "location") {
     setSortByState(v)
@@ -107,6 +108,16 @@ export default function Home({ session }: { session: Session }) {
     )
     setPhotoUrls(urls)
     setPlants(list)
+    const ids = list.map(p => p.id)
+    const healthMap: Record<string, { health: string; occurred_at: string }> = {}
+    if (ids.length) {
+      const { data: hs } = await supabase.from("care_events")
+        .select("plant_id, health, occurred_at").in("plant_id", ids)
+        .not("health", "is", null).order("occurred_at", { ascending: false })
+      for (const h of hs ?? [])
+        if (!healthMap[h.plant_id]) healthMap[h.plant_id] = { health: h.health!, occurred_at: h.occurred_at }
+    }
+    setHealthByPlant(healthMap)
     setLoading(false)
   }, [userId, router])
 
@@ -186,7 +197,15 @@ export default function Home({ session }: { session: Session }) {
     await reload()
     showToast(`${EVENT_LABELS[type]} · ${p.name}`, batch, [p.id])
   }
-
+  async function confirmHealth(p: Plant, same: boolean) {
+    const cur = healthByPlant[p.id]
+    const level = same ? (cur?.health ?? "yellow") : "green"
+    const { error } = await supabase.from("care_events").insert({
+      plant_id: p.id, user_id: userId, type: "observation", health: level,
+    })
+    if (error) return alert(error.message)
+    await reload()
+  }
   async function refreshLastWatered(plantIds: string[]) {
     const { data } = await supabase
       .from("care_events")
@@ -296,17 +315,35 @@ export default function Home({ session }: { session: Session }) {
         <p className="text-stone-700">Cargando…</p>
       ) : (
         <section className={`grid gap-3 ${GRID[size]}`}>
-          {visible.map(p => (
-            <PlantCard
-              key={p.id}
-              plant={p}
-              photoUrl={showPhotos ? photoUrls[p.id] : undefined}
-              summerStart={summerStart}
-              summerEnd={summerEnd}
-              onWater={() => quickEvent(p, "watering")}
-              onWaterMist={() => water([p], true)}
-            />
-          ))}
+          {visible.map(p => {
+            const hh = healthByPlant[p.id]
+            const days = hh ? Math.floor((Date.now() - new Date(hh.occurred_at).getTime()) / 86400000) : 0
+            const nudge = hh && hh.health !== "green" && days >= 4
+            return (
+              <div key={p.id}>
+                <PlantCard
+                  plant={p}
+                  photoUrl={showPhotos ? photoUrls[p.id] : undefined}
+                  summerStart={summerStart}
+                  summerEnd={summerEnd}
+                  health={hh?.health}
+                  onWater={() => quickEvent(p, "watering")}
+                  onWaterMist={() => water([p], true)}
+                />
+                {nudge && (
+                  <div className="mt-1 rounded-lg bg-[#f5ece6] p-2 text-xs text-stone-700">
+                    {hh!.health === "red" ? "🔴" : "🟡"} Lleva {days} días así. ¿Sigue igual?
+                    <div className="mt-1 flex gap-2">
+                      <button onClick={() => confirmHealth(p, true)}
+                        className="rounded bg-stone-200 px-2 py-1 hover:bg-stone-300">Sigue igual</button>
+                      <button onClick={() => confirmHealth(p, false)}
+                        className="rounded bg-[#dfe9e4] px-2 py-1 hover:bg-[#c9dccf]">Ya está 🟢</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
           {visible.length === 0 && (
             <p className="text-stone-700">
               {q ? `Nada coincide con "${query}".` : "Aún no hay plantas. Añade la primera 🌱"}

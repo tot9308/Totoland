@@ -7,6 +7,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
   plant: Plant
   onWater: () => void
   onWaterMist: () => void
+  health?: string
   photoUrl?: string
   summerStart: number
   summerEnd: number
@@ -33,7 +34,8 @@ const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viern
           className="mb-3 aspect-[4/3] w-full rounded-xl object-cover"
         />
       )}
-
+{health && <span className="mr-1">{health === "green" ? "🟢" : health === "yellow" ? "🟡" : "🔴"}</span>}
+{plant.name}
       {/* Contenido */}
       <div className="mb-3">
         <h3 className="font-serif text-xl font-semibold text-stone-800 leading-tight">

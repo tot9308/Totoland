@@ -213,7 +213,18 @@ export default function PlantDetail() {
     await supabase.from("plants").update({ last_watered_at: data?.[0]?.occurred_at ?? null }).eq("id", plantId)
     await reload()
   }
-
+  async function deleteEvent(ev: EventRow) {
+    if (!await confirmAsync("¿Eliminar este evento del historial?")) return
+    const { error } = await supabase.from("care_events").delete().eq("id", ev.id)
+    if (error) return alert(error.message)
+    if (ev.type === "watering") {
+      const { data } = await supabase.from("care_events")
+        .select("occurred_at").eq("plant_id", plantId).eq("type", "watering")
+        .order("occurred_at", { ascending: false }).limit(1)
+      await supabase.from("plants").update({ last_watered_at: data?.[0]?.occurred_at ?? null }).eq("id", plantId)
+    }
+    await reload()
+  }
   function exportPdf() {
     if (!plant) return
     const rows = events.map(ev =>
@@ -522,11 +533,15 @@ export default function PlantDetail() {
                     </>
                   )}
                 </div>
-                {it.ev.batch_id && (
-                  <button onClick={() => undoBatch(it.ev.batch_id!)} className="text-xs text-[#8a3a1a] hover:underline">
-                    ↩ deshacer
-                  </button>
-                )}
+                <div className="flex items-center gap-2">
+                  {it.ev.batch_id && (
+                    <button onClick={() => undoBatch(it.ev.batch_id!)} className="text-xs text-[#8a3a1a] hover:underline">
+                      ↩ deshacer
+                    </button>
+                  )}
+                  <button onClick={() => deleteEvent(it.ev)} title="Eliminar evento"
+                    className="text-xs text-stone-500 hover:underline">🗑</button>
+                </div>
               </div>
               <p className="text-xs text-stone-600">
                 {fmt(it.at)} · {names[it.ev.user_id] ?? "alguien"}
