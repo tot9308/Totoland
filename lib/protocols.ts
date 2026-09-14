@@ -1,3 +1,5 @@
+import type { Plant } from "./plants"
+
 export type ProtocolKind =
   | "drought" | "overwater" | "pest" | "disease"
   | "physical" | "light" | "thermal"
@@ -271,4 +273,13 @@ export function buildPlan(kind: ProtocolKind, culprit: Culprit | null, severity:
   }
 
   return base
+}
+export function currentRecoveryStep(plant: Plant): { plan: Plan; step: Step; day0: number; isDueToday: boolean } | null {
+  if (!plant.recovery_started_at || !plant.recovery_kind) return null
+  const plan = buildPlan(plant.recovery_kind as ProtocolKind, plant.recovery_culprit as Culprit, plant.recovery_severity as Severity)
+  const idx = plant.recovery_step ?? 0
+  const step = plan.steps[idx]
+  if (!step) return null
+  const day0 = Math.floor((Date.now() - new Date(plant.recovery_started_at).getTime()) / 86400000)
+  return { plan, step, day0, isDueToday: step.type === "check" && day0 >= step.day }
 }
