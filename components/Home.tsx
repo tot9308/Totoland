@@ -17,6 +17,7 @@ import HouseholdModal from "./HouseholdModal"
 import Logo from "./Logo"
 import { applyDrift } from "@/lib/drift"
 import { getActiveHouseholdId } from "@/lib/household"
+import { useRouter } from "next/navigation"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -33,6 +34,7 @@ function lsGet(key: string, def: string): string {
 }
 
 export default function Home({ session }: { session: Session }) {
+  const router = useRouter()
   const userId = session.user.id
   const [householdId, setHouseholdId] = useState<string | null>(null)
   const [plants, setPlants] = useState<Plant[]>([])
@@ -69,7 +71,7 @@ export default function Home({ session }: { session: Session }) {
   }
 
   const reload = useCallback(async () => {
-    const household_id = await getActiveHouseholdId(user.id)
+    const household_id = await getActiveHouseholdId(userId)
     if (!household_id) { router.replace("/"); return }
     const mem = { household_id }
     setHouseholdId(mem.household_id)
@@ -101,7 +103,7 @@ export default function Home({ session }: { session: Session }) {
     setPhotoUrls(urls)
     setPlants(list)
     setLoading(false)
-  }, [userId])
+  }, [userId, router])
 
   useEffect(() => { reload() }, [reload])
 
@@ -118,7 +120,7 @@ export default function Home({ session }: { session: Session }) {
     )
     .sort((a, b) => {
       if (sortBy === "name") return a.name.localeCompare(b.name)
-      if (sortBy === "location") return (a.location ?? "∅").localeCompare(b.location ?? "∅")
+      if (sortBy === "location") return (a.location ?? "∞").localeCompare(b.location ?? "∞")
       const da = daysUntilDue(a, summerStart, summerEnd)
       const db = daysUntilDue(b, summerStart, summerEnd)
       if (da === null && db === null) return a.name.localeCompare(b.name)
@@ -207,11 +209,11 @@ export default function Home({ session }: { session: Session }) {
       password: current,
     })
     if (authError) return alert("Contraseña actual incorrecta: " + authError.message)
-    
+
     const newPw = window.prompt("Nueva contraseña (mínimo 6 caracteres):")
     if (!newPw) return
     if (newPw.length < 6) return alert("La contraseña debe tener al menos 6 caracteres")
-    
+
     const { error } = await supabase.auth.updateUser({ password: newPw })
     alert(error ? "Error: " + error.message : "Contraseña cambiada ✅")
   }
@@ -301,7 +303,7 @@ export default function Home({ session }: { session: Session }) {
           ))}
           {visible.length === 0 && (
             <p className="text-stone-700">
-              {q ? `Nada coincide con “${query}”.` : "Aún no hay plantas. Añade la primera 🌱"}
+              {q ? `Nada coincide con "${query}".` : "Aún no hay plantas. Añade la primera 🌱"}
             </p>
           )}
         </section>
