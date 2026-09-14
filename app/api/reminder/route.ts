@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import webpush from "web-push"
-import { daysUntilDue } from "@/lib/plants"
+import { daysUntilDue, healthLevel } from "@/lib/plants"
 
 function initVapid() {
   webpush.setVapidDetails(
@@ -124,6 +124,21 @@ export async function POST(req: Request) {
       data: { household_id: h.id },
     }, muted)
     if (ok) sentCount++
+  }
+  // 4) Snapshot diario de salud para las gráficas
+  const { data: allHouses } = await admin
+    .from("households").select("id, summer_start_month, summer_end_month")
+  for (const h of allHouses ?? []) {
+    const { data: pls } = await admin.from("plants")
+      .select("*").eq("household_id", h.id).neq("status", "dead")
+    const today = now.toISOString().slice(0, 10)
+    for (const p of pls ?? []) {
+      const { data: ex } = await admin.from("health_snapshots")
+        .select("id").eq("plant_id", p.id).eq("day", today).limit(1)
+      if (ex && ex.length) continue
+      const lvl = healthLevel(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 9)
+      await admin.from("health_snapshots").insert({ plant_id: p.id, day: today, level: lvl })
+    }
   }
 
   return NextResponse.json({ sent: sentCount })

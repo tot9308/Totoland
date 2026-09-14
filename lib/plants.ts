@@ -159,3 +159,11 @@ export function waterAmount(plant: Plant): { min: number; max: number } | null {
   if (!plant.pot_diameter_cm) return null
   return waterAmountFor(plant.pot_diameter_cm, "B")
 }
+export function healthLevel(plant: Plant, ss: number, se: number): number {
+  if (plant.status === "dead") return 2
+  if ((plant.recovery_step ?? 0) > 0) return 2
+  const du = daysUntilDue(plant, ss, se)
+  if (du !== null && du <= -4) return 2
+  if (du !== null && du < 0) return 1
+  return 0
+}

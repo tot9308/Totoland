@@ -17,6 +17,7 @@ import {
 import { careTemplate } from "@/lib/careTemplate"
 import { applyDrift } from "@/lib/drift"
 import { useConfirm } from "@/components/UiProvider"
+import HealthChart from "@/components/HealthChart"
 
 type EventRow = {
   id: string
@@ -481,6 +482,7 @@ export default function PlantDetail() {
       {showEvent && (
         <EventForm plant={plant} userId={userId ?? ""} onClose={() => setShowEvent(false)} onSaved={reload} />
       )}
+      <HealthChart plantId={plant.id} />
     </main>
   )
 }

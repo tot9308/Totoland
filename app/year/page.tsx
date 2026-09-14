@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import WaterStats from "@/components/WaterStats"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
@@ -119,6 +120,7 @@ export default function YearPage() {
           </section>
         </>
       )}
+      <WaterStats />
     </main>
   )
 }
