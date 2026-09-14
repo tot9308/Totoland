@@ -482,7 +482,7 @@ export default function PlantDetail() {
       {showEvent && (
         <EventForm plant={plant} userId={userId ?? ""} onClose={() => setShowEvent(false)} onSaved={reload} />
       )}
-      <HealthChart plantId={plant.id} />
+      <HealthChart plantId={plant.id} forceSnapshot />
     </main>
   )
 }

@@ -6,17 +6,21 @@ import { supabase } from "@/lib/supabase"
 type Snap = { day: string; level: number }
 const COLOR = ["#5a7d4a", "#c9a45a", "#b5603d"]
 
-export default function HealthChart({ plantId }: { plantId: string }) {
+export default function HealthChart({ plantId, forceSnapshot }: { plantId: string; forceSnapshot?: boolean }) {
   const [snaps, setSnaps] = useState<Snap[]>([])
 
   useEffect(() => {
     (async () => {
+      if (forceSnapshot) {
+        const today = new Date().toISOString().slice(0, 10)
+        await supabase.from("health_snapshots").upsert({ plant_id: plantId, day: today, level: 0 })
+      }
       const { data } = await supabase.from("health_snapshots")
         .select("day, level").eq("plant_id", plantId)
         .order("day", { ascending: true }).limit(120)
       setSnaps((data as Snap[]) ?? [])
     })()
-  }, [plantId])
+  }, [plantId, forceSnapshot])
 
   if (!snaps.length) return null
   const green = snaps.filter(s => s.level === 0).length
