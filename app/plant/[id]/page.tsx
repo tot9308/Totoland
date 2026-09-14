@@ -9,13 +9,10 @@ import { compressToJpeg } from "@/lib/photos"
 import PlantForm from "@/components/PlantForm"
 import EventForm from "@/components/EventForm"
 import RecoveryPanel from "@/components/RecoveryPanel"
-import { TYPE_LABEL, plantType, plantCategory } from "@/lib/recovery"
 import {
   findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
   SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
 } from "@/lib/species"
-import { careTemplate } from "@/lib/careTemplate"
-import { applyDrift } from "@/lib/drift"
 import { useConfirm } from "@/components/UiProvider"
 import HealthChart from "@/components/HealthChart"
 

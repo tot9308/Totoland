@@ -2,125 +2,226 @@
 
 import { useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { daysSince, type Plant } from "@/lib/plants"
-import { type SpeciesCard } from "@/lib/species"
+import type { Plant } from "@/lib/plants"
+import { useConfirm } from "@/components/UiProvider"
 import {
-  CHECKS, SEV_LABEL, TYPE_LABEL, plantType, severityFor, rehydrateTip, checkPrompt,
-  startRecovery, resolveRecovery, type PType,
-} from "@/lib/recovery"
+  buildPlan, CULPRIT_BY_KIND, CULPRIT_LABEL, KIND_LABEL, SEVERITY_LABEL,
+  type ProtocolKind, type Culprit, type Severity,
+} from "@/lib/protocols"
 
-const TYPES: PType[] = ["succulent", "epiphyte", "tropical", "hardy", "mediterranean"]
-const SEVS = ["mild", "moderate", "severe", "critical"]
-
-export default function RecoveryPanel({ plant, userId, speciesCard, onChanged }: {
+type Props = {
   plant: Plant
   userId: string
-  speciesCard?: SpeciesCard
+  speciesCard: any
   onChanged: () => void
-}) {
-  const [expert, setExpert] = useState(false)
-  const [eSev, setESev] = useState(plant.recovery_severity ?? "moderate")
-  const [eType, setEType] = useState(plant.plant_type ?? "")
-  const [eDate, setEDate] = useState(plant.recovery_check_at ? plant.recovery_check_at.slice(0, 10) : "")
+}
 
-  const inRecovery = !!plant.recovery_check_at
-  const type = plantType(speciesCard, plant.plant_type)
-  const severity = plant.recovery_severity ?? "moderate"
-  const steps = CHECKS[severity] ?? [3]
-  const step = plant.recovery_step ?? 1
-  const now = Date.now()
-  const due = inRecovery && new Date(plant.recovery_check_at!).getTime() <= now
-  const forbidUntil = plant.recovery_started_at
-    ? new Date(new Date(plant.recovery_started_at).getTime() + 21 * 86400000)
-    : null
+export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
+  const { confirm: confirmAsync } = useConfirm()
+  const [open, setOpen] = useState(false)
+  const [kind, setKind] = useState<ProtocolKind>("pest")
+  const [culprit, setCulprit] = useState<Culprit>(null)
+  const [severity, setSeverity] = useState<Severity>("moderate")
 
-  async function begin() {
-    const days = daysSince(plant.last_watered_at) ?? 21
-    const freq = plant.watering_frequency_days ?? 7
-    const sev = severityFor(days, freq, type)
-    await startRecovery(plant, sev, type)
-    onChanged()
-  }
+  const startedAt = plant.recovery_started_at ? new Date(plant.recovery_started_at) : null
+  const currentPlan = startedAt ? buildPlan(plant.recovery_kind as ProtocolKind, plant.recovery_culprit as Culprit, plant.recovery_severity as Severity) : null
+  const day0 = startedAt ? Math.floor((Date.now() - startedAt.getTime()) / 86400000) : 0
 
-  async function saveExpert() {
+  async function startRecovery() {
+    if (!startedAt) return
+    const plan = buildPlan(kind, culprit, severity)
+    const firstCheck = plan.steps.find(s => s.type === "check")
     await supabase.from("plants").update({
-      recovery_severity: eSev,
-      plant_type: eType || null,
-      recovery_check_at: eDate ? new Date(eDate + "T12:00:00").toISOString() : null,
+      recovery_step: firstCheck ? plan.steps.indexOf(firstCheck) : 0,
+      recovery_severity: severity,
+      recovery_kind: kind,
+      recovery_culprit: culprit,
+      recovery_started_at: new Date().toISOString(),
     }).eq("id", plant.id)
-    setExpert(false)
+    await supabase.from("care_events").insert({
+      plant_id: plant.id, user_id: userId, type: "observation",
+      detail: `Inicio protocolo: ${plan.title}${culprit ? " (" + CULPRIT_LABEL[culprit] + ")" : ""} · ${SEVERITY_LABEL[severity]}`,
+    })
+    setOpen(false)
     onChanged()
   }
 
-  if (!inRecovery) {
+  async function markStepDone(stepIdx: number, result?: "better" | "same" | "worse") {
+    if (!currentPlan) return
+    const step = currentPlan.steps[stepIdx]
+    await supabase.from("care_events").insert({
+      plant_id: plant.id, user_id: userId, type: "treatment",
+      detail: step.title + (result ? ` → ${result === "better" ? "mejor" : result === "same" ? "igual" : "peor"}` : ""),
+    })
+    if (result === "worse") {
+      // Sube severidad
+      const next: Severity = plant.recovery_severity === "mild" ? "moderate" : "severe"
+      await supabase.from("plants").update({ recovery_severity: next }).eq("id", plant.id)
+      alert("Subida a severidad " + SEVERITY_LABEL[next])
+    }
+    const nextIdx = Math.min(stepIdx + 1, currentPlan.steps.length - 1)
+    await supabase.from("plants").update({ recovery_step: nextIdx }).eq("id", plant.id)
+    onChanged()
+  }
+
+  async function finishRecovery() {
+    if (!await confirmAsync("¿Marcar como recuperada? Se limpiará el protocolo.")) return
+    await supabase.from("plants").update({
+      recovery_step: 0, recovery_severity: null, recovery_kind: null,
+      recovery_culprit: null, recovery_started_at: null,
+    }).eq("id", plant.id)
+    await supabase.from("care_events").insert({
+      plant_id: plant.id, user_id: userId, type: "observation", detail: "Recuperada ✅",
+    })
+    onChanged()
+  }
+
+  if (!startedAt) {
     return (
-      <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm">
-        <button onClick={begin}
-          className="rounded bg-[#b5603d] px-3 py-2 text-sm text-white hover:bg-[#9c4f31]">
-          🩺 Marcar en recuperación
-        </button>
-        <p className="mt-2 text-xs text-stone-500">
-          Úsalo si ves la planta estresada (sequía, golpe de calor o de frío) aunque no haya retraso de riego.
-          Tipo detectado: <b>{TYPE_LABEL[type]}</b>.
-        </p>
+      <section className="mb-6">
+        {!open ? (
+          <button onClick={() => setOpen(true)}
+            className="w-full rounded-xl border-2 border-dashed border-stone-300 p-4 text-sm text-stone-600 hover:border-[#b5603d] hover:text-[#b5603d]">
+            🩺 Iniciar protocolo de recuperación
+          </button>
+        ) : (
+          <div className="rounded-xl bg-[#f5ece6] p-4 shadow-sm">
+            <h2 className="mb-3 font-serif text-lg font-semibold text-stone-800">🩺 Nuevo protocolo</h2>
+
+            <label className="mb-2 block text-sm text-stone-700">
+              Tipo de problema
+              <select value={kind} onChange={e => { setKind(e.target.value as ProtocolKind); setCulprit(null) }}
+                className="mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2">
+                {Object.entries(KIND_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+
+            {CULPRIT_BY_KIND[kind].length > 0 && (
+              <label className="mb-2 block text-sm text-stone-700">
+                Culpable probable
+                <select value={culprit ?? ""} onChange={e => setCulprit((e.target.value || null) as Culprit)}
+                  className="mt-1 w-full rounded border border-stone-300 bg-white px-3 py-2">
+                  <option value="">No lo sé / genérico</option>
+                  {CULPRIT_BY_KIND[kind].map(c => <option key={c} value={c}>{CULPRIT_LABEL[c]}</option>)}
+                </select>
+              </label>
+            )}
+
+            <label className="mb-3 block text-sm text-stone-700">
+              Severidad
+              <div className="mt-1 flex gap-2">
+                {(["mild", "moderate", "severe"] as Severity[]).map(s => (
+                  <button key={s} onClick={() => setSeverity(s)}
+                    className={`flex-1 rounded-lg px-3 py-2 text-sm ${
+                      severity === s
+                        ? "bg-[#b5603d] text-white"
+                        : "bg-white border border-stone-300 text-stone-700 hover:bg-stone-100"
+                    }`}>
+                    {SEVERITY_LABEL[s]}
+                  </button>
+                ))}
+              </div>
+            </label>
+
+            {(() => {
+              const preview = buildPlan(kind, culprit, severity)
+              return (
+                <div className="mb-3 rounded-lg bg-white/70 p-3 text-xs text-stone-700">
+                  <p className="mb-1"><b>{preview.title}</b></p>
+                  <p className="mb-2">{preview.summary}</p>
+                  <p className="mb-2 text-stone-600">📋 {preview.steps.length} pasos · {preview.steps.filter(s => s.type === "check").length} chequeos</p>
+                  <p className="text-stone-500">⛔ {preview.donot}</p>
+                </div>
+              )
+            })()}
+
+            <div className="flex gap-2">
+              <button onClick={startRecovery}
+                className="rounded bg-[#b5603d] px-4 py-2 text-white hover:bg-[#9c4f31]">Iniciar protocolo</button>
+              <button onClick={() => setOpen(false)}
+                className="rounded px-4 py-2 text-stone-700 hover:bg-stone-100">Cancelar</button>
+            </div>
+          </div>
+        )}
       </section>
     )
   }
 
+  // En protocolo: vista de progreso
+  const currentStepIdx = plant.recovery_step ?? 0
+  const currentStep = currentPlan?.steps[currentStepIdx]
+  const past = currentPlan!.steps.slice(0, currentStepIdx)
+  const future = currentPlan!.steps.slice(currentStepIdx + 1)
+
   return (
     <section className="mb-6 rounded-xl bg-[#f5ece6] p-4 shadow-sm">
-      <h2 className="mb-1 text-lg font-semibold text-stone-800">🩺 Recuperación en curso</h2>
-      <p className="mb-2 text-sm text-stone-700">
-        {SEV_LABEL[severity]} · {TYPE_LABEL[type]} · chequeo {step}/{steps.length} ·{" "}
-        {due ? "toca revisarla hoy" : `próximo en ${Math.ceil((new Date(plant.recovery_check_at!).getTime() - now) / 86400000)} d`}
-      </p>
-      <p className="mb-2 text-sm text-stone-700"><b>Cómo rehidratar:</b> {rehydrateTip(type)}</p>
-      <p className="mb-2 text-sm text-stone-700"><b>En este chequeo pregúntate:</b> {checkPrompt(step)}</p>
-      {forbidUntil && (
-        <p className="mb-3 rounded bg-[#efe3c8] p-2 text-xs text-stone-800">
-          🚫 Hasta el {forbidUntil.toLocaleDateString("es-ES")}: no abones, no trasplantes, no podes drástico.
-        </p>
-      )}
-      <div className="mb-3 flex flex-wrap gap-1">
-        <button onClick={() => resolveRecovery(plant, "ok", userId).then(onChanged)}
-          className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white hover:bg-[#4a6a3a]">✅ Recuperada</button>
-        <button onClick={() => resolveRecovery(plant, "topup", userId).then(onChanged)}
-          className="rounded bg-[#5a8ca6] px-2 py-1 text-xs text-white hover:bg-[#497691]">💧 Riego de apoyo</button>
-        <button onClick={() => resolveRecovery(plant, "still", userId).then(onChanged)}
-          className="rounded bg-[#b5603d] px-2 py-1 text-xs text-white hover:bg-[#9c4f31]">🩺 Sigue maltrecha</button>
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <h2 className="font-serif text-lg font-semibold text-stone-800">🩺 {currentPlan!.title}</h2>
+          <p className="text-xs text-stone-600">
+            {plant.recovery_culprit && CULPRIT_LABEL[plant.recovery_culprit] + " · "}
+            {SEVERITY_LABEL[plant.recovery_severity as Severity]} · día {day0}
+          </p>
+        </div>
+        <button onClick={finishRecovery}
+          className="rounded border border-stone-300 px-3 py-1.5 text-xs text-stone-700 hover:bg-stone-100">
+          ✅ Recuperada
+        </button>
       </div>
 
-      <button onClick={() => setExpert(!expert)}
-        className="text-xs text-[#8a3a1a] hover:underline">
-        🔧 {expert ? "Ocultar modo experto" : "Modo experto"}
-      </button>
-      {expert && (
-        <div className="mt-2 grid gap-2 rounded bg-[#faf7f0] p-3 md:grid-cols-3">
-          <label className="block text-xs text-stone-800">
-            Severidad
-            <select value={eSev} onChange={e => setESev(e.target.value)}
-              className="mt-1 w-full rounded border border-stone-300 px-2 py-1">
-              {SEVS.map(s => <option key={s} value={s}>{SEV_LABEL[s]}</option>)}
-            </select>
-          </label>
-          <label className="block text-xs text-stone-800">
-            Tipo de planta
-            <select value={eType} onChange={e => setEType(e.target.value)}
-              className="mt-1 w-full rounded border border-stone-300 px-2 py-1">
-              <option value="">Auto ({TYPE_LABEL[type]})</option>
-              {TYPES.map(t => <option key={t} value={t}>{TYPE_LABEL[t]}</option>)}
-            </select>
-          </label>
-          <label className="block text-xs text-stone-800">
-            Próximo chequeo
-            <input type="date" value={eDate} onChange={e => setEDate(e.target.value)}
-              className="mt-1 w-full rounded border border-stone-300 px-2 py-1" />
-          </label>
-          <button onClick={saveExpert}
-            className="rounded bg-[#5a7d4a] px-3 py-1 text-xs text-white md:col-span-3">
-            Guardar ajustes expertos
-          </button>
+      {currentStep && (
+        <div className="mb-3 rounded-lg bg-white p-3 shadow-sm">
+          <p className="mb-1 text-xs font-medium text-[#b5603d]">
+            {currentStep.type === "check" ? "🔎 Chequeo de hoy" : "📌 Toca hoy"} · día {currentStep.day}
+          </p>
+          <p className="mb-2 text-sm font-semibold text-stone-800">{currentStep.title}</p>
+          <p className="text-sm text-stone-700">{currentStep.description}</p>
+          {currentStep.type === "check" ? (
+            <div className="mt-3 flex gap-2">
+              <button onClick={() => markStepDone(currentStepIdx, "better")}
+                className="flex-1 rounded bg-[#5a7d4a] px-2 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">😊 Mejor</button>
+              <button onClick={() => markStepDone(currentStepIdx, "same")}
+                className="flex-1 rounded bg-stone-200 px-2 py-1.5 text-sm text-stone-700 hover:bg-stone-300">😐 Igual</button>
+              <button onClick={() => markStepDone(currentStepIdx, "worse")}
+                className="flex-1 rounded bg-[#b5603d] px-2 py-1.5 text-sm text-white hover:bg-[#9c4f31]">😟 Peor</button>
+            </div>
+          ) : (
+            <button onClick={() => markStepDone(currentStepIdx)}
+              className="mt-3 w-full rounded bg-[#5a7d4a] px-3 py-2 text-sm text-white hover:bg-[#4a6a3a]">
+              ✓ Marcar como hecho
+            </button>
+          )}
         </div>
+      )}
+
+      {future.length > 0 && (
+        <details className="mb-2">
+          <summary className="cursor-pointer text-xs font-medium text-stone-600">
+            Próximos pasos ({future.length})
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {future.map((s, i) => (
+              <li key={i} className="text-xs text-stone-600">
+                <span className="font-medium">día {s.day}</span> — {s.title}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+
+      {past.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-xs font-medium text-stone-600">
+            Hechos ({past.length})
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {past.map((s, i) => (
+              <li key={i} className="text-xs text-stone-500 line-through">
+                día {s.day} — {s.title}
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
     </section>
   )
