@@ -35,6 +35,11 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
             <Logo size={28} textClass="text-lg font-bold text-stone-800" />
             <p className="mb-4 truncate text-xs text-stone-500">{email}</p>
             <div className="flex flex-col gap-1 text-sm text-stone-800">
+              <HouseSwitcher />
+              <button onClick={() => { setOpen(false); onOpenHousehold() }}
+                className="rounded px-3 py-2 text-left hover:bg-stone-100">
+                🏠 Mi casa
+              </button>
               <button onClick={() => { setOpen(false); onOpenSettings() }}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 ⚙️ Ajustes
@@ -43,13 +48,13 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 🔄 Sincronizar riegos
               </button>
+              <Link href="/calendar" onClick={() => setOpen(false)}
+                className="rounded px-3 py-2 text-left hover:bg-stone-100">
+                📅 Calendario
+              </Link>
               <button onClick={() => { setOpen(false); onOpenAchievements() }}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 🏆 Logros
-              </button>
-              <button onClick={() => { setOpen(false); onOpenHousehold() }}
-                className="rounded px-3 py-2 text-left hover:bg-stone-100">
-                🏠 Mi casa
               </button>
               <Link href="/year" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
@@ -66,11 +71,6 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
               <Link href="/recovery" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 🩺 Seguimiento
-              </Link>
-              <HouseSwitcher />
-              <Link href="/calendar" onClick={() => setOpen(false)}
-                className="rounded px-3 py-2 text-left hover:bg-stone-100">
-                📅 Calendario
               </Link>
               <Link href="/guide" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
