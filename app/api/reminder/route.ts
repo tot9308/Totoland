@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import webpush from "web-push"
 import { daysUntilDue, healthLevel } from "@/lib/plants"
+import { currentRecoveryStep, CULPRIT_LABEL } from "@/lib/protocols"
 
 function initVapid() {
   webpush.setVapidDetails(
@@ -98,24 +99,37 @@ export async function POST(req: Request) {
     const month = now.getMonth() + 1
     const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
     const due: string[] = []
+    const checks: string[] = []
     for (const p of plants ?? []) {
+      // Riegos
       if (p.watering_days) {
         const du = daysUntilDue(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 9)
         if (du !== null && du <= 0) due.push(p.name)
-        continue
+      } else {
+        const freq = inSummer
+          ? p.watering_frequency_days
+          : p.watering_frequency_winter_days ?? p.watering_frequency_days
+        if (freq) {
+          const last = p.last_watered_at ? new Date(p.last_watered_at).getTime() : 0
+          const dExact = (now.getTime() - last) / 86400000
+          if (!p.last_watered_at || freq - dExact < 1) due.push(p.name)
+        }
       }
-      const freq = inSummer
-        ? p.watering_frequency_days
-        : p.watering_frequency_winter_days ?? p.watering_frequency_days
-      if (!freq) continue
-      const last = p.last_watered_at ? new Date(p.last_watered_at).getTime() : 0
-      const dExact = (now.getTime() - last) / 86400000
-      if (!p.last_watered_at || freq - dExact < 1) due.push(p.name)
+      // Chequeos de recuperación
+      const rec = currentRecoveryStep(p as any)
+      if (rec && rec.isDueToday) {
+        const culpritTxt = p.recovery_culprit ? " · " + CULPRIT_LABEL[p.recovery_culprit] : ""
+        checks.push(`${p.name}${culpritTxt} (día ${rec.step.day})`)
+      }
     }
-    if (due.length === 0) continue
+    if (due.length === 0 && checks.length === 0) continue
 
-    const title = "🌿 Totoland: toca regar"
-    const body = due.slice(0, 5).join(", ") + (due.length > 5 ? "…" : "")
+    let title = "🌿 Totoland: toca regar"
+    if (due.length === 0 && checks.length > 0) title = "🩺 Totoland: chequeo de recuperación"
+    const dueTxt = due.slice(0, 5).join(", ") + (due.length > 5 ? "…" : "")
+    const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
+    const body = [dueTxt, checksTxt].filter(Boolean).join(" · ")
+
     const ok = await sendPush(admin, pr.id, {
       title, body, tag: `daily-${pr.id}`,
       actions: [
@@ -127,6 +141,7 @@ export async function POST(req: Request) {
     }, muted)
     if (ok) sentCount++
   }
+
   // 4) Snapshot diario de salud para las gráficas
   const { data: allHouses } = await admin
     .from("households").select("id, summer_start_month, summer_end_month")
