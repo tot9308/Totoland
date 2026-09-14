@@ -28,6 +28,8 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   const [muteUntil, setMuteUntil] = useState<string | null>(null)
   const [muteSel, setMuteSel] = useState("")
   const [myTime, setMyTime] = useState("08:00")
+  const [vacStart, setVacStart] = useState("")
+  const [vacEnd, setVacEnd] = useState("")
 
   useEffect(() => {
     (async () => {
@@ -38,10 +40,26 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
 
   useEffect(() => {
     (async () => {
+      const { data } = await supabase.from("households")
+        .select("vacation_start, vacation_end").eq("id", householdId).single()
+      if (data) { setVacStart(data.vacation_start ?? ""); setVacEnd(data.vacation_end ?? "") }
+    })()
+  }, [householdId])
+
+  useEffect(() => {
+    (async () => {
       const { data } = await supabase.from("profiles").select("mute_until").eq("id", userId).single()
       setMuteUntil(data?.mute_until ?? null)
     })()
   }, [userId])
+
+  async function saveVac() {
+    const { error } = await supabase.from("households")
+      .update({ vacation_start: vacStart || null, vacation_end: vacEnd || null })
+      .eq("id", householdId)
+    if (error) return alert("Error: " + error.message)
+    alert("Vacaciones guardadas ✅")
+  }
 
   async function saveSeason() {
     setBusy(true)
@@ -158,7 +176,25 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
           className="mb-4 rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
           Guardar temporada
         </button>
-
+        <h3 className="mb-2 text-sm font-semibold text-stone-700">🏖️ Vacaciones</h3>
+        <p className="mb-2 text-xs text-stone-600">
+          Mientras estés de vacaciones no se envían avisos diarios de riego.
+        </p>
+        <div className="mb-2 grid grid-cols-2 gap-3">
+          <label className="block text-sm text-stone-800">
+            Desde
+            <input type="date" value={vacStart} onChange={ev => setVacStart(ev.target.value)}
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
+          </label>
+          <label className="block text-sm text-stone-800">
+            Hasta
+            <input type="date" value={vacEnd} onChange={ev => setVacEnd(ev.target.value)}
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
+          </label>
+        </div>
+        <button onClick={saveVac} className="mb-4 rounded bg-[#5a8ca6] px-3 py-1.5 text-sm text-white hover:bg-[#497691]">
+          Guardar vacaciones
+        </button>
         <h3 className="mb-2 text-sm font-semibold text-stone-700">🔔 Notificaciones</h3>
         <div className="mb-2 flex flex-wrap gap-2">
           <button onClick={enablePush}
