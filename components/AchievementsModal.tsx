@@ -65,26 +65,82 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
       }
 
       const waterings = allOnTime.length
+      const alive = plants.filter(p => p.status !== "dead")
+      const species = new Set(alive.map(p => p.species).filter(Boolean)).size
+      const locations = new Set(alive.map(p => p.location).filter(Boolean)).size
+      const events = (evs ?? []).length
+      const photos = (phs ?? []).length
+
+      const byPlant: Record<string, number[]> = {}
+      for (const e of evs ?? []) {
+        if (e.type !== "watering") continue
+        ;(byPlant[e.plant_id] ??= []).push(new Date(e.occurred_at).getTime())
+      }
+      let onTimeStreak = 0
+      const allOnTime: { t: number; ok: boolean }[] = []
+      for (const p of plants) {
+        const freq = p.watering_frequency_days
+        const times = (byPlant[p.id] ?? []).sort((a, b) => a - b)
+        for (let i = 0; i < times.length; i++) {
+          let ok = true
+          if (i > 0 && freq) {
+            const gap = Math.round((times[i] - times[i - 1]) / 86400000)
+            ok = gap <= freq + 2
+          }
+          allOnTime.push({ t: times[i], ok })
+        }
+      }
+      allOnTime.sort((a, b) => b.t - a.t)
+      for (const x of allOnTime) {
+        if (x.ok) onTimeStreak++
+        else break
+      }
+
+      const waterings = allOnTime.length
+      const activeDays = new Set((evs ?? []).map(e => new Date(e.occurred_at).toISOString().split('T')[0])).size
+      const firstWatering = allOnTime.length > 0 ? new Date(allOnTime[allOnTime.length - 1].t) : null
+      const daysSinceFirst = firstWatering ? Math.floor((Date.now() - firstWatering.getTime()) / 86400000) : 0
+
+      // Recuperaciones completadas
+      const { data: recoveries } = await supabase.from("care_events")
+        .select("id").in("plant_id", ids)
+        .ilike("notes", "%recuperada%")
+      const recoveryCount = (recoveries ?? []).length
+
       const cur: Record<string, number> = {
         first_plant: plants.length >= 1 ? 1 : 0,
         collector_10: alive.length,
         collector_25: alive.length,
+        collector_50: alive.length,
         species_master: species,
+        species_25: species,
+        locations_10: locations,
         waterer_10: waterings,
         waterer_100: waterings,
+        waterer_1000: waterings,
         chronicler: events,
+        chronicler_500: events,
         photographer: photos,
+        photographer_100: photos,
         punctual_14: onTimeStreak,
         punctual_30: onTimeStreak,
         punctual_90: onTimeStreak,
-        resurrection: 0,
+        punctual_180: onTimeStreak,
+        resurrection: recoveryCount,
+        resurrector_3: recoveryCount,
+        active_100: activeDays,
+        anniversary_365: daysSinceFirst,
       }
       const target: Record<string, number> = {
-        first_plant: 1, collector_10: 10, collector_25: 25, species_master: 10,
-        waterer_10: 10, waterer_100: 100, chronicler: 100, photographer: 50,
-        punctual_14: 14, punctual_30: 30, punctual_90: 90, resurrection: 1,
+        first_plant: 1, collector_10: 10, collector_25: 25, collector_50: 50,
+        species_master: 10, species_25: 25, locations_10: 10,
+        waterer_10: 10, waterer_100: 100, waterer_1000: 1000,
+        chronicler: 100, chronicler_500: 500,
+        photographer: 50, photographer_100: 100,
+        punctual_14: 14, punctual_30: 30, punctual_90: 90, punctual_180: 180,
+        resurrection: 1, resurrector_3: 3,
+        active_100: 100, anniversary_365: 365,
       }
-
       const list = ALL_ACHIEVEMENTS.map(a => ({
         ...a,
         cur: cur[a.code] ?? 0,
