@@ -372,3 +372,19 @@ export function buildPlan(kind: ProtocolKind, culprit: Culprit | null, severity:
 export function stepForDay(plan: Plan, day: number): Step[] {
   return plan.steps.filter(s => s.day === day)
 }
+export function currentRecoveryStep(plant: {
+  recovery_kind: string | null
+  recovery_culprit: string | null
+  recovery_severity: string | null
+  recovery_started_at: string | null
+}): { plan: Plan; step: Step | null; day: number } | null {
+  if (!plant.recovery_kind || !plant.recovery_started_at) return null
+  const plan = buildPlan(
+    plant.recovery_kind as ProtocolKind,
+    (plant.recovery_culprit ?? null) as Culprit,
+    (plant.recovery_severity ?? "moderate") as Severity,
+  )
+  const day = Math.floor((Date.now() - new Date(plant.recovery_started_at).getTime()) / 86400000)
+  const upcoming = plan.steps.find(s => s.day >= day) ?? plan.steps[plan.steps.length - 1] ?? null
+  return { plan, step: upcoming, day }
+}
