@@ -96,6 +96,11 @@ export async function POST(req: Request) {
     const { data: h } = await admin.from("households")
       .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end").eq("id", mem.household_id).single()
     if (!h) continue
+    const todayStr = todayMadrid
+    if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
+    const { data: plants } = await admin.from("plants")
+      .select("*").eq("household_id", h.id).neq("status", "dead")
+
     // Detectar nuevos logros y enviar push de celebración
     const { detectNewAchievements } = await import("@/lib/achievements")
     const newAch = await detectNewAchievements(pr.id, h.id, (plants as any) ?? [])
@@ -107,10 +112,6 @@ export async function POST(req: Request) {
       }, muted)
       if (ok) sentCount++
     }
-    const todayStr = todayMadrid
-    if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
-    const { data: plants } = await admin.from("plants")
-      .select("*").eq("household_id", h.id).neq("status", "dead")
 
     const month = now.getMonth() + 1
     const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
