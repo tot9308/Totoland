@@ -24,8 +24,13 @@ export async function POST(req: Request) {
   )
 
   const now = new Date()
-  const currentHour = now.getHours()
-  const currentMM = Math.floor(now.getMinutes() / 5) * 5
+  // Hora local de Bilbao: el cron y Vercel viven en UTC
+  const tf = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(now)
+  const currentHour = Number(tf.find(p => p.type === "hour")!.value)
+  const currentMM = Math.floor(Number(tf.find(p => p.type === "minute")!.value) / 5) * 5
+  const todayMadrid = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(now)
 
   const { data: mutedRows } = await admin.from("profiles")
     .select("id").gt("mute_until", now.toISOString())
@@ -91,7 +96,7 @@ export async function POST(req: Request) {
     const { data: h } = await admin.from("households")
       .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end").eq("id", mem.household_id).single()
     if (!h) continue
-    const todayStr = now.toISOString().slice(0, 10)
+    const todayStr = todayMadrid
     if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
     const { data: plants } = await admin.from("plants")
       .select("*").eq("household_id", h.id).neq("status", "dead")
