@@ -96,6 +96,17 @@ export async function POST(req: Request) {
     const { data: h } = await admin.from("households")
       .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end").eq("id", mem.household_id).single()
     if (!h) continue
+    // Detectar nuevos logros y enviar push de celebración
+    const { detectNewAchievements } = await import("@/lib/achievements")
+    const newAch = await detectNewAchievements(pr.id, h.id, (plants as any) ?? [])
+    for (const ach of newAch) {
+      const ok = await sendPush(admin, pr.id, {
+        title: `🏆 ¡Logro desbloqueado!`,
+        body: `${ach.icon} ${ach.title}: ${ach.description}`,
+        tag: `achievement-${ach.code}`,
+      }, muted)
+      if (ok) sentCount++
+    }
     const todayStr = todayMadrid
     if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
     const { data: plants } = await admin.from("plants")

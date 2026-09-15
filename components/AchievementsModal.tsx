@@ -15,6 +15,19 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
 
   useEffect(() => {
     (async () => {
+      const { detectNewAchievements } = await import("@/lib/achievements")
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Detectar nuevos logros (y guardarlos en BD)
+      const newAch = await detectNewAchievements(user.id, householdId, plants)
+
+      // Mostrar toast por cada logro nuevo
+      for (const a of newAch) {
+        alert(`🏆 ${a.title}: ${a.description}`)
+      }
+
+      // Cargar todos los logros (viejos + nuevos)
       const ids = plants.map(p => p.id)
       const { data: evs } = await supabase.from("care_events")
         .select("plant_id, type, occurred_at")
@@ -26,7 +39,6 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
       const events = (evs ?? []).length
       const photos = (phs ?? []).length
 
-      // Puntualidad: para cada planta, ordeno sus riegos y miro el retraso de cada uno
       const byPlant: Record<string, number[]> = {}
       for (const e of evs ?? []) {
         if (e.type !== "watering") continue
@@ -81,15 +93,10 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
         unlocked_at: null,
       }))
 
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        for (const a of list.filter(x => x.unlocked)) {
-          await supabase.from("achievements").upsert(
-            { household_id: householdId, user_id: user.id, code: a.code },
-            { onConflict: "household_id,user_id,code" }
-          )
-        }
-      }
+      setAch(list)
+      setLoading(false)
+    })()
+  }, [householdId, plants])
 
       setAch(list)
       setLoading(false)
