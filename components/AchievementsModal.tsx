@@ -98,11 +98,6 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
     })()
   }, [householdId, plants])
 
-      setAch(list)
-      setLoading(false)
-    })()
-  }, [householdId, plants])
-
   const unlockedCount = ach.filter(a => a.unlocked).length
 
   return (
