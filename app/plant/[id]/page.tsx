@@ -470,7 +470,7 @@ export default function PlantDetail() {
         </section>
       )}
 
-      <RecoveryPanel plant={plant} userId={userId ?? ""} speciesCard={speciesCard} onChanged={reload} />
+      <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
 
       <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">

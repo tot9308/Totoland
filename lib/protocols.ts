@@ -377,7 +377,7 @@ export function currentRecoveryStep(plant: {
   recovery_culprit: string | null
   recovery_severity: string | null
   recovery_started_at: string | null
-}): { plan: Plan; step: Step | null; day: number } | null {
+}): { plan: Plan; step: Step; day: number; isDueToday: boolean } | null {
   if (!plant.recovery_kind || !plant.recovery_started_at) return null
   const plan = buildPlan(
     plant.recovery_kind as ProtocolKind,
@@ -385,6 +385,12 @@ export function currentRecoveryStep(plant: {
     (plant.recovery_severity ?? "moderate") as Severity,
   )
   const day = Math.floor((Date.now() - new Date(plant.recovery_started_at).getTime()) / 86400000)
-  const upcoming = plan.steps.find(s => s.day >= day) ?? plan.steps[plan.steps.length - 1] ?? null
-  return { plan, step: upcoming, day }
+  // Próximo paso pendiente (o el último si ya pasaron todos)
+  const upcoming =
+    plan.steps.find(s => s.day >= day) ??
+    plan.steps[plan.steps.length - 1] ??
+    { day: 0, title: "", description: "", type: "action" as const }
+  // ¿Hay algún chequeo que toque hoy?
+  const isDueToday = plan.steps.some(s => s.type === "check" && s.day === day)
+  return { plan, step: upcoming, day, isDueToday }
 }
