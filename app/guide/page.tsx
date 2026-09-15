@@ -1,4 +1,5 @@
 ﻿import Link from "next/link"
+import GuideProtocols from "@/components/GuideProtocols"
 
 function S({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -153,6 +154,7 @@ export default function GuidePage() {
         <p><b>Otoño:</b> reducir riego progresivamente, meter dentro lo sensible al frío, última poda ligera y limpieza de hojas secas.</p>
         <p><b>Invierno:</b> riego mínimo, lejos de radiadores y de corrientes; luz al máximo (acerca a las ventanas). No abonar.</p>
       </S>
+      <GuideProtocols />
     </main>
   )
 }
