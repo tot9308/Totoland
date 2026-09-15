@@ -53,10 +53,13 @@ export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
       detail: step.title + (result ? ` → ${result === "better" ? "mejor" : result === "same" ? "igual" : "peor"}` : ""),
     })
     if (result === "worse") {
-      // Sube severidad
-      const next: Severity = plant.recovery_severity === "mild" ? "moderate" : "severe"
-      await supabase.from("plants").update({ recovery_severity: next }).eq("id", plant.id)
-      alert("Subida a severidad " + SEVERITY_LABEL[next])
+      const wc = (plant.recovery_worse_count ?? 0) + 1
+      const upd: any = { recovery_worse_count: wc }
+      if (wc === 1) {
+        const next: Severity = plant.recovery_severity === "mild" ? "moderate" : "severe"
+        upd.recovery_severity = next
+      }
+      await supabase.from("plants").update(upd).eq("id", plant.id)
     }
     const nextIdx = Math.min(stepIdx + 1, currentPlan.steps.length - 1)
     await supabase.from("plants").update({ recovery_step: nextIdx }).eq("id", plant.id)
@@ -131,6 +134,9 @@ export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
                   <p className="mb-2 text-stone-600">📋 {preview.steps.length} pasos · {preview.steps.filter(s => s.type === "check").length} chequeos</p>
                   <p className="text-stone-500">⛔ {preview.donot}</p>
                 </div>
+                  <ul className="mt-1 list-disc space-y-0.5 pl-4 text-stone-500">
+                    {preview.warnings.slice(0, 3).map((w, i) => <li key={i}>{w}</li>)}
+                  </ul>
               )
             })()}
 
@@ -199,6 +205,13 @@ export default function RecoveryPanel({ plant, userId, onChanged }: Props) {
           </span>
         </div>
       ) : null}
+      {(plant.recovery_worse_count ?? 0) >= 2 && currentPlan?.escalation && (
+        <div className="mb-3 rounded-lg border-2 border-[#b5603d] bg-[#ecd9cd] p-3 text-sm text-stone-800">
+          <p className="mb-1 font-semibold">⬆️ Escalada sugerida (2 chequeos en "Peor")</p>
+          <p>{currentPlan.escalation}</p>
+        </div>
+      )}
+
       {future.length > 0 && (
         <details className="mb-2">
           <summary className="cursor-pointer text-xs font-medium text-stone-600">

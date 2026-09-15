@@ -19,6 +19,7 @@ import { applyDrift } from "@/lib/drift"
 import { getActiveHouseholdId } from "@/lib/household"
 import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/UiProvider"
+import { currentRecoveryStep, CULPRIT_LABEL } from "@/lib/protocols"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -330,7 +331,18 @@ export default function Home({ session }: { session: Session }) {
                   onWater={() => quickEvent(p, "watering")}
                   onWaterMist={() => water([p], true)}
                 />
-                {nudge && (
+                                {(() => {
+                  const rec = currentRecoveryStep(p)
+                  if (!rec || !rec.isDueToday) return null
+                  return (
+                    <div className="mt-1 rounded-lg bg-[#f5ece6] p-2 text-xs text-stone-700">
+                      🩺 <b>Chequeo de recuperación</b> · {rec.plan.title}
+                      {p.recovery_culprit && " (" + CULPRIT_LABEL[p.recovery_culprit] + ")"}
+                      <span className="ml-1 text-stone-500">(día {rec.step.day})</span>
+                    </div>
+                  )
+                })()}
+{nudge && (
                   <div className="mt-1 rounded-lg bg-[#f5ece6] p-2 text-xs text-stone-700">
                     {hh!.health === "red" ? "🔴" : "🟡"} Lleva {days} días así. ¿Sigue igual?
                     <div className="mt-1 flex gap-2">
