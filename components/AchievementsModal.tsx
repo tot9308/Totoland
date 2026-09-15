@@ -36,37 +36,6 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
 
       const alive = plants.filter(p => p.status !== "dead")
       const species = new Set(alive.map(p => p.species).filter(Boolean)).size
-      const events = (evs ?? []).length
-      const photos = (phs ?? []).length
-
-      const byPlant: Record<string, number[]> = {}
-      for (const e of evs ?? []) {
-        if (e.type !== "watering") continue
-        ;(byPlant[e.plant_id] ??= []).push(new Date(e.occurred_at).getTime())
-      }
-      let onTimeStreak = 0
-      const allOnTime: { t: number; ok: boolean }[] = []
-      for (const p of plants) {
-        const freq = p.watering_frequency_days
-        const times = (byPlant[p.id] ?? []).sort((a, b) => a - b)
-        for (let i = 0; i < times.length; i++) {
-          let ok = true
-          if (i > 0 && freq) {
-            const gap = Math.round((times[i] - times[i - 1]) / 86400000)
-            ok = gap <= freq + 2
-          }
-          allOnTime.push({ t: times[i], ok })
-        }
-      }
-      allOnTime.sort((a, b) => b.t - a.t)
-      for (const x of allOnTime) {
-        if (x.ok) onTimeStreak++
-        else break
-      }
-
-      const waterings = allOnTime.length
-      const alive = plants.filter(p => p.status !== "dead")
-      const species = new Set(alive.map(p => p.species).filter(Boolean)).size
       const locations = new Set(alive.map(p => p.location).filter(Boolean)).size
       const events = (evs ?? []).length
       const photos = (phs ?? []).length
