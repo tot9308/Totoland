@@ -128,8 +128,7 @@ export async function detectNewAchievements(userId: string, householdId: string,
     rebrote: 1,
     active_100: 100, anniversary_365: 365,
   }
-    active_100: 100, anniversary_365: 365,
-  }
+
   // 4. Detectar logros desbloqueados
   const unlocked = ALL_ACHIEVEMENTS
     .filter(a => (cur[a.code] ?? 0) >= (target[a.code] ?? 1))
