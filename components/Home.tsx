@@ -305,6 +305,16 @@ export default function Home({ session }: { session: Session }) {
               <option value="location">ubicación</option>
             </select>
           </label>
+          <label className="flex items-center gap-1">
+            <input type="checkbox" checked={showPhotos} onChange={e => setShowPhotos(e.target.checked)} />
+            fotos
+          </label>
+          <select value={size} onChange={e => setSize(e.target.value as Size)}
+            className="rounded border border-stone-300 px-2 py-1">
+            <option value="grande">cuadrícula grande</option>
+            <option value="medio">cuadrícula media</option>
+            <option value="pequeno">cuadrícula pequeña</option>
+          </select>
           <button onClick={() => setShowPlantForm(true)}
             className="rounded bg-[#5a7d4a] px-3 py-1.5 text-white hover:bg-[#4a6a3a]">
             + Añadir planta
