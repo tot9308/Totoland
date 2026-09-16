@@ -19,7 +19,8 @@ export const ALL_ACHIEVEMENTS = [
   { code: "punctual_14", title: "Quincena puntual", description: "14 riegos seguidos a tiempo (sin retraso).", icon: "⏰" },
   { code: "punctual_30", title: "Mes puntual", description: "30 riegos seguidos a tiempo.", icon: "📅" },
   { code: "punctual_90", title: "Trimestre impecable", description: "90 riegos seguidos a tiempo. Leyenda.", icon: "🏅" },
-  { code: "resurrection", title: "Resurrección", description: "Has revivido una planta del cementerio.", icon: "✨" },
+  { code: "resurrection", title: "Sanador", description: "Has completado una recuperación (protocolo) con éxito.", icon: "🦋" },
+  { code: "rebrote", title: "Rebrote", description: "Has devuelto una planta del cementerio a la vida.", icon: "↩️" },
   { code: "collector_50", title: "Jardín botánico personal", description: "50 plantas vivas en casa.", icon: "🌳" },
   { code: "locations_10", title: "Ubicaciones variadas", description: "Plantas en 10 ubicaciones distintas.", icon: "🗺️" },
   { code: "waterer_1000", title: "Veterano de plantas", description: "1.000 riegos totales registrados.", icon: "💦💦" },
@@ -112,6 +113,7 @@ export async function detectNewAchievements(userId: string, householdId: string,
     punctual_180: onTimeStreak,
     resurrection: recoveryCount,
     resurrector_3: recoveryCount,
+    rebrote: plants.filter(p => p.status === "alive" && p.died_at).length,
     active_100: activeDays,
     anniversary_365: daysSinceFirst,
   }
@@ -123,6 +125,9 @@ export async function detectNewAchievements(userId: string, householdId: string,
     photographer: 50, photographer_100: 100,
     punctual_14: 14, punctual_30: 30, punctual_90: 90, punctual_180: 180,
     resurrection: 1, resurrector_3: 3,
+    rebrote: 1,
+    active_100: 100, anniversary_365: 365,
+  }
     active_100: 100, anniversary_365: 365,
   }
   // 4. Detectar logros desbloqueados

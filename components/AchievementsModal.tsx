@@ -97,6 +97,7 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
         punctual_180: onTimeStreak,
         resurrection: recoveryCount,
         resurrector_3: recoveryCount,
+        rebrote: plants.filter(p => p.status === "alive" && p.died_at).length,
         active_100: activeDays,
         anniversary_365: daysSinceFirst,
       }
@@ -108,6 +109,7 @@ export default function AchievementsModal({ householdId, plants, onClose }: {
         photographer: 50, photographer_100: 100,
         punctual_14: 14, punctual_30: 30, punctual_90: 90, punctual_180: 180,
         resurrection: 1, resurrector_3: 3,
+        rebrote: 1,
         active_100: 100, anniversary_365: 365,
       }
       const list = ALL_ACHIEVEMENTS.map(a => ({
