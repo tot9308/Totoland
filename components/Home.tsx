@@ -15,7 +15,6 @@ import TasksSection from "./TasksSection"
 import AchievementsModal from "./AchievementsModal"
 import HouseholdModal from "./HouseholdModal"
 import Logo from "./Logo"
-import { applyDrift } from "@/lib/drift"
 import { getActiveHouseholdId } from "@/lib/household"
 import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/UiProvider"
@@ -58,7 +57,6 @@ export default function Home({ session }: { session: Session }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [showAchievements, setShowAchievements] = useState(false)
   const [showHousehold, setShowHousehold] = useState(false)
-  const [driftDays, setDriftDays] = useState(0)
   const [showPw, setShowPw] = useState(false)
   const [pwCurrent, setPwCurrent] = useState("")
   const [pwNew, setPwNew] = useState("")
@@ -85,13 +83,12 @@ export default function Home({ session }: { session: Session }) {
 
     const { data: hh } = await supabase
       .from("households")
-      .select("summer_start_month, summer_end_month, reminder_time, drift_days")
+        .select("summer_start_month, summer_end_month, reminder_time")
       .eq("id", mem.household_id)
       .single()
     if (hh) {
       setSummerStart(hh.summer_start_month)
       setSummerEnd(hh.summer_end_month)
-      setDriftDays(hh.drift_days ?? 0)
     }
     const { data } = await supabase
       .from("plants")
@@ -172,7 +169,6 @@ export default function Home({ session }: { session: Session }) {
         e.push({ plant_id: p.id, user_id: userId, type: "misting", batch_id: batch })
       return e
     })
-    for (const p of list) await applyDrift(p, driftDays, summerStart, summerEnd)
     const { error } = await supabase.from("care_events").insert(events)
     if (error) return alert("Error al registrar: " + error.message)
     const now = new Date().toISOString()
@@ -384,8 +380,6 @@ export default function Home({ session }: { session: Session }) {
           summerEnd={summerEnd}
           onSeasonSaved={(s, e) => { setSummerStart(s); setSummerEnd(e); reload() }}
           userId={userId}
-          driftDays={driftDays}
-          onDriftDays={setDriftDays}
           onClose={() => setShowSettings(false)}
         />
       )}

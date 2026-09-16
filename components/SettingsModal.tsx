@@ -6,7 +6,7 @@ import ThemeToggle from "./ThemeToggle"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-export default function SettingsModal({ householdId, userId, summerStart, summerEnd, onSeasonSaved, driftDays, onDriftDays, onClose }: {
+export default function SettingsModal({ householdId, userId, summerStart, summerEnd, onSeasonSaved, onClose }: {
   householdId: string
   userId: string
   summerStart: number
@@ -15,7 +15,7 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   driftDays: number
   onDriftDays: (v: number) => void
   onClose: () => void
-}) {) {
+}) {
   const [s, setS] = useState(summerStart)
   const [e, setE] = useState(summerEnd)
   const [busy, setBusy] = useState(false)
@@ -68,12 +68,6 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
     const { error } = await supabase.from("profiles").update({ reminder_time: v }).eq("id", userId)
     if (error) return alert("Error: " + error.message)
     setMyTime(v)
-  }
-
-  async function saveDrift(v: number) {
-    const { error } = await supabase.from("households").update({ drift_days: v }).eq("id", householdId)
-    if (error) return alert("Error: " + error.message)
-    onDriftDays(v)
   }
 
   async function setMute(v: string) {
@@ -225,13 +219,11 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
           </p>
         )}
 
-        <h3 className="mb-2 text-sm font-semibold text-stone-700">🗓️ Días fijos y retrasos</h3>
-        <p className="mb-2 rounded bg-stone-100 p-2 text-xs text-stone-600">
-          Algunas plantas se riegan en <b>días fijos</b> de la semana (p. ej. martes y sábado) en vez
-          de "cada N días". Lo asigna el sincronizador o lo eliges tú al editar la planta. Si se te
-          olvida un día fijo, la app te marca el retraso pero el patrón <b>no se mueve</b>, para que
-          sigas regando en grupo. Si prefieres que tras un olvido grande el patrón se re-ancle al día
-          que riegas, elige un umbral.
+        <h3 className="mb-4 text-sm font-semibold text-stone-700">🗓️ Días fijos</h3>
+        <p className="mb-4 rounded bg-stone-100 p-2 text-xs text-stone-600">
+          Las plantas de <b>días fijos</b> (p. ej. martes y sábado) mantienen su patrón aunque se te
+          olvide un día: la app marca el retraso pero el patrón <b>no se mueve</b>, para que sigas
+          regando en grupo.
         </p>
         <label className="mb-4 block text-sm text-stone-800">
           Si riego con retraso una planta de días fijos…
