@@ -12,8 +12,6 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   summerStart: number
   summerEnd: number
   onSeasonSaved: (s: number, e: number) => void
-  driftDays: number
-  onDriftDays: (v: number) => void
   onClose: () => void
 }) {
   const [s, setS] = useState(summerStart)
@@ -221,22 +219,8 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
 
         <h3 className="mb-4 text-sm font-semibold text-stone-700">🗓️ Días fijos</h3>
         <p className="mb-4 rounded bg-stone-100 p-2 text-xs text-stone-600">
-          Las plantas de <b>días fijos</b> (p. ej. martes y sábado) mantienen su patrón aunque se te
-          olvide un día: la app marca el retraso pero el patrón <b>no se mueve</b>, para que sigas
-          regando en grupo.
+          Las plantas de <b>días fijos</b> (p. ej. martes y sábado) mantienen su patrón aunque se te olvide un día: la app marca el retraso pero el patrón <b>no se mueve</b>, para que sigas regando en grupo.
         </p>
-        <label className="mb-4 block text-sm text-stone-800">
-          Si riego con retraso una planta de días fijos…
-          <select value={driftDays} onChange={ev => saveDrift(Number(ev.target.value))}
-            className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
-            <option value={0}>Mantener siempre los días fijos (recomendado)</option>
-            {[1, 2, 3, 4, 5, 6, 7].map(n => (
-              <option key={n} value={n}>
-                Re-anclar los días si el retraso es de {n} día{n > 1 ? "s" : ""} o más
-              </option>
-            ))}
-          </select>
-        </label>
 
         <h3 className="mb-2 text-sm font-semibold text-stone-700">🎨 Aspecto</h3>
         <div className="mb-4"><ThemeToggle /></div>
