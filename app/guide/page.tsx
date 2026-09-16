@@ -58,11 +58,11 @@ export default function GuidePage() {
       </S>
 
       <S title="🔣 Símbolos y cómo piensa la app">
-        <p>💧 Regar · 💧+🌫 Regar y pulverizar · ＋ Más acciones (observaciones, plagas…) · ⭐ Foto principal · 🪦 Cementerio · 🔄 Sincronizar · 🔔 Avisos · ✏️ Editar · 🖨 PDF.</p>
+        <p>💧 Regar · 💧+🌫 Regar y pulverizar · ⋮ Más acciones (editar, evento, PDF, tareas, cementerio) · ⭐ Foto principal · 🔄 Sincronizar · ✏️ Editar · 🖨 PDF.</p>
         <p><b>"Le toca"</b> sale cuando han pasado más días que su frecuencia desde el último riego (o si nunca se regó).</p>
         <p><b>Verano/invierno:</b> cada planta tiene dos frecuencias; la app usa la de la temporada que marques en ⚙️ Ajustes.</p>
         <p><b>🔄 Sincronizar:</b> ajusta frecuencias a múltiplos de un ciclo común (p. ej. 7 días) dentro de tu tolerancia, para regar en tandas el mismo día. También permite varias veces por ronda (p. ej. una planta de 4 días se convierte en "2 riegos por semana").</p>
-        <p><b>🩺 Recuperación:</b> cuando riegas con retraso o marcas manualmente una planta, la app calcula la severidad según tipo y te guía con instrucciones específicas y chequeos progresivos.</p>
+        <p><b>🩺 Seguimiento:</b> eliges tipo de problema, culpable y gravedad, y la app genera un plan por días con pasos y chequeos. Los días de chequeo te avisa en la home y por push.</p>
         <p><b>🪦 Cementerio:</b> las plantas no se borran, se entierran con su historia. Puedes revivirlas o borrarlas del todo.</p>
       </S>
 
@@ -121,69 +121,6 @@ export default function GuidePage() {
           <p>Riego mínimo, lejos de radiadores y de corrientes; luz al máximo (acerca a las ventanas). No abonar.</p>
         </D>
       </S>
-
-      <S title="🩺 Recuperación tras sequía: protocolo científico">
-        <p>Cuando una planta pasa sed, ocurren cosas en cadena: cierra estomas (deja de hacer fotosíntesis), pierde turgencia (hojas mustias), sufre daño oxidativo, y si la sequía es larga, se forman burbujas en los vasos del xilema (cavitación) que son parcialmente irreversibles.</p>
-        <p><b>La clave:</b> rehidratar de golpe una planta muy seca puede ser peor que dejarla seca un poco más. El shock osmótico rompe células, y las raíces dañadas no pueden absorber el exceso → pudrición.</p>
-
-        <D title="⏱️ Escala de severidad según días sin agua">
-          <ul className="list-disc pl-5">
-            <li><b>🟢 Leve (1-3 días):</b> cierre estomático, hojas algo mustias. Recuperación en horas-días.</li>
-            <li><b>🟡 Moderada (4-14 días):</b> hojas amarillas/marrones en bordes, turgencia perdida. Recuperación en 1-3 semanas.</li>
-            <li><b>🟠 Severa (15-30 días):</b> muchas hojas muertas, cavitación parcial. Recuperación en 1-3 meses.</li>
-            <li><b>🔴 Crítica (&gt;30 días):</b> cavitación extensa, raíz parcialmente muerta. Incierta.</li>
-          </ul>
-        </D>
-
-        <D title="🌿 Diferencias por tipo de planta">
-          <p><b>Suculentas y cactus:</b> aguantan semanas-meses. Tras sequía: riego poco, sin remojo. Exceso = pudrición rápida.</p>
-          <p><b>Epífitas (orquídeas, tillandsias):</b> rehidratación por inmersión breve o pulverizado abundante. Escurre bien.</p>
-          <p><b>Tropicales de selva (calathea, helechos):</b> tolerancia muy baja. Rehidratación gradual + humedad alta + sombra 2-3 días.</p>
-          <p><b>Todoterreno (monstera, poto):</b> tolerancia media. Rehidratación en dos tandas, sin sol directo 1-2 días.</p>
-          <p><b>Mediterráneas (romero, lavanda):</b> aguantan bien. Riego moderado, buen drenaje.</p>
-        </D>
-
-        <D title="📋 Protocolo paso a paso">
-          <ol className="list-decimal pl-5">
-            <li><b>Evaluación:</b> toca el sustrato. Si está muy seco y compacto, se ha vuelto hidrofóbico (repele el agua).</li>
-            <li><b>Rehidratación gradual:</b>
-              <ul className="list-disc pl-5">
-                <li>Sustrato hidrofóbico: remojo de la maceta en 2-3 cm de agua durante <b>15-20 min máximo</b>.</li>
-                <li>Sustrato normal: riega con <b>media dosis</b>, espera 15-20 min, y luego otra media dosis.</li>
-              </ul>
-            </li>
-            <li><b>Ambiente de recuperación (24-72 h):</b>
-              <ul className="list-disc pl-5">
-                <li>Aleja del sol directo 2-3 días (aunque sea planta de sol).</li>
-                <li>Si es tropical: aumenta humedad (bandeja con guijarros, agrupa con otras plantas).</li>
-                <li>Temperatura estable, sin corrientes.</li>
-              </ul>
-            </li>
-            <li><b>Poda de daños (día 3-7):</b> quita solo hojas totalmente secas y crujientes. Las amarillas pueden recuperarse.</li>
-            <li><b>Zona prohibida (2-4 semanas):</b>
-              <ul className="list-disc pl-5">
-                <li>🚫 No abones (raíces dañadas no absorben, se queman).</li>
-                <li>🚫 No trasplantes (más estrés).</li>
-                <li>🚫 No podes drástico.</li>
-                <li>🚫 No apliques fitosanitarios.</li>
-              </ul>
-            </li>
-          </ol>
-        </D>
-
-        <D title="🔍 Chequeos progresivos">
-          <ul className="list-disc pl-5">
-            <li><b>Día 3:</b> ¿se han erguido las hojas? ¿hay nuevas hojas mustias?</li>
-            <li><b>Día 7:</b> ¿están brotando yemas nuevas?</li>
-            <li><b>Día 21:</b> ¿el crecimiento ha vuelto a la normalidad?</li>
-            <li><b>Día 45</b> (solo estrés severo/crítico): ¿ha sobrevivido? ¿quedan secuelas?</li>
-          </ul>
-        </D>
-
-        <p><b>La app te guía:</b> al regar con retraso o marcar manualmente "en recuperación", calcula la severidad según tipo de planta y te programa los chequeos. En cada uno te pregunta qué observas y te da el paso siguiente.</p>
-      </S>
-
-      <GuideProtocols />
     </main>
   )
 }

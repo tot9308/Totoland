@@ -369,9 +369,7 @@ export function buildPlan(kind: ProtocolKind, culprit: Culprit | null, severity:
   return base
 }
 
-export function stepForDay(plan: Plan, day: number): Step[] {
-  return plan.steps.filter(s => s.day === day)
-}
+
 export function currentRecoveryStep(plant: {
   recovery_kind: string | null
   recovery_culprit: string | null

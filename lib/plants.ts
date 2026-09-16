@@ -26,7 +26,6 @@ export type Plant = {
   plant_type: string | null
   recovery_kind: string | null
   recovery_culprit: string | null
-  recovery_worse_count: number | null
   death_cause: string | null
 }
 

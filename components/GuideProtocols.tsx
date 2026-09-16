@@ -6,10 +6,61 @@ function P({ name, children }: { name: string; children: React.ReactNode }) {
     </details>
   )
 }
-
+function D({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <details className="rounded-lg bg-white/70 p-3">
+      <summary className="cursor-pointer font-medium text-stone-800">{title}</summary>
+      <div className="mt-2 space-y-2 text-sm text-stone-700">{children}</div>
+    </details>
+  )
+}
 export default function GuideProtocols() {
   return (
     <section className="mb-8 space-y-6">
+      <div>
+        <h2 className="mb-2 font-serif text-xl font-semibold text-stone-800">💧 Sequía: la ciencia del rescate</h2>
+        <p className="mb-2 text-sm text-stone-700">
+          Por qué rehidratar de golpe puede ser peor, y cómo se recupera una planta según su tipo y su severidad.
+        </p>
+        <div className="space-y-2">
+          <D title="🧠 Qué le pasa a la planta cuando pasa sed">
+            <p>Cierra estomas (deja de hacer fotosíntesis), pierde turgencia (hojas mustias), sufre daño oxidativo y, si la sequía es larga, se forman burbujas en los vasos del xilema (cavitación) parcialmente irreversibles.</p>
+            <p><b>La clave:</b> rehidratar de golpe una planta muy seca puede ser peor que dejarla seca un poco más: el shock osmótico rompe células y las raíces dañadas no absorben el exceso → pudrición.</p>
+          </D>
+          <D title="⏱️ Escala de severidad según días sin agua">
+            <ul className="list-disc space-y-1 pl-5">
+              <li><b>🟢 Leve (1-3 días):</b> cierre estomático, hojas algo mustias. Recuperación en horas-días.</li>
+              <li><b>🟡 Moderada (4-14 días):</b> hojas amarillas/marrones en bordes, turgencia perdida. Recuperación en 1-3 semanas.</li>
+              <li><b>🟠 Severa (15-30 días):</b> muchas hojas muertas, cavitación parcial. Recuperación en 1-3 meses.</li>
+              <li><b>🔴 Crítica (&gt;30 días):</b> cavitación extensa, raíz parcialmente muerta. Incierta.</li>
+            </ul>
+          </D>
+          <D title="🌿 Diferencias por tipo de planta">
+            <p><b>Suculentas y cactus:</b> aguantan semanas-meses. Tras sequía: riego poco, sin remojo. Exceso = pudrición rápida.</p>
+            <p><b>Epífitas (orquídeas, tillandsias):</b> rehidratación por inmersión breve o pulverizado abundante. Escurre bien.</p>
+            <p><b>Tropicales de selva (calathea, helechos):</b> tolerancia muy baja. Rehidratación gradual + humedad alta + sombra 2-3 días.</p>
+            <p><b>Todoterreno (monstera, poto):</b> tolerancia media. Rehidratación en dos tandas, sin sol directo 1-2 días.</p>
+            <p><b>Mediterráneas (romero, lavanda):</b> aguantan bien. Riego moderado, buen drenaje.</p>
+          </D>
+          <D title="📋 Protocolo de rescate paso a paso">
+            <ol className="list-decimal space-y-1 pl-5">
+              <li><b>Evaluación:</b> toca el sustrato; si está muy seco y compacto se ha vuelto hidrofóbico (repele el agua).</li>
+              <li><b>Rehidratación gradual:</b> sustrato hidrofóbico → remojo en 2-3 cm de agua 15-20 min máximo; sustrato normal → media dosis, espera 15-20 min, otra media dosis.</li>
+              <li><b>Ambiente de recuperación (24-72 h):</b> sin sol directo 2-3 días; si es tropical, sube humedad; temperatura estable sin corrientes.</li>
+              <li><b>Poda de daños (día 3-7):</b> solo hojas totalmente secas y crujientes; las amarillas pueden recuperarse.</li>
+              <li><b>Zona prohibida (2-4 semanas):</b> no abones, no trasplantes, no podes drástico, no fitosanitarios.</li>
+            </ol>
+          </D>
+          <D title="🔍 Chequeos progresivos">
+            <ul className="list-disc space-y-1 pl-5">
+              <li><b>Día 3:</b> ¿se han erguido las hojas? ¿hay nuevas hojas mustias?</li>
+              <li><b>Día 7:</b> ¿están brotando yemas nuevas?</li>
+              <li><b>Día 21:</b> ¿el crecimiento ha vuelto a la normalidad?</li>
+              <li><b>Día 45</b> (solo estrés severo/crítico): ¿ha sobrevivido? ¿quedan secuelas?</li>
+            </ul>
+          </D>
+        </div>
+      </div>
       <div>
         <h2 className="mb-2 font-serif text-xl font-semibold text-stone-800">🩺 Seguimiento de problemas (protocolos)</h2>
         <div className="space-y-2 text-sm text-stone-700">

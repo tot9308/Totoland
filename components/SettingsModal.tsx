@@ -6,22 +6,16 @@ import ThemeToggle from "./ThemeToggle"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
-export default function SettingsModal({ householdId, userId, summerStart, summerEnd, onSeasonSaved, sortBy, onSortBy, showPhotos, onShowPhotos, size, onSize, driftDays, onDriftDays, onClose }: {
+export default function SettingsModal({ householdId, userId, summerStart, summerEnd, onSeasonSaved, driftDays, onDriftDays, onClose }: {
   householdId: string
   userId: string
   summerStart: number
   summerEnd: number
   onSeasonSaved: (s: number, e: number) => void
-  sortBy: "due" | "name" | "location"
-  onSortBy: (v: "due" | "name" | "location") => void
-  showPhotos: boolean
-  onShowPhotos: (v: boolean) => void
-  size: "grande" | "medio" | "pequeno"
-  onSize: (v: "grande" | "medio" | "pequeno") => void
   driftDays: number
   onDriftDays: (v: number) => void
   onClose: () => void
-}) {
+}) {) {
   const [s, setS] = useState(summerStart)
   const [e, setE] = useState(summerEnd)
   const [busy, setBusy] = useState(false)

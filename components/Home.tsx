@@ -383,12 +383,6 @@ export default function Home({ session }: { session: Session }) {
           summerStart={summerStart}
           summerEnd={summerEnd}
           onSeasonSaved={(s, e) => { setSummerStart(s); setSummerEnd(e); reload() }}
-          sortBy={sortBy}
-          onSortBy={setSortBy}
-          showPhotos={showPhotos}
-          onShowPhotos={setShowPhotos}
-          size={size}
-          onSize={setSize}
           userId={userId}
           driftDays={driftDays}
           onDriftDays={setDriftDays}
