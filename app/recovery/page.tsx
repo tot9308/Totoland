@@ -1,134 +1,120 @@
 ﻿"use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { type Plant } from "@/lib/plants"
-import { CHECKS, SEV_LABEL, TYPE_LABEL, resolveRecovery, type PType } from "@/lib/recovery"
+import { getActiveHouseholdId } from "@/lib/household"
+import { currentRecoveryStep, CULPRIT_LABEL } from "@/lib/protocols"
+import type { Plant } from "@/lib/plants"
 
-type Ev = { id: string; plant_id: string; occurred_at: string; notes: string | null }
+const DOT: Record<string, string> = { green: "🟢", yellow: "🟡", red: "🔴" }
 
-export default function RecoveryPage() {
+type Rec = { title: string; culprit: string | null; stepTitle: string; day: number; due: boolean }
+type Row = { plant: Plant; health: string | null; days: number; rec: Rec | null }
+
+export default function InfirmaryPage() {
   const router = useRouter()
-  const [plants, setPlants] = useState<Plant[]>([])
-  const [history, setHistory] = useState<(Ev & { plantName: string })[]>([])
+  const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
-  const [userId, setUserId] = useState("")
 
-  const reload = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.replace("/"); return }
-    setUserId(user.id)
-    const { data: mem } = await supabase.from("household_members")
-      .select("household_id").eq("user_id", user.id).limit(1).single()
-    if (!mem) { router.replace("/"); return }
-    const { data: pl } = await supabase.from("plants").select("*")
-      .eq("household_id", mem.household_id).neq("status", "dead").order("name")
-    const list = (pl as Plant[]) ?? []
-    setPlants(list)
-    const ids = list.map(p => p.id)
-    if (ids.length) {
-      const { data: evs } = await supabase.from("care_events")
-        .select("id, plant_id, occurred_at, notes")
-        .in("plant_id", ids)
-        .eq("type", "observation")
-        .order("occurred_at", { ascending: false })
-        .limit(200)
-      const rec = (evs ?? []).filter(e => (e.notes ?? "").includes("Chequeo de recuperación"))
-      setHistory(rec.slice(0, 10).map(e => ({
-        ...e,
-        plantName: list.find(p => p.id === e.plant_id)?.name ?? "?",
-      })))
-    } else {
-      setHistory([])
-    }
-    setLoading(false)
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.replace("/"); return }
+      const hhId = await getActiveHouseholdId(user.id)
+      if (!hhId) { router.replace("/"); return }
+      const { data: pl } = await supabase.from("plants")
+        .select("*").eq("household_id", hhId).neq("status", "dead").order("name")
+      const plants = (pl as Plant[]) ?? []
+      const ids = plants.map(p => p.id)
+
+      const healthMap: Record<string, { health: string; occurred_at: string }> = {}
+      if (ids.length) {
+        const { data: hs } = await supabase.from("care_events")
+          .select("plant_id, health, occurred_at").in("plant_id", ids)
+          .not("health", "is", null).order("occurred_at", { ascending: false })
+        for (const h of hs ?? [])
+          if (!healthMap[h.plant_id]) healthMap[h.plant_id] = { health: h.health!, occurred_at: h.occurred_at }
+      }
+
+      const out: Row[] = []
+      for (const p of plants) {
+        const hh = healthMap[p.id] ?? null
+        const r = currentRecoveryStep(p)
+        const rec: Rec | null = r ? {
+          title: r.plan.title,
+          culprit: p.recovery_culprit ? CULPRIT_LABEL[p.recovery_culprit] : null,
+          stepTitle: r.step.title,
+          day: r.day,
+          due: r.isDueToday,
+        } : null
+        const days = hh ? Math.floor((Date.now() - new Date(hh.occurred_at).getTime()) / 86400000) : 0
+        const sick = hh && hh.health !== "green"
+        if (sick || rec) out.push({ plant: p, health: hh?.health ?? null, days, rec })
+      }
+      out.sort((a, b) => {
+        const rank = (r: Row) => (r.health === "red" ? 0 : r.health === "yellow" ? 1 : 2)
+        return rank(a) - rank(b)
+      })
+      setRows(out)
+      setLoading(false)
+    })()
   }, [router])
 
-  useEffect(() => { reload() }, [reload])
-
-  const inRecovery = plants.filter(p => p.recovery_check_at)
-  const now = Date.now()
-
   return (
-    <main className="min-h-screen bg-stone-50 p-4 md:p-8">
+    <main className="min-h-screen bg-stone-50 p-4 md:p-8 dark:bg-stone-900">
       <header className="mb-6 flex items-center gap-3">
-        <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
-        <h1 className="text-2xl font-bold text-stone-800">🩺 Seguimiento de recuperación</h1>
+        <Link href="/" className="text-sm text-stone-600 hover:underline dark:text-stone-300">← Volver</Link>
+        <h1 className="font-serif text-2xl font-bold text-stone-800 dark:text-stone-100">🩺 Enfermería</h1>
       </header>
 
-      <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 text-sm text-stone-700 shadow-sm">
-        <h2 className="mb-2 text-lg font-semibold text-stone-800">Cómo funciona</h2>
-        <p className="mb-1">
-          Cuando una planta sufre sequía (o la marcas manualmente), Totoland calcula la{" "}
-          <b>severidad</b> según su tipo y los días sin agua, y programa chequeos en los días
-          3, 7, 21 y 45 según el caso. En cada chequeo evalúas síntomas y decides:
-          recuperada, riego de apoyo o seguir vigilando.
-        </p>
-        <p>
-          Durante 3 semanas desde el inicio hay <b>zona prohibida</b>: no abonar, no trasplantar,
-          no poda drástica. La teoría completa y las instrucciones de rehidratación por tipo
-          están en la <Link href="/guide" className="underline">📚 Guía</Link>.
-        </p>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="mb-2 text-lg font-semibold text-stone-800">
-          En recuperación ahora ({inRecovery.length})
-        </h2>
-        {loading ? <p className="text-stone-700">Cargando…</p> : inRecovery.length === 0 ? (
-          <p className="rounded-xl bg-[#faf7f0] p-4 text-sm text-stone-600 shadow-sm">
-            Ninguna planta en recuperación ahora mismo 🎉
+      {loading ? (
+        <p className="text-sm text-stone-600 dark:text-stone-300">Cargando…</p>
+      ) : rows.length === 0 ? (
+        <div className="rounded-xl bg-[#dfe9e4] p-6 text-center text-stone-700 dark:bg-stone-800 dark:text-stone-200">
+          🎉 Enfermería vacía: ninguna planta con problemas ahora mismo.
+        </div>
+      ) : (
+        <>
+          <p className="mb-4 text-sm text-stone-600 dark:text-stone-300">
+            {rows.length} planta{rows.length !== 1 ? "s" : ""} en cuidados.
           </p>
-        ) : (
-          <ul className="space-y-2">
-            {inRecovery.map(p => {
-              const sev = p.recovery_severity ?? "moderate"
-              const steps = CHECKS[sev] ?? [3]
-              const step = p.recovery_step ?? 1
-              const t = new Date(p.recovery_check_at!).getTime()
-              const due = t <= now
-              return (
-                <li key={p.id} className="rounded-xl bg-[#f5ece6] p-3 shadow-sm">
-                  <p className="mb-2 text-sm text-stone-800">
-                    <Link href={`/plant/${p.id}`} className="font-semibold hover:underline">{p.name}</Link>
-                    {" · "}{SEV_LABEL[sev]}
-                    {p.plant_type && <span> · {TYPE_LABEL[p.plant_type as PType]}</span>}
-                    {" · "}chequeo {step}/{steps.length} · {due ? "toca hoy" : `en ${Math.ceil((t - now) / 86400000)} d`}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <button onClick={() => resolveRecovery(p, "ok", userId).then(reload)}
-                      className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white hover:bg-[#4a6a3a]">
-                      ✅ Recuperada
-                    </button>
-                    <button onClick={() => resolveRecovery(p, "topup", userId).then(reload)}
-                      className="rounded bg-[#5a8ca6] px-2 py-1 text-xs text-white hover:bg-[#497691]">
-                      💧 Apoyo
-                    </button>
-                    <button onClick={() => resolveRecovery(p, "still", userId).then(reload)}
-                      className="rounded bg-[#b5603d] px-2 py-1 text-xs text-white hover:bg-[#9c4f31]">
-                      🩺 Maltrecha
-                    </button>
+          <ul className="space-y-3">
+            {rows.map(r => (
+              <li key={r.plant.id}>
+                <Link href={`/plant/${r.plant.id}`}
+                  className="block rounded-xl bg-[#faf7f0] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-stone-800">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-serif text-lg font-semibold text-stone-800 dark:text-stone-100">
+                      {r.health && DOT[r.health]} {r.plant.name}
+                    </p>
+                    {r.health && r.health !== "green" && (
+                      <span className="text-xs text-stone-500 dark:text-stone-300">
+                        desde hace {r.days} día{r.days !== 1 ? "s" : ""}
+                      </span>
+                    )}
                   </div>
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
-
-      {history.length > 0 && (
-        <section>
-          <h2 className="mb-2 text-lg font-semibold text-stone-800">Historial reciente</h2>
-          <ul className="space-y-1">
-            {history.map(e => (
-              <li key={e.id} className="rounded-lg bg-[#faf7f0] p-2 text-xs text-stone-600 shadow-sm">
-                {new Date(e.occurred_at).toLocaleDateString("es-ES")} · <b>{e.plantName}</b> · {e.notes}
+                  {r.rec && (
+                    <p className="mt-1 text-sm text-stone-700 dark:text-stone-200">
+                      🩺 <b>{r.rec.title}</b>{r.rec.culprit && ` · ${r.rec.culprit}`} · día {r.rec.day}
+                    </p>
+                  )}
+                  {r.rec && (
+                    <p className="mt-0.5 text-xs text-stone-600 dark:text-stone-300">
+                      {r.rec.due ? "🔎 Toca chequeo hoy: " : "Próximo paso: "}{r.rec.stepTitle}
+                    </p>
+                  )}
+                  {!r.rec && r.health && r.health !== "green" && r.days >= 4 && (
+                    <p className="mt-1 text-xs text-stone-600 dark:text-stone-300">
+                      💬 Lleva {r.days} días así: en la home te preguntará si sigue igual.
+                    </p>
+                  )}
+                </Link>
               </li>
             ))}
           </ul>
-        </section>
+        </>
       )}
     </main>
   )
