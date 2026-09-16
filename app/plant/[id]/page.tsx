@@ -18,6 +18,7 @@ import { careTemplate } from "@/lib/careTemplate"
 import { applyDrift } from "@/lib/drift"
 import { useConfirm } from "@/components/UiProvider"
 import HealthChart from "@/components/HealthChart"
+import { DEATH_CAUSES } from "@/lib/causes"
 
 type EventRow = {
   id: string
@@ -81,6 +82,9 @@ export default function PlantDetail() {
   const [showAll, setShowAll] = useState(false)
   const [showMore, setShowMore] = useState(false)
   const { confirm: confirmAsync } = useConfirm()
+  const [showBury, setShowBury] = useState(false)
+  const [buryCause, setBuryCause] = useState("unknown")
+  const [buryNote, setBuryNote] = useState("")
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -253,20 +257,23 @@ export default function PlantDetail() {
     w.document.close()
   }
 
-  async function toCemetery() {
+  function toCemetery() { setShowBury(true) }
+
+  async function confirmBury() {
     if (!plant) return
-    if (!await confirmAsync(`¿Mandar "${plant.name}" al cementerio? Dejaría de salir en la home.`)) return
-    const epitaph = window.prompt("Epitafio o causa (opcional):") ?? ""
+    const causeLabel = DEATH_CAUSES[buryCause] ?? "No lo sé"
+    const notes = `Causa: ${causeLabel}.${buryNote.trim() ? " " + buryNote.trim() : ""}`
     const { error } = await supabase.from("plants").update({
       status: "dead",
       died_at: new Date().toISOString().slice(0, 10),
-      notes: epitaph || plant.notes,
+      death_cause: buryCause,
+      notes,
     }).eq("id", plant.id)
     if (error) return alert("Error: " + error.message)
+    setShowBury(false)
     alert("Descanse en paz 🪦")
     window.location.href = "/"
   }
-
   const batchCount: Record<string, number> = {}
   const firstEventOfBatch: Record<string, string> = {}
   for (const ev of events) {
@@ -559,6 +566,39 @@ export default function PlantDetail() {
         <EventForm plant={plant} userId={userId ?? ""} onClose={() => setShowEvent(false)} onSaved={reload} />
       )}
       <HealthChart plantId={plant.id} forceSnapshot />
+
+      {showBury && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-xs rounded-xl bg-[#faf7f0] p-5 shadow-xl dark:bg-stone-800">
+            <h2 className="mb-3 text-lg font-semibold text-stone-800 dark:text-stone-100">
+              🪦 Enterrar a {plant?.name}
+            </h2>
+            <label className="mb-2 block text-sm text-stone-700 dark:text-stone-200">
+              Causa de la muerte
+              <select value={buryCause} onChange={e => setBuryCause(e.target.value)}
+                className="mt-1 w-full rounded border border-stone-300 px-3 py-2 dark:border-stone-600 dark:bg-stone-700">
+                {Object.entries(DEATH_CAUSES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+            <label className="mb-3 block text-sm text-stone-700 dark:text-stone-200">
+              Epitafio o nota (opcional)
+              <textarea value={buryNote} onChange={e => setBuryNote(e.target.value)} rows={2}
+                placeholder="Vivió rápido, murió feliz…"
+                className="mt-1 w-full rounded border border-stone-300 px-3 py-2 dark:border-stone-600 dark:bg-stone-700" />
+            </label>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setShowBury(false)}
+                className="rounded px-3 py-2 text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-700">
+                Cancelar
+              </button>
+              <button onClick={confirmBury}
+                className="rounded bg-[#8a3a1a] px-4 py-2 text-white hover:bg-[#6f2e14]">
+                Enterrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

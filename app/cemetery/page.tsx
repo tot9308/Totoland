@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { type Plant } from "@/lib/plants"
 import { useConfirm } from "@/components/UiProvider"
+import CemeteryStats from "@/components/CemeteryStats"
 
 type Memorial = Plant & { thumbUrl: string; eventsCount: number; waterings: number }
 
@@ -74,7 +75,7 @@ export default function CemeteryPage() {
         <h1 className="text-2xl font-bold text-stone-800">🪦 Cementerio</h1>
         <span className="text-sm text-stone-600">({items.length})</span>
       </header>
-
+<CemeteryStats />
       {loading ? (
         <p className="text-stone-700">Cargando…</p>
       ) : items.length === 0 ? (
@@ -107,7 +108,7 @@ export default function CemeteryPage() {
               <div className="mt-3 flex gap-2">
                 <button onClick={() => revive(p.id)}
                   className="flex-1 rounded bg-[#5a7d4a] px-2 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
-                  🌱 Revivir
+                  ↩️ Rebrota / estaba viva
                 </button>
                 <button onClick={() => del(p.id)}
                   className="rounded bg-[#b5603d] px-2 py-1.5 text-sm text-white hover:bg-[#9c4f31]">
