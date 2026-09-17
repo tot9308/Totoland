@@ -191,6 +191,11 @@ export default function Home({ session }: { session: Session }) {
     if (error) return alert("Error: " + error.message)
     if (type === "watering")
       await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", p.id)
+    if (type === "watering") {
+      await supabase.from("plants")
+        .update({ last_watered_at: new Date().toISOString() })
+        .eq("id", p.id)
+    }
     await reload()
     showToast(`${EVENT_LABELS[type]} · ${p.name}`, batch, [p.id])
   }
