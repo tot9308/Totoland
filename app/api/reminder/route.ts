@@ -167,10 +167,6 @@ export async function POST(req: Request) {
       .select("*").eq("household_id", h.id).neq("status", "dead")
     const today = now.toISOString().slice(0, 10)
     for (const p of pls ?? []) {
-      await admin.from("health_snapshots").upsert(
-        { plant_id: p.id, day: today, level: lvl },
-        { onConflict: "plant_id,day" }
-      )
       const { data: lastObs } = await admin.from("care_events")
         .select("health, occurred_at").eq("plant_id", p.id).not("health", "is", null)
         .order("occurred_at", { ascending: false }).limit(1)
@@ -183,6 +179,10 @@ export async function POST(req: Request) {
       } else {
         lvl = objective
       }
+      await admin.from("health_snapshots").upsert(
+        { plant_id: p.id, day: today, level: lvl },
+        { onConflict: "plant_id,day" }
+      )
     }
   }
 
