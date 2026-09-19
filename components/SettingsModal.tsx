@@ -105,6 +105,12 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
         new Promise<ServiceWorkerRegistration | null>(res => setTimeout(() => res(null), 5000)),
       ])
       if (!reg) return alert("El service worker no está listo. Recarga la página y vuelve a probar.")
+      // Si hay una suscripción previa con otra clave VAPID, hay que quitarla antes
+      const oldSub = await reg.pushManager.getSubscription()
+      if (oldSub) {
+        await supabase.from("push_subscriptions").delete().eq("endpoint", oldSub.endpoint)
+        await oldSub.unsubscribe()
+      }
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(key),
