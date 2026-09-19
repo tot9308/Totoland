@@ -198,8 +198,9 @@ async function sendPush(admin: any, userId: string | null, payload: any, muted: 
     try {
       await webpush.sendNotification(s.subscription, JSON.stringify(payload))
       ok = true
-    } catch {
-      await admin.from("push_subscriptions").delete().eq("subscription", s.subscription)
+    } catch (err: any) {
+      // NO borrar la suscripción: logueamos el error y la mantenemos para depurar
+      console.error("PUSH FAIL for user", userId, ":", err?.message || err, "statusCode:", err?.statusCode)
     }
   }
   return ok
