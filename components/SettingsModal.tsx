@@ -90,25 +90,37 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   }
 
   async function enablePush() {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window))
-      return alert("Este navegador no soporta avisos")
-    const perm = await Notification.requestPermission()
-    if (perm !== "granted") return alert("Permiso de avisos denegado")
-    const reg = await navigator.serviceWorker.ready
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
-    })
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await supabase.from("push_subscriptions").delete().eq("user_id", user.id)
-    const { error } = await supabase.from("push_subscriptions").insert({
-      user_id: user.id, endpoint: sub.endpoint, subscription: sub.toJSON(),
-    })
-    if (error) return alert("Error al guardar el aviso: " + error.message)
-    alert("Avisos activados en este dispositivo ✅")
+    try {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window))
+        return alert("Este navegador no soporta avisos")
+      const key = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      if (!key) return alert("Falta NEXT_PUBLIC_VAPID_PUBLIC_KEY en Vercel. Añádela y rehaz el deploy.")
+      const perm = await Notification.requestPermission()
+      if (perm !== "granted") return alert("Permiso de avisos denegado: " + perm)
+      if (!navigator.serviceWorker.controller) {
+        await navigator.serviceWorker.register("/sw.js")
+      }
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<ServiceWorkerRegistration | null>(res => setTimeout(() => res(null), 5000)),
+      ])
+      if (!reg) return alert("El service worker no está listo. Recarga la página y vuelve a probar.")
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(key),
+      })
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return alert("No hay sesión iniciada.")
+      await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+      const { error } = await supabase.from("push_subscriptions").insert({
+        user_id: user.id, endpoint: sub.endpoint, subscription: sub.toJSON(),
+      })
+      if (error) return alert("Error al guardar el aviso: " + error.message)
+      alert("Avisos activados en este dispositivo ✅")
+    } catch (e) {
+      alert("No se pudo activar: " + e)
+    }
   }
-
   async function testPush() {
     if (!("serviceWorker" in navigator)) return alert("Este navegador no soporta service workers.")
     if (!("PushManager" in window)) return alert("Este navegador no soporta push.")
@@ -130,7 +142,8 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
         body: "Aviso de prueba ✅ (" + subInfo + ")",
         icon: "/icon-192.png", badge: "/badge.png",
       })
-      alert("Notificación local mostrada. " + subInfo + ".")
+      alert("Notificación local mostrada. " + subInfo + ". Clave VAPID: " +
+        (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ? "presente" : "FALTA") + ".")
     } catch (e) {
       alert("Error al mostrar la notificación: " + e)
     }
