@@ -18,6 +18,7 @@ import { careTemplate } from "@/lib/careTemplate"
 import { useConfirm } from "@/components/UiProvider"
 import HealthChart from "@/components/HealthChart"
 import { DEATH_CAUSES } from "@/lib/causes"
+import CropModal from "@/components/CropModal"
 
 type EventRow = {
   id: string
@@ -83,6 +84,7 @@ export default function PlantDetail() {
   const [showBury, setShowBury] = useState(false)
   const [buryCause, setBuryCause] = useState("unknown")
   const [buryNote, setBuryNote] = useState("")
+  const [showCrop, setShowCrop] = useState(false)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -333,13 +335,35 @@ export default function PlantDetail() {
                   className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100">🖨 Ficha PDF</button>
                 <Link href="/tasks" onClick={() => setShowMore(false)}
                   className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100">📋 Tareas y recordatorios</Link>
+                {plant.main_photo_path && (
+                  <button onClick={() => { setShowMore(false); setShowCrop(true) }}
+                    className="block w-full px-4 py-2 text-left text-sm text-stone-700 hover:bg-stone-100">
+                    ✂️ Recortar foto
+                  </button>
+                )}
                 <button onClick={() => { setShowMore(false); toCemetery() }}
                   className="block w-full px-4 py-2 text-left text-sm text-[#8a3a1a] hover:bg-red-50">🪦 Mandar al cementerio</button>
               </div>
             )}
           </div>
         </div>
-
+        {(() => {
+          const main = photos.find(ph => ph.storage_path === plant.main_photo_path)
+          if (!main) return null
+          const cb = plant.crop_box
+          return (
+            <img
+              src={main.fullUrl}
+              alt={plant.name}
+              className="mt-3 aspect-[3/4] max-h-96 w-full rounded-xl object-cover shadow-sm"
+              style={cb ? {
+                objectPosition: `${cb.x}% ${cb.y}%`,
+                transform: `scale(${100 / cb.width})`,
+                transformOrigin: `${cb.x}% ${cb.y}%`,
+              } : undefined}
+            />
+          )
+        })()}
         <div className="mt-3 flex flex-wrap gap-2">
           <button onClick={() => quickWater(false)}
             className="rounded-lg bg-[#5a7d4a] px-5 py-2.5 text-white hover:bg-[#4a6a3a]">
@@ -592,6 +616,19 @@ export default function PlantDetail() {
           </div>
         </div>
       )}
+
+      {showCrop && (() => {
+        const main = photos.find(ph => ph.storage_path === plant.main_photo_path)
+        if (!main) return null
+        return (
+          <CropModal
+            plant={plant}
+            photoUrl={main.fullUrl}
+            onClose={() => setShowCrop(false)}
+            onSaved={() => { setShowCrop(false); reload() }}
+          />
+        )
+      })()}
     </main>
   )
 }

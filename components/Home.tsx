@@ -15,7 +15,6 @@ import TasksSection from "./TasksSection"
 import AchievementsModal from "./AchievementsModal"
 import HouseholdModal from "./HouseholdModal"
 import Logo from "./Logo"
-import CropModal from "./CropModal"
 import { getActiveHouseholdId } from "@/lib/household"
 import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/UiProvider"
@@ -61,7 +60,6 @@ export default function Home({ session }: { session: Session }) {
   const [showPw, setShowPw] = useState(false)
   const [pwCurrent, setPwCurrent] = useState("")
   const [pwNew, setPwNew] = useState("")
-  const [showCrop, setShowCrop] = useState<Plant | null>(null)
   const [healthByPlant, setHealthByPlant] = useState<Record<string, { health: string; occurred_at: string }>>({})
 
   function setSortBy(v: "due" | "name" | "location") {
@@ -339,10 +337,6 @@ export default function Home({ session }: { session: Session }) {
                   onWater={() => quickEvent(p, "watering")}
                   onWaterMist={() => water([p], true)}
                 />
-                <button onClick={() => setShowCrop(p)}
-                  className="mt-1 text-xs text-stone-600 underline hover:text-stone-800">
-                  ✂️ Recortar foto
-                </button>
                   {(() => {
                   const rec = currentRecoveryStep(p)
                   if (!rec || !rec.isDueToday) return null
@@ -467,14 +461,6 @@ export default function Home({ session }: { session: Session }) {
           <span>{toast.message}</span>
           <button onClick={undo} className="font-semibold underline">Deshacer</button>
         </div>
-      )}
-      {showCrop && photoUrls[showCrop.id] && (
-        <CropModal
-          plant={showCrop}
-          photoUrl={photoUrls[showCrop.id]}
-          onClose={() => setShowCrop(null)}
-          onSaved={() => { setShowCrop(null); reload() }}
-        />
       )}
     </main>
   )
