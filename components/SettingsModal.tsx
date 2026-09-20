@@ -66,6 +66,20 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
     const { error } = await supabase.from("profiles").update({ reminder_time: v }).eq("id", userId)
     if (error) return alert("Error: " + error.message)
     setMyTime(v)
+    // 1) Cancelar avisos pospuestos pendientes con la hora antigua
+    await supabase.from("scheduled_notifications")
+      .delete().eq("user_id", userId).eq("status", "pending")
+    // 2) Cerrar en este dispositivo las notificaciones ya mostradas (diarias y pospuestas)
+    try {
+      if ("serviceWorker" in navigator) {
+        const reg = await navigator.serviceWorker.ready
+        const shown = await reg.getNotifications()
+        for (const n of shown) {
+          const t = n.tag || ""
+          if (t.startsWith("daily-") || t.startsWith("sched-")) n.close()
+        }
+      }
+    } catch {}
   }
 
   async function setMute(v: string) {

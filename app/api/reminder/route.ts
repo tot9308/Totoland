@@ -22,8 +22,6 @@ export async function POST(req: Request) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
-  const { data: probe, error: probeErr } = await admin.from("profiles").select("id").limit(1)
-  const probeInfo = { rows: (probe ?? []).length, err: probeErr ? probeErr.message : null }
 
   const now = new Date()
   // Hora local de Bilbao: el cron y Vercel viven en UTC
@@ -201,7 +199,7 @@ export async function POST(req: Request) {
     }
   }
 
-  return NextResponse.json(debug ? { sent: sentCount, probe: probeInfo, debug: dbg } : { sent: sentCount })
+  return NextResponse.json({ sent: sentCount })
 }
 
 async function sendPush(admin: any, userId: string | null, payload: any, muted: Set<string>): Promise<boolean> {
@@ -214,7 +212,6 @@ async function sendPush(admin: any, userId: string | null, payload: any, muted: 
       await webpush.sendNotification(s.subscription, JSON.stringify(payload))
       ok = true
     } catch (err: any) {
-      // NO borrar la suscripción: logueamos el error y la mantenemos para depurar
       console.error("PUSH FAIL for user", userId, ":", err?.message || err, "statusCode:", err?.statusCode)
     }
   }
