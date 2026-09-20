@@ -18,6 +18,7 @@ import Logo from "./Logo"
 import { getActiveHouseholdId } from "@/lib/household"
 import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/UiProvider"
+import { detectNewAchievements } from "@/lib/achievements"
 import { currentRecoveryStep, CULPRIT_LABEL, answerCheck } from "@/lib/protocols"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
@@ -60,6 +61,7 @@ export default function Home({ session }: { session: Session }) {
   const [showPw, setShowPw] = useState(false)
   const [pwCurrent, setPwCurrent] = useState("")
   const [pwNew, setPwNew] = useState("")
+  const [achMsg, setAchMsg] = useState<string | null>(null)
   const [healthByPlant, setHealthByPlant] = useState<Record<string, { health: string; occurred_at: string }>>({})
 
   function setSortBy(v: "due" | "name" | "location") {
@@ -143,6 +145,17 @@ export default function Home({ session }: { session: Session }) {
       return da - db
     })
 
+  async function celebrateAchievements() {
+    if (!householdId) return
+    const { data } = await supabase.from("plants")
+      .select("*").eq("household_id", householdId).neq("status", "dead")
+    const newAch = await detectNewAchievements(userId, householdId, (data as Plant[]) ?? [])
+    if (newAch.length === 0) return
+    const txt = newAch.map(a => `${a.icon} ${a.title}`).join(" · ")
+    setAchMsg(`🏆 ¡Logro desbloqueado! ${txt}`)
+    setTimeout(() => setAchMsg(null), 6000)
+  }
+
   function showToast(message: string, batch: string, plantIds: string[]) {
     if (toastTimer.current) clearTimeout(toastTimer.current)
     setToast({ message, batch, plantIds })
@@ -181,6 +194,7 @@ export default function Home({ session }: { session: Session }) {
     }
     await reload()
     showToast(`Riego registrado (${list.length})`, batch, list.map(p => p.id))
+    celebrateAchievements()
   }
 
   async function quickEvent(p: Plant, type: string) {
@@ -202,6 +216,7 @@ export default function Home({ session }: { session: Session }) {
     })
     if (error) return alert(error.message)
     await reload()
+    celebrateAchievements()
   }
   async function refreshLastWatered(plantIds: string[]) {
     const { data } = await supabase
@@ -405,7 +420,8 @@ export default function Home({ session }: { session: Session }) {
       )}
 
       {showPlantForm && householdId && (
-        <PlantForm householdId={householdId} onClose={() => setShowPlantForm(false)} onSaved={reload} />
+        <PlantForm householdId={householdId} onClose={() => setShowPlantForm(false)}
+          onSaved={async () => { await reload(); celebrateAchievements() }} />
       )}
       {showSettings && householdId && (
         <SettingsModal
@@ -455,7 +471,11 @@ export default function Home({ session }: { session: Session }) {
           </div>
         </div>
       )}
-
+      {achMsg && (
+        <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#c9a45a] px-5 py-3 text-white shadow-lg">
+          {achMsg}
+        </div>
+      )}
       {toast && (
         <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-4 rounded-full bg-emerald-900 px-5 py-3 text-white shadow-lg">
           <span>{toast.message}</span>
