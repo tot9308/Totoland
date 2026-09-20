@@ -27,6 +27,7 @@ export type Plant = {
   recovery_kind: string | null
   recovery_culprit: string | null
   death_cause: string | null
+  crop_box: { x: number; y: number; width: number; height: number } | null
 }
 
 export const EVENT_LABELS: Record<string, string> = {

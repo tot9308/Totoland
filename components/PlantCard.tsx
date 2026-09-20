@@ -31,7 +31,12 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
         <img
           src={photoUrl}
           alt={plant.name}
-          className="mb-3 aspect-[3/4] w-full rounded-xl object-cover"
+          className="mb-3 aspect-[4/5] w-full rounded-xl object-cover"
+  style={{
+    objectPosition: `${plant.crop_box?.x ?? 50}% ${plant.crop_box?.y ?? 50}%`,
+    transform: plant.crop_box ? `scale(${100 / plant.crop_box.width})` : undefined,
+    transformOrigin: `${plant.crop_box?.x ?? 50}% ${plant.crop_box?.y ?? 50}%`,
+  }}
         />
       )}
 
