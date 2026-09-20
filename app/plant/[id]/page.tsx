@@ -352,16 +352,18 @@ export default function PlantDetail() {
           if (!main) return null
           const cb = plant.crop_box
           return (
-            <img
-              src={main.fullUrl}
-              alt={plant.name}
-              className="mt-3 aspect-[3/4] max-h-96 w-full rounded-xl object-cover shadow-sm"
-              style={cb ? {
-                objectPosition: `${cb.x}% ${cb.y}%`,
-                transform: `scale(${100 / cb.width})`,
-                transformOrigin: `${cb.x}% ${cb.y}%`,
-              } : undefined}
-            />
+            <div className="mx-auto mt-3 w-full max-w-xs">
+              <img
+                src={main.fullUrl}
+                alt={plant.name}
+                className="aspect-[3/4] w-full rounded-xl object-cover shadow-sm"
+                style={cb ? {
+                  objectPosition: `${cb.x}% ${cb.y}%`,
+                  transform: `scale(${100 / cb.width})`,
+                  transformOrigin: `${cb.x}% ${cb.y}%`,
+                } : undefined}
+              />
+            </div>
           )
         })()}
         <div className="mt-3 flex flex-wrap gap-2">
