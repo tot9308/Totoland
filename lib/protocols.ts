@@ -77,6 +77,8 @@ export type Step = {
   title: string
   description: string
   type: "action" | "check"
+  question?: string
+  options?: { label: string; result: "ok" | "topup" | "still" }[]
 }
 
 export type Plan = {
@@ -103,9 +105,26 @@ export function buildPlan(kind: ProtocolKind, culprit: Culprit | null, severity:
       { day: 0, title: "Riego de rescate", description: "Sumerge la maceta 20-30 min en agua templada. Deja escurrir 10-15 min.", type: "action" },
       { day: 1, title: "Pulverizar hojas", description: "Si no es suculenta, nebuliza agua sobre las hojas 1-2 veces al día.", type: "action" },
       { day: 2, title: "Sombra parcial", description: "Aleja del sol directo hasta que se recupere.", type: "action" },
-      { day: 3, title: "Chequeo 1", description: "¿Las hojas recuperan turgencia? ¿Alguna caída nueva?", type: "check" },
-      { day: 7, title: "Chequeo 2", description: "¿Brotes nuevos o mejoría visible?", type: "check" },
-      { day: 14, title: "Cierre", description: "Sin síntomas nuevos durante una semana → recuperada.", type: "check" },
+      { day: 3, title: "Chequeo 1", description: "¿Las hojas recuperan turgencia? ¿Alguna caída nueva?", type: "check",
+        question: "¿Las hojas han recuperado turgencia?",
+        options: [
+          { label: "Sí, están firmes", result: "ok" },
+          { label: "Algo mejor, no del todo", result: "topup" },
+          { label: "Sigue mustia o peor", result: "still" },
+        ] },
+      { day: 7, title: "Chequeo 2", description: "¿Brotes nuevos o mejoría visible?", type: "check",
+        question: "¿Hay brotes nuevos o mejora visible?",
+        options: [
+          { label: "Sí, crece bien", result: "ok" },
+          { label: "Está estable, sin brotes", result: "topup" },
+          { label: "Empeora", result: "still" },
+        ] },
+      { day: 14, title: "Cierre", description: "Sin síntomas nuevos durante una semana → recuperada.", type: "check",
+        question: "¿Una semana sin síntomas nuevos?",
+        options: [
+          { label: "Sí, recuperada ✅", result: "ok" },
+          { label: "No, hay algo", result: "still" },
+        ] },
     ]
   } else if (kind === "overwater") {
     base.title = "Recuperación por exceso de riego"
@@ -141,11 +160,27 @@ export function buildPlan(kind: ProtocolKind, culprit: Culprit | null, severity:
         { day: 0, title: "Inspección nocturna", description: "Revisa envés y tallos al anochecer con linterna. Retira a mano (guantes). Mira también huevos: puntitos en el envés.", type: "action" },
         { day: 0, title: "Poda de hojas dañadas", description: "Quita hojas con más del 50% dañado (máx. 1/3 del follaje).", type: "action" },
         { day: 1, title: "Tratamiento", description: "Aplica Bacillus thuringiensis (Bt kurstaki) al atardecer o jabón potásico según etiqueta. Bt solo actúa por ingestión.", type: "action" },
-        { day: 3, title: "Chequeo 1", description: "¿Mordiscos nuevos o cacas negras? Sí → repetir tratamiento.", type: "check" },
+        { day: 3, title: "Chequeo 1", description: "¿Mordiscos nuevos o cacas negras?", type: "check",
+          question: "¿Ves mordiscos nuevos o cacas negras?",
+          options: [
+            { label: "No, nada nuevo", result: "ok" },
+            { label: "Sí, pero pocos", result: "topup" },
+            { label: "Sí, muchos", result: "still" },
+          ] },
         { day: 4, title: "Reaplicar Bt si hay mordiscos nuevos", description: "Repite el tratamiento completo (las orugas nuevas necesitan ingerirlo).", type: "action" },
-        { day: 7, title: "Chequeo 2", description: "¿4 días sin daño nuevo?", type: "check" },
+        { day: 7, title: "Chequeo 2", description: "¿4 días sin daño nuevo?", type: "check",
+          question: "¿Han pasado 4 días sin daño nuevo?",
+          options: [
+            { label: "Sí, todo limpio", result: "ok" },
+            { label: "No, reapareció", result: "still" },
+          ] },
         { day: 10, title: "Reaplicar Bt si persiste", description: "Última reaplicación si aún hay señal.", type: "action" },
-        { day: 14, title: "Cierre", description: "Sin daño durante una semana → recuperada.", type: "check" },
+        { day: 14, title: "Cierre", description: "Sin daño durante una semana → recuperada.", type: "check",
+          question: "¿Una semana sin daños?",
+          options: [
+            { label: "Sí, recuperada ✅", result: "ok" },
+            { label: "No, sigue", result: "still" },
+          ] },
       ]
     } else if (culprit === "aphid") {
       base.summary = "Pulgón: puntitos verdes/negros en brotes tiernos. Suele ir acompañado de hormigas."
@@ -165,11 +200,28 @@ export function buildPlan(kind: ProtocolKind, culprit: Culprit | null, severity:
         { day: 0, title: "Controlar hormigas si las hay", description: "Sin quitar las hormigas, la cochinilla vuelve. Cebo o barrera.", type: "action" },
         { day: 1, title: "Retirar focos con algodón y alcohol", description: "Limpia cada bolita visible en axilas y envés.", type: "action" },
         { day: 1, title: "Jabón potásico (al atardecer)", description: "Aplica toda la planta, insistiendo en axilas.", type: "action" },
-        { day: 4, title: "Chequeo 1", description: "¿Aparecen nuevas bolitas algodonosas?", type: "check" },
+        { day: 4, title: "Chequeo 1", description: "¿Aparecen nuevas bolitas algodonosas?", type: "check",
+          question: "¿Aparecen nuevas bolitas algodonosas?",
+          options: [
+            { label: "No, limpio", result: "ok" },
+            { label: "Alguna suelta", result: "topup" },
+            { label: "Sí, bastantes", result: "still" },
+          ] },
         { day: 7, title: "Reaplicar jabón potásico", description: "Reaplicación programada (los crawlers siguen eclosionando).", type: "action" },
-        { day: 14, title: "Chequeo 2", description: "¿Sin cochinilla visible?", type: "check" },
+        { day: 14, title: "Chequeo 2", description: "¿Sin cochinilla visible?", type: "check",
+          question: "¿La planta está libre de cochinilla?",
+          options: [
+            { label: "Sí, limpia", result: "ok" },
+            { label: "Alguna suelta", result: "topup" },
+            { label: "Sigue habiendo", result: "still" },
+          ] },
         { day: 21, title: "Reaplicar si reaparece", description: "Última reaplicación si hay señal.", type: "action" },
-        { day: 28, title: "Cierre", description: "Cuatro semanas sin nuevas bolitas → recuperada.", type: "check" },
+        { day: 28, title: "Cierre", description: "Cuatro semanas sin nuevas bolitas → recuperada.", type: "check",
+          question: "¿Cuatro semanas sin nuevas bolitas?",
+          options: [
+            { label: "Sí, recuperada ✅", result: "ok" },
+            { label: "No, volvió", result: "still" },
+          ] },
       ]
     } else if (culprit === "mealybug_root") {
       base.summary = "Cochinilla de raíz: algodón blanco en las raíces. Se ve al sacar la planta o por parón de crecimiento."
@@ -203,12 +255,29 @@ export function buildPlan(kind: ProtocolKind, culprit: Culprit | null, severity:
         { day: 0, title: "Humedad del entorno", description: "Bandeja con guijarros y agua, o grupo con otras plantas. NO pulverizar la planta directamente a diario.", type: "action" },
         { day: 0, title: "Aislar la planta", description: "Se pasa con facilidad a vecinas.", type: "action" },
         { day: 1, title: "Jabón potásico (al atardecer)", description: "Aplica en el envés. Prueba antes si la planta es sensible.", type: "action" },
-        { day: 3, title: "Chequeo corto", description: "¿Telarañas nuevas? (Los huevos eclosionan en ~3 días.)", type: "check" },
+        { day: 3, title: "Chequeo corto", description: "¿Telarañas nuevas? (Los huevos eclosionan en ~3 días.)", type: "check",
+          question: "¿Hay telarañas nuevas en el envés?",
+          options: [
+            { label: "No, limpio", result: "ok" },
+            { label: "Alguna pequeña", result: "topup" },
+            { label: "Sí, varias", result: "still" },
+          ] },
         { day: 4, title: "Reaplicar jabón", description: "Obligatorio para romper el ciclo, no opcional.", type: "action" },
         { day: 7, title: "Reaplicar jabón", description: "Tercera aplicación.", type: "action" },
         { day: 10, title: "Reaplicar jabón", description: "Cuarta aplicación. Ya cubres todo el ciclo de huevos.", type: "action" },
-        { day: 14, title: "Chequeo final", description: "¿Hojas nuevas limpias 7 días?", type: "check" },
-        { day: 21, title: "Cierre", description: "Sin síntomas 10 días → recuperada.", type: "check" },
+        { day: 14, title: "Chequeo final", description: "¿Hojas nuevas limpias 7 días?", type: "check",
+          question: "¿Las hojas nuevas están limpias?",
+          options: [
+            { label: "Sí, sin síntomas", result: "ok" },
+            { label: "Alguna señal", result: "topup" },
+            { label: "No, sigue igual", result: "still" },
+          ] },
+        { day: 21, title: "Cierre", description: "Sin síntomas 10 días → recuperada.", type: "check",
+          question: "¿10 días sin síntomas?",
+          options: [
+            { label: "Sí, recuperada ✅", result: "ok" },
+            { label: "No, persiste", result: "still" },
+          ] },
       ]
     } else if (culprit === "whitefly") {
       base.summary = "Mosca blanca: al agitar la planta salen volando pequeños insectos blancos."

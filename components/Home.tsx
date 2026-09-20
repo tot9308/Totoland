@@ -337,9 +337,10 @@ export default function Home({ session }: { session: Session }) {
                   onWater={() => quickEvent(p, "watering")}
                   onWaterMist={() => water([p], true)}
                 />
-                {(() => {
+                  {(() => {
                   const rec = currentRecoveryStep(p)
                   if (!rec || !rec.isDueToday) return null
+                  const hasQ = !!rec.step.question && !!rec.step.options?.length
                   return (
                     <div className="mt-1 rounded-lg border-2 border-[#b5603d] bg-[#f5ece6] p-2 text-xs text-stone-700">
                       <p className="font-semibold">
@@ -347,13 +348,36 @@ export default function Home({ session }: { session: Session }) {
                         {p.recovery_culprit && <span className="font-normal text-stone-500"> ({CULPRIT_LABEL[p.recovery_culprit]})</span>}
                       </p>
                       <p className="mb-1.5">{rec.step.description}</p>
+                      {hasQ && (
+                        <p className="mb-2 rounded bg-white/60 p-2 text-sm font-medium text-stone-800">
+                          ❓ {rec.step.question}
+                        </p>
+                      )}
                       <div className="flex flex-wrap gap-1">
-                        <button onClick={async () => { await answerCheck(p, userId, "ok"); reload() }}
-                          className="rounded bg-[#5a7d4a] px-2 py-1 text-white hover:bg-[#4a6a3a]">✅ Recuperada</button>
-                        <button onClick={async () => { await answerCheck(p, userId, "topup"); reload() }}
-                          className="rounded bg-[#5a8ca6] px-2 py-1 text-white hover:bg-[#497691]">💧 Sigo el tratamiento</button>
-                        <button onClick={async () => { await answerCheck(p, userId, "still"); reload() }}
-                          className="rounded bg-[#b5603d] px-2 py-1 text-white hover:bg-[#9c4f31]">😟 Sin cambios</button>
+                        {hasQ ? (
+                          rec.step.options!.map((opt, i) => {
+                            const color = opt.result === "ok"
+                              ? "bg-[#5a7d4a] hover:bg-[#4a6a3a]"
+                              : opt.result === "topup"
+                              ? "bg-[#5a8ca6] hover:bg-[#497691]"
+                              : "bg-[#b5603d] hover:bg-[#9c4f31]"
+                            return (
+                              <button key={i} onClick={async () => { await answerCheck(p, userId, opt.result); reload() }}
+                                className={"rounded px-2 py-1 text-white " + color}>
+                                {opt.label}
+                              </button>
+                            )
+                          })
+                        ) : (
+                          <>
+                            <button onClick={async () => { await answerCheck(p, userId, "ok"); reload() }}
+                              className="rounded bg-[#5a7d4a] px-2 py-1 text-white hover:bg-[#4a6a3a]">✅ Recuperada</button>
+                            <button onClick={async () => { await answerCheck(p, userId, "topup"); reload() }}
+                              className="rounded bg-[#5a8ca6] px-2 py-1 text-white hover:bg-[#497691]">💧 Sigo el tratamiento</button>
+                            <button onClick={async () => { await answerCheck(p, userId, "still"); reload() }}
+                              className="rounded bg-[#b5603d] px-2 py-1 text-white hover:bg-[#9c4f31]">😟 Sin cambios</button>
+                          </>
+                        )}
                       </div>
                     </div>
                   )
