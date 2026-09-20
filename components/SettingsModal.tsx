@@ -251,11 +251,6 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
           </p>
         )}
 
-        <h3 className="mb-4 text-sm font-semibold text-stone-700">🗓️ Días fijos</h3>
-        <p className="mb-4 rounded bg-stone-100 p-2 text-xs text-stone-600">
-          Las plantas de <b>días fijos</b> (p. ej. martes y sábado) mantienen su patrón aunque se te olvide un día: la app marca el retraso pero el patrón <b>no se mueve</b>, para que sigas regando en grupo.
-        </p>
-
         <h3 className="mb-2 text-sm font-semibold text-stone-700">🎨 Aspecto</h3>
         <div className="mb-4"><ThemeToggle /></div>
 

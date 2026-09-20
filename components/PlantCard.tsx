@@ -31,7 +31,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
         <img
           src={photoUrl}
           alt={plant.name}
-          className="mb-3 aspect-[4/3] w-full rounded-xl object-cover"
+          className="mb-3 aspect-[3/4] w-full rounded-xl object-cover"
         />
       )}
 

@@ -18,7 +18,7 @@ import Logo from "./Logo"
 import { getActiveHouseholdId } from "@/lib/household"
 import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/UiProvider"
-import { currentRecoveryStep, CULPRIT_LABEL } from "@/lib/protocols"
+import { currentRecoveryStep, CULPRIT_LABEL, answerCheck } from "@/lib/protocols"
 
 type Toast = { message: string; batch: string; plantIds: string[] }
 type Size = "grande" | "medio" | "pequeno"
@@ -191,11 +191,6 @@ export default function Home({ session }: { session: Session }) {
     if (error) return alert("Error: " + error.message)
     if (type === "watering")
       await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", p.id)
-    if (type === "watering") {
-      await supabase.from("plants")
-        .update({ last_watered_at: new Date().toISOString() })
-        .eq("id", p.id)
-    }
     await reload()
     showToast(`${EVENT_LABELS[type]} · ${p.name}`, batch, [p.id])
   }
@@ -342,14 +337,24 @@ export default function Home({ session }: { session: Session }) {
                   onWater={() => quickEvent(p, "watering")}
                   onWaterMist={() => water([p], true)}
                 />
-                                {(() => {
+                {(() => {
                   const rec = currentRecoveryStep(p)
                   if (!rec || !rec.isDueToday) return null
                   return (
-                    <div className="mt-1 rounded-lg bg-[#f5ece6] p-2 text-xs text-stone-700">
-                      🩺 <b>Chequeo de recuperación</b> · {rec.plan.title}
-                      {p.recovery_culprit && " (" + CULPRIT_LABEL[p.recovery_culprit] + ")"}
-                      <span className="ml-1 text-stone-500">(día {rec.step.day})</span>
+                    <div className="mt-1 rounded-lg border-2 border-[#b5603d] bg-[#f5ece6] p-2 text-xs text-stone-700">
+                      <p className="font-semibold">
+                        🩺 Hoy toca · {rec.step.title}
+                        {p.recovery_culprit && <span className="font-normal text-stone-500"> ({CULPRIT_LABEL[p.recovery_culprit]})</span>}
+                      </p>
+                      <p className="mb-1.5">{rec.step.description}</p>
+                      <div className="flex flex-wrap gap-1">
+                        <button onClick={async () => { await answerCheck(p, userId, "ok"); reload() }}
+                          className="rounded bg-[#5a7d4a] px-2 py-1 text-white hover:bg-[#4a6a3a]">✅ Recuperada</button>
+                        <button onClick={async () => { await answerCheck(p, userId, "topup"); reload() }}
+                          className="rounded bg-[#5a8ca6] px-2 py-1 text-white hover:bg-[#497691]">💧 Sigo el tratamiento</button>
+                        <button onClick={async () => { await answerCheck(p, userId, "still"); reload() }}
+                          className="rounded bg-[#b5603d] px-2 py-1 text-white hover:bg-[#9c4f31]">😟 Sin cambios</button>
+                      </div>
                     </div>
                   )
                 })()}
