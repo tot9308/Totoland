@@ -1,3 +1,6 @@
+import { supabase } from "./supabase"
+import type { Plant } from "./plants"
+
 export type ProtocolKind =
   | "drought" | "overwater" | "pest" | "disease"
   | "physical" | "light" | "thermal" | "fertilizer_burn"
@@ -391,4 +394,40 @@ export function currentRecoveryStep(plant: {
   // ¿Hay algún chequeo que toque hoy?
   const isDueToday = plan.steps.some(s => s.type === "check" && s.day === day)
   return { plan, step: upcoming, day, isDueToday }
+}
+export async function answerCheck(plant: Plant, userId: string, result: "ok" | "topup" | "still") {
+  const kind = plant.recovery_kind as ProtocolKind
+  if (result === "ok") {
+    await supabase.from("care_events").insert({
+      plant_id: plant.id, user_id: userId, type: "observation", health: "green",
+      notes: `Seguimiento (${KIND_LABEL[kind]}): recuperada ✅`,
+    })
+    await supabase.from("plants").update({
+      recovery_kind: null, recovery_culprit: null, recovery_severity: null,
+      recovery_started_at: null, recovery_step: 0, recovery_check_at: null,
+    }).eq("id", plant.id)
+    return
+  }
+  await supabase.from("care_events").insert({
+    plant_id: plant.id, user_id: userId, type: "observation",
+    health: result === "topup" ? "yellow" : "red",
+    notes: result === "topup"
+      ? `Seguimiento (${KIND_LABEL[kind]}): seguimos tratamiento 💧`
+      : `Seguimiento (${KIND_LABEL[kind]}): sin cambios o empeora 🩺`,
+  })
+  let nextSeverity = plant.recovery_severity as Severity
+  if (result === "still") {
+    const { data: stills } = await supabase.from("care_events")
+      .select("id").eq("plant_id", plant.id).eq("type", "observation")
+      .ilike("notes", "%sin cambios%")
+      .gte("occurred_at", plant.recovery_started_at!)
+    const n = stills?.length ?? 0
+    if ((plant.recovery_severity === "mild") && n >= 2) nextSeverity = "moderate"
+    else if ((plant.recovery_severity === "moderate") && n >= 3) nextSeverity = "severe"
+  }
+  await supabase.from("plants").update({
+    recovery_severity: nextSeverity,
+    recovery_check_at: new Date(Date.now() + 3 * 86400000).toISOString(),
+    recovery_step: (plant.recovery_step ?? 1) + 1,
+  }).eq("id", plant.id)
 }
