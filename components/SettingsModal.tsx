@@ -114,24 +114,25 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
       if (!navigator.serviceWorker.controller) {
         await navigator.serviceWorker.register("/sw.js")
       }
-      const reg = await Promise.race([
-        navigator.serviceWorker.ready,
-        new Promise<ServiceWorkerRegistration | null>(res => setTimeout(() => res(null), 5000)),
-      ])
-      if (!reg) return alert("El service worker no está listo. Recarga la página y vuelve a probar.")
-      // Si hay una suscripción previa con otra clave VAPID, hay que quitarla antes
-      const oldSub = await reg.pushManager.getSubscription()
-      if (oldSub) {
-        await supabase.from("push_subscriptions").delete().eq("endpoint", oldSub.endpoint)
-        await oldSub.unsubscribe()
+      const reg = await navigator.serviceWorker.ready
+
+      // Si ya hay suscripción, reutilizarla (no intentar crear otra)
+      let sub = await reg.pushManager.getSubscription()
+      if (!sub) {
+        // Solo suscribirse si no hay ninguna
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(key),
+        })
       }
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(key),
-      })
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return alert("No hay sesión iniciada.")
+
+      // Borrar suscripciones viejas de este dispositivo (por si había duplicadas)
       await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+
+      // Insertar la actual
       const { error } = await supabase.from("push_subscriptions").insert({
         user_id: user.id, endpoint: sub.endpoint, subscription: sub.toJSON(),
       })
