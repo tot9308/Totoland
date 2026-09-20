@@ -111,16 +111,6 @@ export async function POST(req: Request) {
     const { data: plants } = await admin.from("plants")
       .select("*").eq("household_id", h.id).neq("status", "dead")
 
-    const { detectNewAchievements } = await import("@/lib/achievements")
-    const newAch = await detectNewAchievements(pr.id, h.id, (plants as any) ?? [])
-    for (const ach of newAch) {
-      const ok = await sendPush(admin, pr.id, {
-        title: `🏆 ¡Logro desbloqueado!`,
-        body: `${ach.icon} ${ach.title}: ${ach.description}`,
-        tag: `achievement-${ach.code}`,
-      }, muted)
-      if (ok) sentCount++
-    }
 
     const month = now.getMonth() + 1
     const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
