@@ -56,11 +56,13 @@ export default function CemeteryPage() {
   useEffect(() => { reload() }, [reload])
 
   async function revive(id: string) {
-    const { error } = await supabase.from("plants").update({ status: "alive" }).eq("id", id)
+    const { error } = await supabase.from("plants")
+      .update({ status: "alive", died_at: null })
+      .eq("id", id)
     if (error) return alert("Error: " + error.message)
     await reload()
+    window.location.href = "/"
   }
-
   async function del(id: string) {
     if (!await confirmAsync("¿Borrar DEFINITIVAMENTE esta planta con su historial y sus fotos? No se puede deshacer.")) return
     const { error } = await supabase.from("plants").delete().eq("id", id)

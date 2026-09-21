@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     }
   }
 
-  // 3) Recordatorio diario POR USUARIO a su hora.
+  // 3) Recordatorio diario POR USUARIO a su hora (todas las casas del usuario).
   const { data: profs } = await admin.from("profiles")
     .select("id, reminder_time").not("reminder_time", "is", null)
   for (const pr of profs ?? []) {
@@ -88,61 +88,66 @@ export async function POST(req: Request) {
     if (rh !== currentHour || Math.floor(rm / 5) * 5 !== currentMM) continue
     if (muted.has(pr.id)) continue
 
-    const { data: mem } = await admin.from("household_members")
-      .select("household_id").eq("user_id", pr.id).limit(1).single()
-    if (!mem) continue
-    const { data: h } = await admin.from("households")
-      .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end")
-      .eq("id", mem.household_id).single()
-    if (!h) continue
-    const todayStr = todayMadrid
-    if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
-    const { data: plants } = await admin.from("plants")
-      .select("*").eq("household_id", h.id).neq("status", "dead")
+    // Obtener TODAS las casas del usuario
+    const { data: memberships } = await admin.from("household_members")
+      .select("household_id").eq("user_id", pr.id)
+    
+    for (const mem of memberships ?? []) {
+      const { data: h } = await admin.from("households")
+        .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end")
+        .eq("id", mem.household_id).single()
+      if (!h) continue
+      const todayStr = todayMadrid
+      if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
+      
+      const { data: plants } = await admin.from("plants")
+        .select("*").eq("household_id", h.id).neq("status", "dead")
 
-    const month = now.getMonth() + 1
-    const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
-    const due: string[] = []
-    const checks: string[] = []
-    for (const p of plants ?? []) {
-      if (p.watering_days) {
-        const du = daysUntilDue(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 5)
-        if (du !== null && du <= 0) due.push(p.name)
-      } else {
-        const freq = inSummer
-          ? p.watering_frequency_days
-          : p.watering_frequency_winter_days ?? p.watering_frequency_days
-        if (freq) {
-          const last = p.last_watered_at ? new Date(p.last_watered_at).getTime() : 0
-          const dExact = (now.getTime() - last) / 86400000
-          if (!p.last_watered_at || freq - dExact < 1) due.push(p.name)
+      const month = now.getMonth() + 1
+      const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
+      const due: string[] = []
+      const checks: string[] = []
+      for (const p of plants ?? []) {
+        if (p.watering_days) {
+          const du = daysUntilDue(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 5)
+          if (du !== null && du <= 0) due.push(p.name)
+        } else {
+          const freq = inSummer
+            ? p.watering_frequency_days
+            : p.watering_frequency_winter_days ?? p.watering_frequency_days
+          if (freq) {
+            const last = p.last_watered_at ? new Date(p.last_watered_at).getTime() : 0
+            const dExact = (now.getTime() - last) / 86400000
+            if (!p.last_watered_at || freq - dExact < 1) due.push(p.name)
+          }
+        }
+        const rec = currentRecoveryStep(p as any)
+        if (rec && rec.isDueToday) {
+          const culpritTxt = p.recovery_culprit ? " · " + CULPRIT_LABEL[p.recovery_culprit] : ""
+          checks.push(`${p.name}${culpritTxt} (día ${rec.step.day})`)
         }
       }
-      const rec = currentRecoveryStep(p as any)
-      if (rec && rec.isDueToday) {
-        const culpritTxt = p.recovery_culprit ? " · " + CULPRIT_LABEL[p.recovery_culprit] : ""
-        checks.push(`${p.name}${culpritTxt} (día ${rec.step.day})`)
-      }
+      if (due.length === 0 && checks.length === 0) continue
+
+      let title = `🌿 ${h.name}: toca regar`
+      if (due.length === 0 && checks.length > 0) title = `🩺 ${h.name}: chequeo de recuperación`
+      const dueTxt = due.slice(0, 5).join(", ") + (due.length > 5 ? "…" : "")
+      const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
+      const body = [dueTxt, checksTxt].filter(Boolean).join(" · ")
+
+      const ok = await sendPush(admin, pr.id, {
+        title, body, tag: `daily-${pr.id}-${h.id}`,
+        actions: [
+          { action: "postpone-2", title: "Posponer 2h" },
+          { action: "postpone-4", title: "Posponer 4h" },
+          { action: "postpone-6", title: "Posponer 6h" },
+        ],
+        data: { household_id: h.id },
+      }, muted)
+      if (ok) sentCount++
     }
-    if (due.length === 0 && checks.length === 0) continue
-
-    let title = "🌿 Totoland: toca regar"
-    if (due.length === 0 && checks.length > 0) title = "🩺 Totoland: chequeo de recuperación"
-    const dueTxt = due.slice(0, 5).join(", ") + (due.length > 5 ? "…" : "")
-    const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
-    const body = [dueTxt, checksTxt].filter(Boolean).join(" · ")
-
-    const ok = await sendPush(admin, pr.id, {
-      title, body, tag: `daily-${pr.id}`,
-      actions: [
-        { action: "postpone-2", title: "Posponer 2h" },
-        { action: "postpone-4", title: "Posponer 4h" },
-        { action: "postpone-6", title: "Posponer 6h" },
-      ],
-      data: { household_id: h.id },
-    }, muted)
-    if (ok) sentCount++
-  }  // 4) Snapshot diario de salud para las gráficas
+  }
+// 4) Snapshot diario de salud para las gráficas
   const { data: allHouses } = await admin
     .from("households").select("id, summer_start_month, summer_end_month")
   for (const h of allHouses ?? []) {
