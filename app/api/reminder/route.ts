@@ -80,37 +80,25 @@ export async function POST(req: Request) {
   }
 
   // 3) Recordatorio diario POR USUARIO a su hora.
-  const debug = req.headers.get("x-debug") === "1"
-  const dbg: any[] = []
   const { data: profs } = await admin.from("profiles")
     .select("id, reminder_time").not("reminder_time", "is", null)
   for (const pr of profs ?? []) {
     const hhmm = pr.reminder_time ?? "08:00"
     const [rh, rm] = hhmm.split(":").map(Number)
-    const match = (rh === currentHour && Math.floor(rm / 5) * 5 === currentMM)
-    const { data: subsRows } = await admin.from("push_subscriptions")
-      .select("id").eq("user_id", pr.id)
-    const info: any = {
-      reminder: hhmm, rh, rm, currentHour, currentMM, match,
-      muted: muted.has(pr.id), subs: (subsRows ?? []).length,
-    }
-    if (!match && !debug) continue
-    if (muted.has(pr.id)) { dbg.push(info); continue }
+    if (rh !== currentHour || Math.floor(rm / 5) * 5 !== currentMM) continue
+    if (muted.has(pr.id)) continue
 
     const { data: mem } = await admin.from("household_members")
       .select("household_id").eq("user_id", pr.id).limit(1).single()
-    if (!mem) { dbg.push(info); continue }
+    if (!mem) continue
     const { data: h } = await admin.from("households")
       .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end")
       .eq("id", mem.household_id).single()
-    if (!h) { dbg.push(info); continue }
+    if (!h) continue
     const todayStr = todayMadrid
-    const inVac = !!(h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end)
-    info.vacation = inVac
-    if (inVac) { dbg.push(info); continue }
+    if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
     const { data: plants } = await admin.from("plants")
       .select("*").eq("household_id", h.id).neq("status", "dead")
-
 
     const month = now.getMonth() + 1
     const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
@@ -136,10 +124,7 @@ export async function POST(req: Request) {
         checks.push(`${p.name}${culpritTxt} (día ${rec.step.day})`)
       }
     }
-    info.due = due
-    info.checks = checks
-    const nothing = due.length === 0 && checks.length === 0
-    if (nothing && !debug) { dbg.push(info); continue }
+    if (due.length === 0 && checks.length === 0) continue
 
     let title = "🌿 Totoland: toca regar"
     if (due.length === 0 && checks.length > 0) title = "🩺 Totoland: chequeo de recuperación"
@@ -147,22 +132,17 @@ export async function POST(req: Request) {
     const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
     const body = [dueTxt, checksTxt].filter(Boolean).join(" · ")
 
-    if (match && !nothing) {
-      const ok = await sendPush(admin, pr.id, {
-        title, body, tag: `daily-${pr.id}`,
-        actions: [
-          { action: "postpone-2", title: "Posponer 2h" },
-          { action: "postpone-4", title: "Posponer 4h" },
-          { action: "postpone-6", title: "Posponer 6h" },
-        ],
-        data: { household_id: h.id },
-      }, muted)
-      if (ok) sentCount++
-      info.sent = ok
-    }
-    dbg.push(info)
-  }
-  // 4) Snapshot diario de salud para las gráficas
+    const ok = await sendPush(admin, pr.id, {
+      title, body, tag: `daily-${pr.id}`,
+      actions: [
+        { action: "postpone-2", title: "Posponer 2h" },
+        { action: "postpone-4", title: "Posponer 4h" },
+        { action: "postpone-6", title: "Posponer 6h" },
+      ],
+      data: { household_id: h.id },
+    }, muted)
+    if (ok) sentCount++
+  }  // 4) Snapshot diario de salud para las gráficas
   const { data: allHouses } = await admin
     .from("households").select("id, summer_start_month, summer_end_month")
   for (const h of allHouses ?? []) {
@@ -188,7 +168,7 @@ export async function POST(req: Request) {
       )
     }
   }
-
+  console.log("[reminder] run", todayMadrid, `${currentHour}:${String(currentMM).padStart(2, "0")}`, "sent:", sentCount)
   return NextResponse.json({ sent: sentCount })
 }
 
