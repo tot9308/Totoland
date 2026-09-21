@@ -32,11 +32,14 @@ export default function HouseSwitcher() {
   async function create() {
     if (!userId || !newName.trim()) return
     const invite = Math.random().toString(36).slice(2, 8).toUpperCase()
-    const { data: h, error } = await supabase.from("households")
-      .insert({ name: newName.trim(), invite_code: invite }).select().single()
+    const id = crypto.randomUUID()
+    const { error } = await supabase.from("households")
+      .insert({ id, name: newName.trim(), invite_code: invite })
     if (error) return alert("Error: " + error.message)
-    await supabase.from("household_members").insert({ household_id: h.id, user_id: userId, role: "owner" })
-    await setActiveHouseholdId(userId, h.id)
+    const { error: e2 } = await supabase.from("household_members")
+      .insert({ household_id: id, user_id: userId, role: "owner" })
+    if (e2) return alert("Error al añadirte como dueño: " + e2.message)
+    await setActiveHouseholdId(userId, id)
     window.location.reload()
   }
 
