@@ -121,7 +121,12 @@ export default function Home({ session }: { session: Session }) {
     setLoading(false)
   }, [userId, router])
 
-  useEffect(() => { reload() }, [reload])
+  useEffect(() => {
+    (async () => {
+      await reload()
+      await celebrateAchievements()
+    })()
+  }, [reload])
 
   const active = plants.filter(p => p.status !== "dead")
   const dead = plants.filter(p => p.status === "dead")
@@ -146,10 +151,11 @@ export default function Home({ session }: { session: Session }) {
     })
 
   async function celebrateAchievements() {
-    if (!householdId) return
+    const hid = householdId ?? (await getActiveHouseholdId(userId))
+    if (!hid) return
     const { data } = await supabase.from("plants")
-      .select("*").eq("household_id", householdId).neq("status", "dead")
-    const newAch = await detectNewAchievements(userId, householdId, (data as Plant[]) ?? [])
+      .select("*").eq("household_id", hid).neq("status", "dead")
+    const newAch = await detectNewAchievements(userId, hid, (data as Plant[]) ?? [])
     if (newAch.length === 0) return
     const txt = newAch.map(a => `${a.icon} ${a.title}`).join(" · ")
     setAchMsg(`🏆 ¡Logro desbloqueado! ${txt}`)
