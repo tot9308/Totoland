@@ -34,6 +34,10 @@ export default function HouseSwitcher() {
     const invite = Math.random().toString(36).slice(2, 8).toUpperCase()
     const { data: h, error } = await supabase.from("households")
       .insert({ name: newName.trim(), invite_code: invite }).select().single()
+const { error } = await supabase.from("households").insert({
+  name: nombre.trim(),
+  owner_id: userId,   // ← añadir
+})
     if (error) return alert("Error: " + error.message)
     await supabase.from("household_members").insert({ household_id: h.id, user_id: userId, role: "owner" })
     await setActiveHouseholdId(userId, h.id)
