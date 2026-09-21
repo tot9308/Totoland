@@ -56,7 +56,7 @@ export default function CemeteryPage() {
   useEffect(() => { reload() }, [reload])
 
   async function revive(id: string) {
-    const { error } = await supabase.from("plants").update({ status: "alive", died_at: null }).eq("id", id)
+    const { error } = await supabase.from("plants").update({ status: "alive" }).eq("id", id)
     if (error) return alert("Error: " + error.message)
     await reload()
   }
