@@ -377,7 +377,14 @@ export default function Home({ session }: { session: Session }) {
       </section>
 
       <section className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-stone-800">Mis plantas</h2>
+        <h2 className="text-lg font-semibold text-stone-800">
+          Mis plantas{" "}
+          <span className="ml-1 text-sm font-normal text-stone-600">
+            🟢 {active.filter(p => (healthByPlant[p.id]?.health ?? "green") === "green").length} ·
+            🟡 {active.filter(p => healthByPlant[p.id]?.health === "yellow").length} ·
+            🔴 {active.filter(p => healthByPlant[p.id]?.health === "red").length}
+          </span>
+        </h2>
         <div className="flex flex-wrap items-center gap-2 text-sm text-stone-700">
           <label className="flex items-center gap-1">
             <span aria-hidden>🔍</span>

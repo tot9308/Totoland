@@ -19,6 +19,7 @@ import { useConfirm } from "@/components/UiProvider"
 import HealthChart from "@/components/HealthChart"
 import { DEATH_CAUSES } from "@/lib/causes"
 import CropModal from "@/components/CropModal"
+import { EVENT_LABELS, waterAmount, daysSince, daysUntilDue, type Plant } from "@/lib/plants"
 
 type EventRow = {
   id: string
@@ -86,6 +87,8 @@ export default function PlantDetail() {
   const [buryNote, setBuryNote] = useState("")
   const [showCrop, setShowCrop] = useState(false)
   const [showSpecies, setShowSpecies] = useState<boolean | null>(null)
+  const [summerStart, setSummerStart] = useState(5)
+  const [summerEnd, setSummerEnd] = useState(9)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -93,6 +96,12 @@ export default function PlantDetail() {
 
     const { data: p } = await supabase.from("plants").select("*").eq("id", plantId).single()
     setPlant(p as Plant)
+
+    if (p) {
+      const { data: hh } = await supabase.from("households")
+        .select("summer_start_month, summer_end_month").eq("id", p.household_id).single()
+      if (hh) { setSummerStart(hh.summer_start_month); setSummerEnd(hh.summer_end_month) }
+    }
 
     const { data: evs } = await supabase
       .from("care_events")
@@ -318,6 +327,16 @@ export default function PlantDetail() {
               <p className="text-xs text-stone-500">
                 💦 Riego: ≈ {waterAmt.min}–{waterAmt.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
                 {plant.has_saucer && " · vacía el plato a los 10-15 min"}
+              </p>
+            )}
+            {plant.last_watered_at && (
+              <p className="text-xs text-stone-500">
+                💧 Último riego: hace {daysSince(plant.last_watered_at)} días
+                {(() => {
+                  const du = daysUntilDue(plant, summerStart, summerEnd)
+                  if (du === null) return ""
+                  return du <= 0 ? " · ¡toca hoy!" : ` · próximo en ${du} días`
+                })()}
               </p>
             )}
           </div>
