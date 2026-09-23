@@ -5,7 +5,7 @@ import Link from "next/link"
 import Logo from "./Logo"
 import HouseSwitcher from "./HouseSwitcher"
 
-export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onChangePassword, onLogout }: {
+export default function AppMenu({ email, cemeteryCount, recoveryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onChangePassword, onLogout }: {
   email: string
   cemeteryCount: number
   recoveryCount: number
