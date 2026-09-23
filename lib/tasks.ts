@@ -1,3 +1,7 @@
+import { supabase } from "./supabase"
+import { type Plant } from "./plants"
+import { findSpecies, type SpeciesCard } from "./species"
+
 export type Task = {
   id: string
   household_id: string
@@ -23,6 +27,7 @@ export const TASK_ICONS: Record<string, string> = {
   pest_watch: "🐛",
   light: "☀️",
   no_fertilize: "🚫",
+  rotate: "🔄",
 }
 
 // Catálogo general (se sugiere una vez al mes a la casa entera)
@@ -43,11 +48,8 @@ export const MONTHLY_TASKS = [
   { month: 12, type: "light", title: "Proteger del frío y corrientes", description: "Aleja plantas de ventanas mal aisladas y radiadores." },
 ]
 
-// Tareas por especie y mes (se generan para cada planta viva de esa especie)
+// Tareas por especie (catálogo manual, solo para casos muy específicos)
 export const SPECIES_MONTHLY_TASKS: Record<string, { month: number; type: string; title: string; description: string }[]> = {
-  "Spathiphyllum wallisii": [
-    { month: 5, type: "fertilize", title: "Abono quincenal", description: "Empieza a abonar cada 15 días con fertilizante equilibrado." },
-  ],
   "Phalaenopsis hybrida": [
     { month: 10, type: "reduce_water", title: "Reposo de orquídea", description: "Reduce riego y ponla en sitio fresco (15-18 °C de noche) para estimular floración." },
   ],
@@ -65,21 +67,90 @@ export const SPECIES_MONTHLY_TASKS: Record<string, { month: number; type: string
     { month: 3, type: "prune", title: "Poda de geranios", description: "Recorta tallos largos y pinza puntas para que ramifique." },
   ],
 }
-import { supabase } from "./supabase"
-import { type Plant } from "./plants"
+
+// Meses de reposo invernal (no abonar en ellos salvo excepciones manuales)
+const NO_FERT_MONTHS = new Set([1, 2, 11, 12])
+
+// Deriva tareas automáticas desde la ficha de especie
+function speciesDerivedTasks(s: SpeciesCard, p: Plant, month: number): { type: string; title: string; description: string }[] {
+  const out: { type: string; title: string; description: string }[] = []
+
+  // 1) Abono mensual o quincenal (según fert) solo en meses de crecimiento
+  if (!NO_FERT_MONTHS.has(month) && s.fert && s.fert !== "-") {
+    const [freq, tipo] = s.fert.split("-")
+    const tipoTxt = tipo === "Eq" ? "equilibrado" : "rico en fósforo"
+    if (freq === "F") {
+      out.push({
+        type: "fertilize",
+        title: "Abono quincenal",
+        description: `Aplica fertilizante ${tipoTxt} a mitad de dosis.`,
+      })
+    } else {
+      // M: una vez al mes
+      out.push({
+        type: "fertilize",
+        title: "Abono mensual",
+        description: `Aplica fertilizante ${tipoTxt} a dosis reducida.`,
+      })
+    }
+  }
+
+  // 2) Limpieza de hojas mensual para plantas de hoja (no cactus/suculentas/tillandsias)
+  // Detectamos "no limpiar" cuando sustrato es poroso (2) o sin sustrato (4 con flags de inmersión)
+  const isSucculent = s.substrate === 2 || s.flags.includes("inmersion")
+  if (!isSucculent) {
+    out.push({
+      type: "clean",
+      title: "Limpiar hojas",
+      description: "Pasa un paño húmedo (o una ducha tibia) para que capten mejor la luz.",
+    })
+  }
+
+  // 3) Rotación mensual para plantas de luz indirecta (crecen torcidas hacia la luz)
+  if (s.light === 2 || s.light === 3) {
+    out.push({
+      type: "rotate",
+      title: "Girar la maceta",
+      description: "Rota 90° la maceta para que crezca recta y equilibrada.",
+    })
+  }
+
+  return out
+}
 
 export async function ensureMonthlyTasks(householdId: string, plants: Plant[], month: number, year: number) {
   const { data: existing } = await supabase
-    .from("tasks").select("id")
-    .eq("household_id", householdId).eq("month", month).eq("year", year).limit(1)
+    .from("tasks").select("id, plant_id, type, title")
+    .eq("household_id", householdId).eq("month", month).eq("year", year)
   if (existing && existing.length > 0) return
+
   const toInsert: object[] = []
+
+  // Tareas generales de la casa
   for (const t of MONTHLY_TASKS.filter(m => m.month === month))
     toInsert.push({ household_id: householdId, plant_id: null, type: t.type, title: t.title, description: t.description, month, year })
+
+  // Tareas por planta
   for (const p of plants) {
     if (p.status === "dead" || !p.species) continue
-    for (const t of (SPECIES_MONTHLY_TASKS[p.species] ?? []).filter(s => s.month === month))
+    const species = findSpecies(p.species)
+
+    // Catálogo manual (si existe, tiene prioridad y evita duplicar)
+    const manualTasks = (SPECIES_MONTHLY_TASKS[p.species] ?? []).filter(s => s.month === month)
+    const manualKeys = new Set(manualTasks.map(t => `${t.type}|${t.title}`))
+
+    for (const t of manualTasks)
       toInsert.push({ household_id: householdId, plant_id: p.id, type: t.type, title: `${p.name}: ${t.title}`, description: t.description, month, year })
+
+    // Tareas derivadas de la ficha (evitando duplicados con el manual)
+    if (species) {
+      for (const t of speciesDerivedTasks(species, p, month)) {
+        const key = `${t.type}|${t.title}`
+        if (manualKeys.has(key)) continue
+        toInsert.push({ household_id: householdId, plant_id: p.id, type: t.type, title: `${p.name}: ${t.title}`, description: t.description, month, year })
+      }
+    }
   }
+
   if (toInsert.length) await supabase.from("tasks").insert(toInsert)
 }
