@@ -421,7 +421,7 @@ export default function PlantDetail() {
 
           {/* Gráfico de evolución */}
           <div className="mt-4">
-            <HealthChart plantId={plant.id} forceSnapshot />
+            <HealthChart plantId={plant.id} forceSnapshot plain />
           </div>
 
           {/* Seguimiento */}

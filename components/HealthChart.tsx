@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 type Snap = { day: string; level: number }
 const COLOR = ["#5a7d4a", "#c9a45a", "#b5603d"]
 
-export default function HealthChart({ plantId, forceSnapshot }: { plantId: string; forceSnapshot?: boolean }) {
+export default function HealthChart({ plantId, forceSnapshot, plain = false }: { plantId: string; forceSnapshot?: boolean; plain?: boolean }) {
   const [snaps, setSnaps] = useState<Snap[]>([])
 
   useEffect(() => {
@@ -27,10 +27,12 @@ export default function HealthChart({ plantId, forceSnapshot }: { plantId: strin
   const pct = Math.round((green / snaps.length) * 100)
 
   return (
-    <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm dark:bg-stone-800">
+    <section className={plain ? "" : "mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm"}>
+      {!plain && (
       <h2 className="mb-2 font-serif text-lg font-semibold text-stone-800 dark:text-stone-100">
         📊 Salud · últimos {snaps.length} días
       </h2>
+      )}
       <div className="flex flex-wrap gap-1">
         {snaps.map(s => (
           <span key={s.day} title={s.day}
