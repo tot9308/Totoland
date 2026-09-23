@@ -19,6 +19,7 @@ import HealthChart from "@/components/HealthChart"
 import { DEATH_CAUSES } from "@/lib/causes"
 import CropModal from "@/components/CropModal"
 import { EVENT_LABELS, waterAmount, daysSince, daysUntilDue, type Plant } from "@/lib/plants"
+import ShareCard from "@/components/ShareCard"
 
 type EventRow = {
   id: string
@@ -88,6 +89,7 @@ export default function PlantDetail() {
   const [showSpecies, setShowSpecies] = useState<boolean | null>(null)
   const [summerStart, setSummerStart] = useState(5)
   const [summerEnd, setSummerEnd] = useState(9)
+  const [showShare, setShowShare] = useState(false)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -310,6 +312,7 @@ export default function PlantDetail() {
 
   const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
   const speciesCard = findSpecies(plant.species ?? "")
+  const mainPhoto = photos.find(ph => ph.storage_path === plant.main_photo_path)
   const waterAmt = waterAmount(plant)
 
   return (
@@ -397,6 +400,10 @@ export default function PlantDetail() {
               className="rounded-lg bg-[#5a8ca6] px-5 py-2.5 text-white hover:bg-[#497691]">
               💧 + 🌫 Pulverizar
             </button>
+          <button onClick={() => setShowShare(true)}
+            className="rounded-xl border border-stone-300 px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-100">
+            📤 Compartir
+          </button>
           )}
         </div>
 
@@ -652,6 +659,14 @@ export default function PlantDetail() {
       )}
       {showEvent && (
         <EventForm plant={plant} userId={userId ?? ""} onClose={() => setShowEvent(false)} onSaved={reload} />
+      )}
+      {showShare && (
+        <ShareCard
+          plant={plant}
+          speciesCard={speciesCard}
+          photoUrl={mainPhoto?.fullUrl}
+          onClose={() => setShowShare(false)}
+        />
       )}
 
       {showBury && (
