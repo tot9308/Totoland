@@ -22,11 +22,18 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   const [myTime, setMyTime] = useState("08:00")
   const [vacStart, setVacStart] = useState("")
   const [vacEnd, setVacEnd] = useState("")
+  const [subsCount, setSubsCount] = useState(0)
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from("profiles").select("reminder_time").eq("id", userId).single()
       setMyTime(data?.reminder_time ?? "08:00")
+      // Cargar número de suscripciones push activas
+      const { data: subs } = await supabase
+        .from("push_subscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+      setSubsCount(subs?.length ?? 0)
     })()
   }, [userId])
 
@@ -138,6 +145,13 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
       })
       if (error) return alert("Error al guardar el aviso: " + error.message)
       alert("Avisos activados en este dispositivo ✅")
+      
+      // Recargar el contador de suscripciones
+      const { data: subs } = await supabase
+        .from("push_subscriptions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+      setSubsCount(subs?.length ?? 0)
     } catch (e) {
       alert("No se pudo activar: " + e)
     }
@@ -217,39 +231,57 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
           Guardar vacaciones
         </button>
 
-        <h3 className="mb-2 text-sm font-semibold text-stone-700">🔔 Notificaciones</h3>
-        <div className="mb-2 flex flex-wrap gap-2">
-          <button onClick={enablePush}
-            className="rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
-            Activar avisos en este dispositivo
-          </button>
-          <button onClick={testPush}
-            className="rounded border border-stone-300 px-3 py-1.5 text-sm text-stone-700">
-            🧪 Probar aviso
-          </button>
+        <div className="mb-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-stone-700">🔔 Notificaciones</h3>
+            {subsCount > 0 ? (
+              <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                🟢 Avisos activos ({subsCount})
+              </span>
+            ) : (
+              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                🔴 Sin avisos
+              </span>
+            )}
+          </div>
+          <div className="mb-2 flex flex-wrap gap-2">
+            <button onClick={enablePush}
+              className="rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
+              Activar avisos en este dispositivo
+            </button>
+            <button onClick={testPush}
+              className="rounded border border-stone-300 px-3 py-1.5 text-sm text-stone-700">
+              🧪 Probar aviso
+            </button>
+          </div>
+          {subsCount === 0 && (
+            <div className="mb-2 rounded bg-amber-50 p-3 text-xs text-amber-800">
+              ⚠️ Activa los avisos para recibir notificaciones en este dispositivo
+            </div>
+          )}
+          <label className="mb-2 block text-sm text-stone-800">
+            ¿A qué hora quieres recibir el recordatorio?
+            <input type="time" step={300} value={myTime} onChange={ev => saveReminderTime(ev.target.value)}
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
+          </label>
+          <label className="block text-sm text-stone-800">
+            🔕 Silenciar avisos un tiempo
+            <select value={muteSel} onChange={ev => setMute(ev.target.value)}
+              className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
+              <option value="">No silenciado</option>
+              <option value="1">Silenciar 1 día</option>
+              <option value="3">Silenciar 3 días</option>
+              <option value="7">Silenciar 7 días</option>
+              <option value="14">Silenciar 14 días</option>
+              <option value="30">Silenciar 30 días</option>
+            </select>
+          </label>
+          {muteUntil && (
+            <p className="mt-2 text-xs text-[#8a3a1a]">
+              Silenciado hasta el {new Date(muteUntil).toLocaleDateString("es-ES")}.
+            </p>
+          )}
         </div>
-        <label className="mb-2 block text-sm text-stone-800">
-          ¿A qué hora quieres recibir el recordatorio?
-          <input type="time" step={300} value={myTime} onChange={ev => saveReminderTime(ev.target.value)}
-            className="mt-1 w-full rounded border border-stone-300 px-3 py-2" />
-        </label>
-        <label className="mb-4 block text-sm text-stone-800">
-          🔕 Silenciar avisos un tiempo
-          <select value={muteSel} onChange={ev => setMute(ev.target.value)}
-            className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
-            <option value="">No silenciado</option>
-            <option value="1">Silenciar 1 día</option>
-            <option value="3">Silenciar 3 días</option>
-            <option value="7">Silenciar 7 días</option>
-            <option value="14">Silenciar 14 días</option>
-            <option value="30">Silenciar 30 días</option>
-          </select>
-        </label>
-        {muteUntil && (
-          <p className="mb-4 -mt-2 text-xs text-[#8a3a1a]">
-            Silenciado hasta el {new Date(muteUntil).toLocaleDateString("es-ES")}.
-          </p>
-        )}
 
         <h3 className="mb-2 text-sm font-semibold text-stone-700">🎨 Aspecto</h3>
         <div className="mb-4"><ThemeToggle /></div>
