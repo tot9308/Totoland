@@ -1,264 +1,175 @@
-\# Changelog
-
-
-
-Registro de cambios de Totoland. Formato inspirado en \[Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
-
-
-
-\## \[Unreleased]
-
-
-
-\### En desarrollo
-
-\- 🔔 Recordatorios personalizados recurrentes
-
-\- 🌱 Plantillas automáticas de cuidados al crear planta
-
-\- 📸 Capturas y documentación visual
-
-
-
-\## \[0.12.0] - 2026-09-14
-
-
-
-\### Añadido
-
-\- 🩺 Motor de protocolos de recuperación: 7 tipos de problema (sequía, exceso de riego, plaga, enfermedad, daño físico, luz, térmico) con planes guiados por días, culpables específicos (oruga, pulgón, cochinilla, araña roja, mosca blanca, trips, mosca del sustrato, caracol, oídio, mildiu, podredumbre, manchas, botrytis) y severidad (leve/moderado/grave)
-
-\- 📋 Panel de recuperación rediseñado con línea de tiempo, paso actual destacado, botones "mejor / igual / peor" en los chequeos y botón "Recuperada"
-
-\- ⚠ Aislamiento estricto añadido automáticamente si la severidad es grave
-
-
-
-\### Corregido
-
-\- 🐛 Sincronizar respeta el último riego real de cada planta (ya no pisa riegos al re-anclar)
-
-\- 🐛 Rutas con corchetes aplican el restyling orgánico correctamente
-
-\- 🐛 Build limpio tras varios parches de tipado
-
-
-
-\### Cambiado
-
-\- 🔔 Hora del aviso diario por usuario (no por casa)
-
-\- 🤫 El siguiente usuario solo recibe aviso si aún quedan riegos pendientes
-
-\- 📅 Fecha de último riego configurable en el sincronizador
-
-\- 🕐 Notificaciones con minutos (cron cada 5 min, selector con pasos de 5)
-
-\- 📝 Badge de próximo riego muestra día de la semana cuando faltan ≤4 días
-
-\- ⚓ Anclaje del patrón de riego a fecha + intervalo semanal
-
-\- 🌨️ Los días fijos respetan la temporada (en invierno se riega menos)
-
-\- 🌙 Modo oscuro (claro / oscuro / automático)
-
-\- 🏠 Multi-casa con casa activa y selector en el menú
-
-\- 🍞 Toasts globales (sin `alert()` nativos)
-
-\- 💬 Confirmaciones bonitas (sin `confirm()` nativos)
-
-\- ✨ Animaciones sutiles en modales y toasts
-
-\- 💧 Agua regada por planta y total anual en "Mi año verde"
-
-\- 📊 Gráficas de salud con instantáneas diarias en la ficha
-
-\- 🏖️ Modo vacaciones (sin avisos diarios durante el viaje)
-
-\- 📋 Tareas y recordatorios fusionados en una única página
-
-\- 📜 Historial reorganizado: observaciones primero, riegos agrupados por ronda, botón "Ver más"
-
-\- 🔑 Modal bonito para cambiar contraseña
-
-\- 🚦 Puntito de semáforo (🟢🟡🔴) en las tarjetas de la home
-
-\- 💬 Nudge "¿Sigue igual?" tras 4+ días en 🟡/🔴
-
-\- 🗑 Botón para borrar eventos individuales del historial
-
-\- 🚦 Semáforo manual persistente (dura hasta que lo cambies; solo alertas objetivas graves lo sobrescriben)
-
-
-
-\## \[0.11.0] - 2026-09-13
-
-
-
-\### Añadido
-
-\- 🌙 Modo oscuro con tres opciones: Claro, Oscuro y Automático (según el sistema)
-
-\- 🔔 Hora del aviso diario \*\*por usuario\*\* (cada miembro tiene la suya)
-
-\- 🤫 El siguiente usuario solo recibe el aviso si aún quedan riegos pendientes
-
-\- 📅 Fecha de último riego configurable en el sincronizador
-
-\- 🕐 Notificaciones con minutos (cron cada 5 minutos, selector con pasos de 5)
-
-\- 📝 El badge de próximo riego muestra el día de la semana cuando faltan ≤4 días
-
-\- ⚓ Anclaje del patrón de riego a fecha + intervalo semanal, para que no se desfasen
-
-\- 🌀 Modo frecuencia pura para ciclos no semanales (5, 10, 12…), con aviso de que el patrón rotará
-
-\- 🌨️ Los días fijos respetan la temporada (en invierno se riega menos automáticamente)
-
-\- 🔧 Registro del service worker al cargar la app (imprescindible para las push)
-
-\- 🩺 "Probar aviso" con diagnóstico: permiso, service worker y suscripción push
-
-
-
-\### Cambiado
-
-\- 💧 Cantidades de riego por tabla de referencia interpolada, coherente con la guía
-
-\- 📅 Calendario y cron respetan el intervalo semanal anclado y la temporada
-
-
-
-\### Corregido
-
-\- 🐛 Cálculo de ml de riego (daba 0-1 ml)
-
-\- 🐛 El calendario no respetaba los días fijos del sincronizador
-
-\- 🐛 El sincronizador no anclaba bien al día del grupo y fallaba en silencio sin las columnas de BD
-
-\- ⏱️ Las fracciones de día (<1) ya cuentan como "pendiente hoy" (frecuencias como 3,5 d)
-
-\- 🐛 Varios errores de build (manifest.ts, import duplicado, case-sensitive en Linux, tipos de push)
-
-
-
-\## \[0.10.0] - 2026-09-11
-
-
-
-\### Añadido
-
-\- 🗓️ Modo de riego por días fijos de la semana, anclado al día del grupo
-
-\- 🔄 Sincronizador que convierte frecuencias no múltiplos en días fijos (p. ej. 4 d → martes + sábado)
-
-\- 🧭 Ajuste de comportamiento ante retrasos en días fijos (mantener o re-anclar según umbral)
-
-\- 🔕 Silenciar notificaciones push por 1, 3, 7, 14 o 30 días
-
-\- 📅 Vista de calendario mensual (riegos hechos, previstos y tareas)
-
-\- 🔔 Recordatorios personalizados recurrentes
-
-\- 🌱 Plantilla automática de cuidados al elegir especie (editable)
-
-\- 💚 Página "Acerca de" con licencia y autoría
-
-\- 🎨 Restyling completo al estilo orgánico natural (crema, oliva, terracota, serif)
-
-\- 🖼️ Nuevo logotipo en icono, launcher, notificaciones, login, cabeceras y menú
-
-
-
-\### Cambiado
-
-\- 🔄 El sincronizador ya no desfasa plantas de frecuencia no múltiplo: las ancla a días fijos
-
-
-
-\## \[0.9.0] - 2026-09-09
-
-
-
-\### Añadido
-
-\- 📖 Catálogo ampliado a \*\*500 especies\*\* con aliases
-
-\- 📊 Página "Tu año verde" con estadísticas anuales
-
-\- 🔔 Hora personalizable para el aviso diario
-
-\- ⏰ Posponer notificaciones 2h / 4h / 6h desde la propia notificación
-
-\- 🩺 Protocolo científico de recuperación post-sequía (por tipo de planta y severidad)
-
-\- 🏷️ Categoría general de planta visible en la ficha
-
-\- 🧬 Tipo de planta para recuperación visible en la ficha
-
-\- 📌 Cuidados clave accesibles desde la ficha (añadir/editar)
-
-\- ＋ Botón "Más acciones" dentro de cada planta
-
-\- 📝 Desplegables dependientes en observaciones (plaga, tratamiento, abono, ubicación)
-
-\- 🚦 Semáforo de salud en observaciones
-
-\- 📋 Tareas mensuales automáticas + personalizadas (página /tasks)
-
-\- 🏆 Logros con progreso y barra visual
-
-\- 🗺️ Mapa de arquitectura en la guía
-
-
-
-\### Cambiado
-
-\- 💧 Calculadora de cantidad de agua recalibrada (modelo troncocónico)
-
-\- 📚 Guía actualizada con sección de recuperación y pulverizado
-
-\- 🪦 Cementerio como página completa (no modal)
-
-\- 🎨 Tamaños de tarjetas configurables (grande/medio/pequeño)
-
-
-
-\## \[0.8.0] - 2026-09-07
-
-
-
-\### Añadido
-
-\- 🔄 Sincronización de riegos con subdivisiones (2-4 riegos por ciclo)
-
-\- 🏠 Sistema de casas compartidas con código de invitación
-
-\- 🔐 Autenticación completa (registro, recuperación, cambio con contraseña actual)
-
-\- 📚 Guía integrada de cuidados
-
-\- 🖨️ Fichas imprimibles en PDF
-
-
-
-\## \[0.7.0] - 2026-09-06
-
-
-
-\### Añadido
-
-\- 🌿 Versión inicial funcional
-
-\- 💧 Registro de riegos y frecuencias por estación
-
-\- 📸 Fotos con compresión automática
-
-\- 🪦 Cementerio de plantas con epitafio
-
-\- 🔔 Notificaciones push con cron de Supabase
-
-\- 💾 Backup nocturno en Raspberry Pi
-
+# Changelog
+
+Registro de cambios de Totoland. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
+
+## [Unreleased]
+
+### En desarrollo
+
+- 📸 Capturas y documentación visual
+- 🗺️ Buscador de especies con filtros (luz, riego, dificultad, mascotas)
+- 🌿 Patrones de éxito: qué especies te funcionan mejor en casa
+
+## [0.14.0] - 2026-09-23
+
+### Añadido
+
+- 📤 Tarjeta compartible de planta con foto y cuidados (compartir por WhatsApp/Telegram o descargar)
+- 🔎 Diagnóstico por síntomas en la Guía: 15 síntomas comunes con causas probables y soluciones
+- 🪴 Tareas recurrentes automáticas derivadas de la ficha de especie (abono, limpieza, rotación)
+- 🟢 Badge visual de estado de avisos en ajustes (dispositivos activos)
+- 🩺 Panel de seguimientos en curso en la parte alta de la home
+- 📊 Gráfico de salud junto a "¿Cómo está hoy?" en la ficha
+- 🏥 Bloque unificado de salud (estado + gráfico + seguimiento)
+- 📖 Ficha de especie desplegable para no duplicar cuidados clave
+- 🔢 Resumen de salud en la home (🟢🟡🔴)
+- 💧 Línea de último/próximo riego en la ficha
+- 🩺 Badge "Enfermería (N)" en el menú cuando hay seguimientos o plantas en estrés
+
+### Corregido
+
+- 🐛 Rebrote mantiene `died_at` para que el logro se marque
+- 🐛 Cron multi-casa: ahora mira todas las casas del usuario, no solo la activa
+- 🐛 Toast de logro al rebrotar (celebra también al entrar en home)
+- 🐛 Crear casa funciona sin errores de RLS ni owner_id
+- 🐛 Foto de ficha con overflow-hidden para que no desborde
+
+### Cambiado
+
+- 🔔 Log operativo del cron (sin debug expuesto) para diagnóstico en Vercel
+- 📋 Tareas mensuales derivadas automáticamente de la ficha de especie (no solo catálogo manual)
+- 🩺 Título del panel de seguimiento compacto en una línea
+
+## [0.12.0] - 2026-09-14
+
+### Añadido
+
+- 🩺 Motor de protocolos de recuperación: 7 tipos de problema (sequía, exceso de riego, plaga, enfermedad, daño físico, luz, térmico) con planes guiados por días, culpables específicos (oruga, pulgón, cochinilla, araña roja, mosca blanca, trips, mosca del sustrato, caracol, oídio, mildiu, podredumbre, manchas, botrytis) y severidad (leve/moderado/grave)
+- 📋 Panel de recuperación rediseñado con línea de tiempo, paso actual destacado, botones "mejor / igual / peor" en los chequeos y botón "Recuperada"
+- ⚠ Aislamiento estricto añadido automáticamente si la severidad es grave
+
+### Corregido
+
+- 🐛 Sincronizar respeta el último riego real de cada planta (ya no pisa riegos al re-anclar)
+- 🐛 Rutas con corchetes aplican el restyling orgánico correctamente
+- 🐛 Build limpio tras varios parches de tipado
+
+### Cambiado
+
+- 🔔 Hora del aviso diario por usuario (no por casa)
+- 🤫 El siguiente usuario solo recibe aviso si aún quedan riegos pendientes
+- 📅 Fecha de último riego configurable en el sincronizador
+- 🕐 Notificaciones con minutos (cron cada 5 min, selector con pasos de 5)
+- 📝 Badge de próximo riego muestra día de la semana cuando faltan ≤4 días
+- ⚓ Anclaje del patrón de riego a fecha + intervalo semanal
+- 🌨️ Los días fijos respetan la temporada (en invierno se riega menos)
+- 🌙 Modo oscuro (claro / oscuro / automático)
+- 🏠 Multi-casa con casa activa y selector en el menú
+- 🍞 Toasts globales (sin `alert()` nativos)
+- 💬 Confirmaciones bonitas (sin `confirm()` nativos)
+- ✨ Animaciones sutiles en modales y toasts
+- 💧 Agua regada por planta y total anual en "Mi año verde"
+- 📊 Gráficas de salud con instantáneas diarias en la ficha
+- 🏖️ Modo vacaciones (sin avisos diarios durante el viaje)
+- 📋 Tareas y recordatorios fusionados en una única página
+- 📜 Historial reorganizado: observaciones primero, riegos agrupados por ronda, botón "Ver más"
+- 🔑 Modal bonito para cambiar contraseña
+- 🚦 Puntito de semáforo (🟢🟡🔴) en las tarjetas de la home
+- 💬 Nudge "¿Sigue igual?" tras 4+ días en 🟡/🔴
+- 🗑 Botón para borrar eventos individuales del historial
+- 🚦 Semáforo manual persistente (dura hasta que lo cambies; solo alertas objetivas graves lo sobrescriben)
+
+## [0.11.0] - 2026-09-13
+
+### Añadido
+
+- 🌙 Modo oscuro con tres opciones: Claro, Oscuro y Automático (según el sistema)
+- 🔔 Hora del aviso diario **por usuario** (cada miembro tiene la suya)
+- 🤫 El siguiente usuario solo recibe el aviso si aún quedan riegos pendientes
+- 📅 Fecha de último riego configurable en el sincronizador
+- 🕐 Notificaciones con minutos (cron cada 5 minutos, selector con pasos de 5)
+- 📝 El badge de próximo riego muestra el día de la semana cuando faltan ≤4 días
+- ⚓ Anclaje del patrón de riego a fecha + intervalo semanal, para que no se desfasen
+- 🌀 Modo frecuencia pura para ciclos no semanales (5, 10, 12…), con aviso de que el patrón rotará
+- 🌨️ Los días fijos respetan la temporada (en invierno se riega menos automáticamente)
+- 🔧 Registro del service worker al cargar la app (imprescindible para las push)
+- 🩺 "Probar aviso" con diagnóstico: permiso, service worker y suscripción push
+
+### Cambiado
+
+- 💧 Cantidades de riego por tabla de referencia interpolada, coherente con la guía
+- 📅 Calendario y cron respetan el intervalo semanal anclado y la temporada
+
+### Corregido
+
+- 🐛 Cálculo de ml de riego (daba 0-1 ml)
+- 🐛 El calendario no respetaba los días fijos del sincronizador
+- 🐛 El sincronizador no anclaba bien al día del grupo y fallaba en silencio sin las columnas de BD
+- ⏱️ Las fracciones de día (<1) ya cuentan como "pendiente hoy" (frecuencias como 3,5 d)
+- 🐛 Varios errores de build (manifest.ts, import duplicado, case-sensitive en Linux, tipos de push)
+
+## [0.10.0] - 2026-09-11
+
+### Añadido
+
+- 🗓️ Modo de riego por días fijos de la semana, anclado al día del grupo
+- 🔄 Sincronizador que convierte frecuencias no múltiplos en días fijos (p. ej. 4 d → martes + sábado)
+- 🧭 Ajuste de comportamiento ante retrasos en días fijos (mantener o re-anclar según umbral)
+- 🔕 Silenciar notificaciones push por 1, 3, 7, 14 o 30 días
+- 📅 Vista de calendario mensual (riegos hechos, previstos y tareas)
+- 🔔 Recordatorios personalizados recurrentes
+- 🌱 Plantilla automática de cuidados al elegir especie (editable)
+- 💚 Página "Acerca de" con licencia y autoría
+- 🎨 Restyling completo al estilo orgánico natural (crema, oliva, terracota, serif)
+- 🖼️ Nuevo logotipo en icono, launcher, notificaciones, login, cabeceras y menú
+
+### Cambiado
+
+- 🔄 El sincronizador ya no desfasa plantas de frecuencia no múltiplo: las ancla a días fijos
+
+## [0.9.0] - 2026-09-09
+
+### Añadido
+
+- 📖 Catálogo ampliado a **500 especies** con aliases
+- 📊 Página "Tu año verde" con estadísticas anuales
+- 🔔 Hora personalizable para el aviso diario
+- ⏰ Posponer notificaciones 2h / 4h / 6h desde la propia notificación
+- 🩺 Protocolo científico de recuperación post-sequía (por tipo de planta y severidad)
+- 🏷️ Categoría general de planta visible en la ficha
+- 🧬 Tipo de planta para recuperación visible en la ficha
+- 📌 Cuidados clave accesibles desde la ficha (añadir/editar)
+- ＋ Botón "Más acciones" dentro de cada planta
+- 📝 Desplegables dependientes en observaciones (plaga, tratamiento, abono, ubicación)
+- 🚦 Semáforo de salud en observaciones
+- 📋 Tareas mensuales automáticas + personalizadas (página /tasks)
+- 🏆 Logros con progreso y barra visual
+- 🗺️ Mapa de arquitectura en la guía
+
+### Cambiado
+
+- 💧 Calculadora de cantidad de agua recalibrada (modelo troncocónico)
+- 📚 Guía actualizada con sección de recuperación y pulverizado
+- 🪦 Cementerio como página completa (no modal)
+- 🎨 Tamaños de tarjetas configurables (grande/medio/pequeño)
+
+## [0.8.0] - 2026-09-07
+
+### Añadido
+
+- 🔄 Sincronización de riegos con subdivisiones (2-4 riegos por ciclo)
+- 🏠 Sistema de casas compartidas con código de invitación
+- 🔐 Autenticación completa (registro, recuperación, cambio con contraseña actual)
+- 📚 Guía integrada de cuidados
+- 🖨️ Fichas imprimibles en PDF
+
+## [0.7.0] - 2026-09-06
+
+### Añadido
+
+- 🌿 Versión inicial funcional
+- 💧 Registro de riegos y frecuencias por estación
+- 📸 Fotos con compresión automática
+- 🪦 Cementerio de plantas con epitafio
+- 🔔 Notificaciones push con cron de Supabase
+- 💾 Backup nocturno en Raspberry Pi

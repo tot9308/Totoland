@@ -1,3 +1,11 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+
+type Cause = { c: string; fix: string; tag: string }
+type Symptom = { id: string; label: string; causes: Cause[] }
+
 const SYMPTOMS: Symptom[] = [
   {
     id: "yellow", label: "🟡 Hojas amarillas", causes: [
@@ -101,3 +109,46 @@ const SYMPTOMS: Symptom[] = [
     ],
   },
 ]
+
+export default function SymptomChecker() {
+  const [sel, setSel] = useState<string | null>(null)
+  const symptom = SYMPTOMS.find(s => s.id === sel)
+
+  return (
+    <section className="mb-6 rounded-xl bg-[#eaf1ee] p-4 shadow-sm">
+      <h2 className="mb-1 text-lg font-semibold text-stone-800">🔎 ¿Qué le pasa a mi planta?</h2>
+      <p className="mb-3 text-xs text-stone-600">
+        Elige el síntoma y te digo las causas más probables y qué hacer.
+      </p>
+      <div className="mb-3 flex flex-wrap gap-2">
+        {SYMPTOMS.map(s => (
+          <button key={s.id} onClick={() => setSel(sel === s.id ? null : s.id)}
+            className={`rounded-full px-3 py-1.5 text-sm ${sel === s.id
+              ? "bg-[#5a7d4a] text-white"
+              : "bg-white text-stone-700 shadow-sm hover:bg-stone-100"}`}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+      {symptom && (
+        <div className="space-y-2">
+          {symptom.causes.map((k, i) => (
+            <div key={i} className="rounded-lg bg-white/80 p-3">
+              <p className="text-sm font-semibold text-stone-800">
+                {k.c}{" "}
+                <span className="ml-1 rounded-full bg-[#f5ece6] px-2 py-0.5 text-[10px] font-medium text-[#8a3a1a]">
+                  {k.tag}
+                </span>
+              </p>
+              <p className="mt-1 text-xs text-stone-600">➡️ {k.fix}</p>
+            </div>
+          ))}
+          <p className="pt-1 text-xs text-stone-600">
+            ¿Va a más? Inicia un seguimiento guiado desde{" "}
+            <Link href="/recovery" className="font-semibold text-[#5a7d4a] underline">Enfermería</Link>.
+          </p>
+        </div>
+      )}
+    </section>
+  )
+}
