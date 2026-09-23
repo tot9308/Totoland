@@ -85,6 +85,7 @@ export default function PlantDetail() {
   const [buryCause, setBuryCause] = useState("unknown")
   const [buryNote, setBuryNote] = useState("")
   const [showCrop, setShowCrop] = useState(false)
+  const [showSpecies, setShowSpecies] = useState<boolean | null>(null)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -468,35 +469,49 @@ export default function PlantDetail() {
         )}
       </section>
 
-      {speciesCard && (
-        <section className="mb-6 rounded-xl bg-[#eaf1ee] p-4 shadow-sm">
-          <h2 className="mb-2 text-lg font-semibold text-stone-800">
-            📖 {speciesCard.sci}{" "}
-            <span className="text-sm font-normal text-stone-600">({speciesCard.common})</span>
-          </h2>
-          <div className="grid grid-cols-1 gap-1 text-sm text-stone-800 md:grid-cols-2">
-            <p>{LIGHT_LABELS[speciesCard.light]}</p>
-            <p>
-              {WATER_LABELS[speciesCard.water].label} · {WATER_LABELS[speciesCard.water].check}
+      {speciesCard && (() => {
+        const expanded = showSpecies ?? !plant.care_tips
+        return (
+          <section className="mb-6 rounded-xl bg-[#eaf1ee] p-4 shadow-sm">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h2 className="text-lg font-semibold text-stone-800">
+                📖 {speciesCard.sci}{" "}
+                <span className="text-sm font-normal text-stone-600">({speciesCard.common})</span>
+              </h2>
+              <button onClick={() => setShowSpecies(!expanded)}
+                className="shrink-0 rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:bg-stone-100">
+                {expanded ? "Ver menos ▴" : "Ver más ▾"}
+              </button>
+            </div>
+            <div className={`relative ${expanded ? "" : "max-h-32 overflow-hidden"}`}>
+              <div className="grid grid-cols-1 gap-1 text-sm text-stone-800 md:grid-cols-2">
+                <p>{LIGHT_LABELS[speciesCard.light]}</p>
+                <p>
+                  {WATER_LABELS[speciesCard.water].label} · {WATER_LABELS[speciesCard.water].check}
+                </p>
+                <p>🌡️ {speciesCard.temp} °C</p>
+                <p>{MIST_LABELS[speciesCard.mist]}</p>
+                <p>🪴 Sustrato: {SUBSTRATE_LABELS[speciesCard.substrate]}</p>
+                <p>🌾 Abono: {fertLabel(speciesCard.fert)}</p>
+                <p>🐶 Tóxica para mascotas: {speciesCard.toxic ? "sí" : "no"}</p>
+                <p>Dificultad: {DIFF_LABELS[speciesCard.difficulty]}</p>
+                <p>🏷️ Categoría: {plantCategory(speciesCard)}</p>
+                <p>🧬 Tipo (recuperación): {TYPE_LABEL[plantType(speciesCard, plant.plant_type)]}</p>
+                <p>💧 Orientativo: {speciesCard.ws} d verano / {speciesCard.ww} d invierno</p>
+              </div>
+              {speciesCard.flags && FLAG_LABELS[speciesCard.flags] && (
+                <p className="mt-2 text-sm text-stone-700">{FLAG_LABELS[speciesCard.flags]}</p>
+              )}
+              {!expanded && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-[#eaf1ee] to-transparent" />
+              )}
+            </div>
+            <p className="mt-1 text-[11px] text-stone-500">
+              Orientativo: manda lo que observes en tu casa.
             </p>
-            <p>🌡️ {speciesCard.temp} °C</p>
-            <p>{MIST_LABELS[speciesCard.mist]}</p>
-            <p>🪴 Sustrato: {SUBSTRATE_LABELS[speciesCard.substrate]}</p>
-            <p>🌾 Abono: {fertLabel(speciesCard.fert)}</p>
-            <p>🐶 Tóxica para mascotas: {speciesCard.toxic ? "sí" : "no"}</p>
-            <p>Dificultad: {DIFF_LABELS[speciesCard.difficulty]}</p>
-            <p>🏷️ Categoría: {plantCategory(speciesCard)}</p>
-            <p>🧬 Tipo (recuperación): {TYPE_LABEL[plantType(speciesCard, plant.plant_type)]}</p>
-            <p>💧 Orientativo: {speciesCard.ws} d verano / {speciesCard.ww} d invierno</p>
-          </div>
-          {speciesCard.flags && FLAG_LABELS[speciesCard.flags] && (
-            <p className="mt-2 text-sm text-stone-700">{FLAG_LABELS[speciesCard.flags]}</p>
-          )}
-          <p className="mt-1 text-[11px] text-stone-500">
-            Orientativo: manda lo que observes en tu casa.
-          </p>
-        </section>
-      )}
+          </section>
+        )
+      })()}
 
       <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
 
