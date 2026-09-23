@@ -31,7 +31,7 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
       // Cargar número de suscripciones push activas
       const { data: subs } = await supabase
         .from("push_subscriptions")
-        .select("id", { count: "exact", head: true })
+        .select("id")
         .eq("user_id", userId)
       setSubsCount(subs?.length ?? 0)
     })()
@@ -73,10 +73,8 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
     const { error } = await supabase.from("profiles").update({ reminder_time: v }).eq("id", userId)
     if (error) return alert("Error: " + error.message)
     setMyTime(v)
-    // 1) Cancelar avisos pospuestos pendientes con la hora antigua
     await supabase.from("scheduled_notifications")
       .delete().eq("user_id", userId).eq("status", "pending")
-    // 2) Cerrar en este dispositivo las notificaciones ya mostradas (diarias y pospuestas)
     try {
       if ("serviceWorker" in navigator) {
         const reg = await navigator.serviceWorker.ready
@@ -123,10 +121,8 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
       }
       const reg = await navigator.serviceWorker.ready
 
-      // Si ya hay suscripción, reutilizarla (no intentar crear otra)
       let sub = await reg.pushManager.getSubscription()
       if (!sub) {
-        // Solo suscribirse si no hay ninguna
         sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(key),
@@ -136,10 +132,8 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return alert("No hay sesión iniciada.")
 
-      // Borrar suscripciones viejas de este dispositivo (por si había duplicadas)
       await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
 
-      // Insertar la actual
       const { error } = await supabase.from("push_subscriptions").insert({
         user_id: user.id, endpoint: sub.endpoint, subscription: sub.toJSON(),
       })
@@ -149,13 +143,14 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
       // Recargar el contador de suscripciones
       const { data: subs } = await supabase
         .from("push_subscriptions")
-        .select("id", { count: "exact", head: true })
+        .select("id")
         .eq("user_id", userId)
       setSubsCount(subs?.length ?? 0)
     } catch (e) {
       alert("No se pudo activar: " + e)
     }
   }
+  
   async function testPush() {
     if (!("serviceWorker" in navigator)) return alert("Este navegador no soporta service workers.")
     if (!("PushManager" in window)) return alert("Este navegador no soporta push.")
