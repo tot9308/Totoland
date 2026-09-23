@@ -1,6 +1,7 @@
 ﻿import Link from "next/link"
 import GuideProtocols from "@/components/GuideProtocols"
 import ExpandAll from "@/components/ExpandAll"
+import SymptomChecker from "@/components/SymptomChecker"
 
 function S({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -27,6 +28,7 @@ export default function GuidePage() {
         <Link href="/" className="text-sm text-stone-600 hover:underline">← Volver</Link>
         <h1 className="text-2xl font-bold text-stone-800">📚 Guía de Totoland</h1>
       </header>
+<SymptomChecker />
       <ExpandAll />
 
       {/* ---------- Lo esencial, siempre visible ---------- */}

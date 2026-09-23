@@ -390,21 +390,21 @@ export default function PlantDetail() {
             </div>
           )
         })()}
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button onClick={() => quickWater(false)}
-            className="rounded-lg bg-[#5a7d4a] px-5 py-2.5 text-white hover:bg-[#4a6a3a]">
-            💧 Regar
+        <div className="mt-4 flex flex-wrap gap-2">
+<button onClick={() => quickWater(false)}
+            className="rounded-xl bg-[#5a7d4a] px-4 py-2.5 text-sm text-white hover:bg-[#4a6a3a]">
+            💧 Regar {waterAmt ? `(${waterAmt} ml)` : ""}
           </button>
           {plant.misting_enabled && (
-            <button onClick={() => quickWater(true)}
-              className="rounded-lg bg-[#5a8ca6] px-5 py-2.5 text-white hover:bg-[#497691]">
+<button onClick={() => quickWater(true)}
+              className="rounded-xl bg-[#5a8ca6] px-4 py-2.5 text-sm text-white hover:bg-[#497691]">
               💧 + 🌫 Pulverizar
             </button>
+          )}
           <button onClick={() => setShowShare(true)}
             className="rounded-xl border border-stone-300 px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-100">
             📤 Compartir
           </button>
-          )}
         </div>
 
         <section className="mt-3 rounded-xl bg-[#faf7f0] p-4 shadow-sm">
