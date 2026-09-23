@@ -132,6 +132,9 @@ export default function Home({ session }: { session: Session }) {
   const active = plants.filter(p => p.status !== "dead")
   const dead = plants.filter(p => p.status === "dead")
   const due = active.filter(p => isDue(p, summerStart, summerEnd))
+  const inRecovery = active.filter(p => p.recovery_kind).length
+  const stressed = active.filter(p => healthByPlant[p.id]?.health === "red").length
+  const recoveryBadge = inRecovery + stressed
   const q = query.trim().toLowerCase()
   const visible = active
     .filter(p =>
@@ -268,6 +271,7 @@ export default function Home({ session }: { session: Session }) {
         <AppMenu
           email={session.user.email ?? ""}
           cemeteryCount={dead.length}
+          recoveryCount={recoveryBadge}
           onOpenSettings={() => setShowSettings(true)}
           onOpenSync={() => setShowSync(true)}
           onOpenAchievements={() => setShowAchievements(true)}

@@ -8,6 +8,7 @@ import HouseSwitcher from "./HouseSwitcher"
 export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onChangePassword, onLogout }: {
   email: string
   cemeteryCount: number
+  recoveryCount: number
   onOpenSettings: () => void
   onOpenSync: () => void
   onOpenAchievements: () => void
@@ -66,7 +67,7 @@ export default function AppMenu({ email, cemeteryCount, onOpenSettings, onOpenSy
               </Link>
               <Link href="/recovery" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
-                🩺 Enfermería
+                🩺 Enfermería{recoveryCount > 0 ? ` (${recoveryCount})` : ""}
               </Link>
               <Link href="/guide" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">

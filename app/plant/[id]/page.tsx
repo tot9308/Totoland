@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, waterAmount, type Plant } from "@/lib/plants"
 import { compressToJpeg } from "@/lib/photos"
 import PlantForm from "@/components/PlantForm"
 import EventForm from "@/components/EventForm"
@@ -541,12 +540,20 @@ export default function PlantDetail() {
         open={!!plant.recovery_kind}
         className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm"
       >
-        <summary className="cursor-pointer list-none text-lg font-semibold text-stone-800">
-          🩺 Recuperación y seguimientos{" "}
-          <span className="text-xs font-normal text-stone-500">
-            {plant.recovery_kind ? "· en curso" : "· sin seguimiento activo"}
-          </span>
-          <span className="ml-1 text-xs text-stone-400">{plant.recovery_kind ? "▴" : "▾"}</span>
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-semibold text-stone-800">🩺 Seguimiento</span>
+            {plant.recovery_kind ? (
+              <span className="rounded-full bg-[#f5ece6] px-2 py-0.5 text-xs font-medium text-[#8a3a1a]">
+                1 en curso
+              </span>
+            ) : (
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+                sin activo
+              </span>
+            )}
+          </div>
+          <span className="text-xs text-stone-400">{plant.recovery_kind ? "▴" : "▾"}</span>
         </summary>
         <div className="mt-3">
           <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
