@@ -398,6 +398,10 @@ export default function PlantDetail() {
             </p>
           )}
         </div>
+
+        <div className="mt-3">
+          <HealthChart plantId={plant.id} forceSnapshot />
+        </div>
       </header>
       <section className="mb-6 rounded-xl bg-[#f7f0e3] p-4 shadow-sm">
         {editingTips ? (
@@ -513,7 +517,22 @@ export default function PlantDetail() {
         )
       })()}
 
-      <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
+      <details
+        key={plant.recovery_kind ?? "none"}
+        open={!!plant.recovery_kind}
+        className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm"
+      >
+        <summary className="cursor-pointer list-none text-lg font-semibold text-stone-800">
+          🩺 Recuperación y seguimientos{" "}
+          <span className="text-xs font-normal text-stone-500">
+            {plant.recovery_kind ? "· en curso" : "· sin seguimiento activo"}
+          </span>
+          <span className="ml-1 text-xs text-stone-400">{plant.recovery_kind ? "▴" : "▾"}</span>
+        </summary>
+        <div className="mt-3">
+          <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
+        </div>
+      </details>
 
       <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">
@@ -601,7 +620,6 @@ export default function PlantDetail() {
       {showEvent && (
         <EventForm plant={plant} userId={userId ?? ""} onClose={() => setShowEvent(false)} onSaved={reload} />
       )}
-      <HealthChart plantId={plant.id} forceSnapshot />
 
       {showBury && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
