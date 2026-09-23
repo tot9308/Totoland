@@ -79,30 +79,31 @@ export async function POST(req: Request) {
     }
   }
 
-  // 3) Recordatorio diario POR USUARIO a su hora (todas las casas del usuario).
+  // 3) Recordatorio diario POR USUARIO a su hora (todas las casas) + log de diagnóstico.
+  const reasons: string[] = []
   const { data: profs } = await admin.from("profiles")
     .select("id, reminder_time").not("reminder_time", "is", null)
   for (const pr of profs ?? []) {
     const hhmm = pr.reminder_time ?? "08:00"
     const [rh, rm] = hhmm.split(":").map(Number)
-    if (rh !== currentHour || Math.floor(rm / 5) * 5 !== currentMM) continue
-    if (muted.has(pr.id)) continue
-
-    // Obtener TODAS las casas del usuario
+    const match = (rh === currentHour && Math.floor(rm / 5) * 5 === currentMM)
+    reasons.push(`u=${pr.id.slice(0, 8)} rem=${hhmm} match=${match}`)
+    if (!match) continue
+    if (muted.has(pr.id)) { reasons.push("muted"); continue }
+    const { data: subsRows } = await admin.from("push_subscriptions")
+      .select("id").eq("user_id", pr.id)
+    reasons.push(`subs=${(subsRows ?? []).length}`)
     const { data: memberships } = await admin.from("household_members")
       .select("household_id").eq("user_id", pr.id)
-    
     for (const mem of memberships ?? []) {
       const { data: h } = await admin.from("households")
         .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end")
         .eq("id", mem.household_id).single()
       if (!h) continue
       const todayStr = todayMadrid
-      if (h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end) continue
-      
+      const inVac = !!(h.vacation_start && h.vacation_end && todayStr >= h.vacation_start && todayStr <= h.vacation_end)
       const { data: plants } = await admin.from("plants")
         .select("*").eq("household_id", h.id).neq("status", "dead")
-
       const month = now.getMonth() + 1
       const inSummer = month >= (h.summer_start_month ?? 5) && month <= (h.summer_end_month ?? 9)
       const due: string[] = []
@@ -127,6 +128,8 @@ export async function POST(req: Request) {
           checks.push(`${p.name}${culpritTxt} (día ${rec.step.day})`)
         }
       }
+      reasons.push(`casa=${h.name} vac=${inVac} due=${due.length} checks=${checks.length}`)
+      if (inVac) continue
       if (due.length === 0 && checks.length === 0) continue
 
       let title = `🌿 ${h.name}: toca regar`
@@ -144,6 +147,7 @@ export async function POST(req: Request) {
         ],
         data: { household_id: h.id },
       }, muted)
+      reasons.push(`sent=${ok}`)
       if (ok) sentCount++
     }
   }
@@ -173,7 +177,7 @@ export async function POST(req: Request) {
       )
     }
   }
-  console.log("[reminder] run", todayMadrid, `${currentHour}:${String(currentMM).padStart(2, "0")}`, "sent:", sentCount)
+  console.log("[reminder] run", todayMadrid, `${currentHour}:${String(currentMM).padStart(2, "0")}`, "sent:", sentCount, "|", reasons.join(" | "))
   return NextResponse.json({ sent: sentCount })
 }
 
