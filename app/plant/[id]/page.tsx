@@ -400,7 +400,10 @@ export default function PlantDetail() {
           )}
         </div>
 
-        <div className="mt-3 rounded-xl bg-[#faf7f0] p-3 shadow-sm">
+        <section className="mt-3 rounded-xl bg-[#faf7f0] p-4 shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold text-stone-800">🏥 Salud</h2>
+          
+          {/* Estado actual */}
           <p className="mb-2 text-sm font-medium text-stone-700">¿Cómo está hoy?</p>
           <div className="flex gap-2">
             <button onClick={() => markHealth("green")}
@@ -415,11 +418,39 @@ export default function PlantDetail() {
               Último estado: {HEALTH_ICON[lastHealth.health!]} · {fmt(lastHealth.occurred_at)}
             </p>
           )}
-        </div>
 
-        <div className="mt-3">
-          <HealthChart plantId={plant.id} forceSnapshot />
-        </div>
+          {/* Gráfico de evolución */}
+          <div className="mt-4">
+            <HealthChart plantId={plant.id} forceSnapshot />
+          </div>
+
+          {/* Seguimiento */}
+          <details
+            key={plant.recovery_kind ?? "none"}
+            open={!!plant.recovery_kind}
+            className="mt-4 rounded-lg bg-white/50 p-3"
+          >
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-stone-800">🩺 Seguimiento</span>
+                {plant.recovery_kind ? (
+                  <span className="rounded-full bg-[#f5ece6] px-2 py-0.5 text-xs font-medium text-[#8a3a1a]">
+                    1 en curso
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+                    sin activo
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-stone-400">{plant.recovery_kind ? "▴" : "▾"}</span>
+            </summary>
+            <div className="mt-3">
+              <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
+            </div>
+          </details>
+        </section>
+
       </header>
       <section className="mb-6 rounded-xl bg-[#f7f0e3] p-4 shadow-sm">
         {editingTips ? (
@@ -535,30 +566,6 @@ export default function PlantDetail() {
         )
       })()}
 
-      <details
-        key={plant.recovery_kind ?? "none"}
-        open={!!plant.recovery_kind}
-        className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm"
-      >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-stone-800">🩺 Seguimiento</span>
-            {plant.recovery_kind ? (
-              <span className="rounded-full bg-[#f5ece6] px-2 py-0.5 text-xs font-medium text-[#8a3a1a]">
-                1 en curso
-              </span>
-            ) : (
-              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
-                sin activo
-              </span>
-            )}
-          </div>
-          <span className="text-xs text-stone-400">{plant.recovery_kind ? "▴" : "▾"}</span>
-        </summary>
-        <div className="mt-3">
-          <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
-        </div>
-      </details>
 
       <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">
