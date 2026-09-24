@@ -439,7 +439,6 @@ export default function PlantDetail() {
             key={plant.recovery_kind ?? "none"}
             open={!!plant.recovery_kind || !!recoveryPreset}
             className="mt-4 rounded-lg bg-white/50 p-3"
-            <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} preset={recoveryPreset} />
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -457,7 +456,7 @@ export default function PlantDetail() {
               <span className="text-xs text-stone-400">{plant.recovery_kind ? "▴" : "▾"}</span>
             </summary>
             <div className="mt-3">
-              <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} />
+              <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} preset={recoveryPreset} />
             </div>
           </details>
         </section>
