@@ -393,7 +393,7 @@ export default function PlantDetail() {
         <div className="mt-4 flex flex-wrap gap-2">
 <button onClick={() => quickWater(false)}
             className="rounded-xl bg-[#5a7d4a] px-4 py-2.5 text-sm text-white hover:bg-[#4a6a3a]">
-            💧 Regar {waterAmt ? `(${waterAmt} ml)` : ""}
+            💧 Regar {waterAmt ? `(${waterAmt.min}–${waterAmt.max} ml)` : ""}
           </button>
           {plant.misting_enabled && (
 <button onClick={() => quickWater(true)}
