@@ -20,6 +20,8 @@ import { DEATH_CAUSES } from "@/lib/causes"
 import CropModal from "@/components/CropModal"
 import { EVENT_LABELS, waterAmount, daysSince, daysUntilDue, type Plant } from "@/lib/plants"
 import ShareCard from "@/components/ShareCard"
+import SymptomChecker from "@/components/SymptomChecker"
+import type { ProtocolKind, Culprit, Severity } from "@/lib/protocols"
 
 type EventRow = {
   id: string
@@ -90,6 +92,7 @@ export default function PlantDetail() {
   const [summerStart, setSummerStart] = useState(5)
   const [summerEnd, setSummerEnd] = useState(9)
   const [showShare, setShowShare] = useState(false)
+  const [recoveryPreset, setRecoveryPreset] = useState<{ kind: ProtocolKind; culprit: Culprit | null; severity: Severity } | null>(null)
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -434,8 +437,9 @@ export default function PlantDetail() {
           {/* Seguimiento */}
           <details
             key={plant.recovery_kind ?? "none"}
-            open={!!plant.recovery_kind}
+            open={!!plant.recovery_kind || !!recoveryPreset}
             className="mt-4 rounded-lg bg-white/50 p-3"
+            <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} preset={recoveryPreset} />
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -572,7 +576,10 @@ export default function PlantDetail() {
           </section>
         )
       })()}
-
+      <SymptomChecker
+        plant={plant}
+        onStartRecovery={(k, c, s) => setRecoveryPreset({ kind: k, culprit: c, severity: s })}
+      />
 
       <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">

@@ -8,6 +8,7 @@ import {
   type ProtocolKind, type Severity, type Culprit,
 } from "@/lib/protocols"
 import ProblemModal from "./ProblemModal"
+import { useEffect, useState } from "react"
 
 export default function RecoveryPanel({ plant, userId, onChanged }: {
   plant: Plant
@@ -16,7 +17,26 @@ export default function RecoveryPanel({ plant, userId, onChanged }: {
 }) {
   const [showStart, setShowStart] = useState(false)
   const inProgress = plant.recovery_started_at && plant.recovery_kind
+export default function RecoveryPanel({ plant, userId, onChanged, preset }: {
+  plant: Plant
+  userId: string
+  onChanged: () => void
+  preset?: { kind: ProtocolKind; culprit: Culprit | null; severity: Severity } | null
+}) {
+  const [showStart, setShowStart] = useState(false)
+  useEffect(() => { if (preset) setShowStart(true) }, [preset])
+  const inProgress = plant.recovery_started_at && plant.recovery_kind
 
+        {showStart && (
+          <ProblemModal
+            plant={plant}
+            onClose={() => setShowStart(false)}
+            onStarted={onChanged}
+            initialKind={preset?.kind}
+            initialCulprit={preset?.culprit ?? null}
+            initialSeverity={preset?.severity}
+          />
+        )}
   if (!inProgress) {
     return (
       <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm dark:bg-stone-800">
