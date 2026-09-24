@@ -8,6 +8,7 @@ import {
   type ProtocolKind, type Severity, type Culprit,
 } from "@/lib/protocols"
 import ProblemModal from "./ProblemModal"
+import SymptomChecker from "./SymptomChecker"
 
 export default function RecoveryPanel({ plant, userId, onChanged, preset }: {
   plant: Plant
@@ -19,7 +20,50 @@ export default function RecoveryPanel({ plant, userId, onChanged, preset }: {
   useEffect(() => { if (preset) setShowStart(true) }, [preset])
   const inProgress = plant.recovery_started_at && plant.recovery_kind
 
-  if (!inProgress) {
+   if (!inProgress) {
+    if (preset) {
+      // El diagnóstico ya está hecho: guardar en historial + iniciar protocolo
+      return (
+        <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm dark:bg-stone-800">
+          <p className="mb-3 text-sm text-stone-700 dark:text-stone-200">
+            Diagnóstico: <b>{KIND_LABEL[preset.kind]}</b>
+            {preset.culprit && <> · {CULPRIT_LABEL[preset.culprit]}</>}
+            {" · "}{SEVERITY_LABEL[preset.severity]}
+          </p>
+          <button
+            onClick={async () => {
+              // 1) Guardar en historial
+              const { data: { user } } = await supabase.auth.getUser()
+              if (user) {
+                await supabase.from("care_events").insert({
+                  plant_id: plant.id,
+                  user_id: user.id,
+                  type: "observation",
+                  notes: `🔎 Diagnóstico: ${KIND_LABEL[preset.kind]}${preset.culprit ? " · " + CULPRIT_LABEL[preset.culprit] : ""} · ${SEVERITY_LABEL[preset.severity]}`,
+                })
+              }
+              // 2) Iniciar protocolo
+              await supabase.from("plants").update({
+                recovery_kind: preset.kind,
+                recovery_culprit: preset.culprit,
+                recovery_severity: preset.severity,
+                recovery_started_at: new Date().toISOString(),
+                recovery_step: 1,
+                recovery_check_at: new Date(Date.now() + 86400000).toISOString(),
+              }).eq("id", plant.id)
+              onChanged()
+            }}
+            className="rounded bg-[#5a7d4a] px-3 py-2 text-sm text-white hover:bg-[#4a6a3a]"
+          >
+            ✓ Confirmar y empezar seguimiento
+          </button>
+          <button onClick={onChanged} className="ml-2 rounded px-3 py-2 text-sm text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-700">
+            Cancelar
+          </button>
+        </section>
+      )
+    }
+
     return (
       <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm dark:bg-stone-800">
         <button onClick={() => setShowStart(true)}
@@ -31,14 +75,7 @@ export default function RecoveryPanel({ plant, userId, onChanged, preset }: {
           La app te irá guiando con pasos y chequeos.
         </p>
         {showStart && (
-          <ProblemModal
-            plant={plant}
-            onClose={() => setShowStart(false)}
-            onStarted={onChanged}
-            initialKind={preset?.kind}
-            initialCulprit={preset?.culprit ?? null}
-            initialSeverity={preset?.severity}
-          />
+          <ProblemModal plant={plant} onClose={() => setShowStart(false)} onStarted={onChanged} />
         )}
       </section>
     )

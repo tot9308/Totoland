@@ -459,6 +459,18 @@ export default function PlantDetail() {
               <RecoveryPanel plant={plant} userId={userId ?? ""} onChanged={reload} preset={recoveryPreset} />
             </div>
           </details>
+          <details className="mt-4 rounded-lg bg-white/50 p-3">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
+              <span className="text-sm font-semibold text-stone-800">🔎 Diagnóstico por síntomas</span>
+              <span className="text-xs text-stone-400">▾</span>
+            </summary>
+            <div className="mt-3">
+              <SymptomChecker
+                plant={plant}
+                onStartRecovery={(k, c, s) => setRecoveryPreset({ kind: k, culprit: c, severity: s })}
+              />
+            </div>
+          </details>
         </section>
 
       </header>
@@ -575,10 +587,6 @@ export default function PlantDetail() {
           </section>
         )
       })()}
-      <SymptomChecker
-        plant={plant}
-        onStartRecovery={(k, c, s) => setRecoveryPreset({ kind: k, culprit: c, severity: s })}
-      />
 
       <section className="mb-6">
         <div className="mb-2 flex items-center justify-between">

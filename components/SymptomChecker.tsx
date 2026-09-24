@@ -244,8 +244,15 @@ export default function SymptomChecker({
                   <div className="flex flex-wrap justify-end gap-2">
                     {topCause?.kind && onStartRecovery && (
                       <button
-                        onClick={() => onStartRecovery(topCause.kind!, topCause.culprit ?? null, severity ?? "moderate")}
+                        onClick={() => {
+                          onStartRecovery(topCause.kind!, topCause.culprit ?? null, severity ?? "moderate")
+                          // Resetear el cuestionario
+                          setSel(null); setStep(0); setScores(baseScores); setSeverity(null); setNotes(""); setFile(null)
+                        }}
                         className="rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
+                        🩺 Iniciar seguimiento
+                      </button>
+                    )}
                         🩺 Iniciar seguimiento
                       </button>
                     )}
