@@ -10,6 +10,32 @@ Registro de cambios de Totoland. Formato inspirado en [Keep a Changelog](https:/
 - 🗺️ Buscador de especies con filtros (luz, riego, dificultad, mascotas)
 - 🌿 Patrones de éxito: qué especies te funcionan mejor en casa
 
+## [0.15.0] - 2026-09-24
+
+### Añadido
+
+- 🔎 **Sistema de diagnóstico por síntomas completo**: cuestionario interactivo con 11 síntomas comunes (hojas amarillas, puntas secas, mustia, plagas, manchas, polvo blanco, brotes deformes, tallo blando, falta de floración, caída de hojas, crecimiento lento) y sus causas probables
+- 🧠 **Contexto de planta**: el diagnóstico ajusta los pesos según la especie (suculenta vs tropical), último riego, presencia de plato, etc. "Hojas amarillas" en calathea vs sansevieria ahora apunta a causas opuestas
+- 🩺 **Integración con protocolos de recuperación**: al finalizar el diagnóstico, botón "Iniciar seguimiento" que guarda en historial y arranca el protocolo con tipo y culpable preseleccionados
+- 📊 **Puntuación visible**: barritas de confianza en los resultados y detección de empates
+- 📷 **Foto opcional**: adjunta foto del síntoma al guardar el diagnóstico en el historial
+- ❓ **Pregunta de gravedad**: al final del cuestionario para determinar severidad (leve/moderada/grave)
+- 🤷 **Botón "No estoy seguro"**: en cada pregunta para no forzar respuestas inventadas
+- 📝 **Guardado en historial**: botón para registrar el diagnóstico como observación sin iniciar protocolo
+- 🎯 **Causas "naturales"**: incluye renovación de hojas, reposo invernal y variegación para evitar sobrediagnóstico
+
+### Mejorado
+
+- 🏥 **Diagnóstico integrado en la sección de Salud**: plegado por defecto, solo un botón para abrir el cuestionario cuando lo necesitas
+- 🔄 **Flujo unificado**: un solo botón "🩺 Iniciar seguimiento" que guarda en historial + arranca protocolo (acción única)
+- 📖 **Contenido extraído a `lib/symptoms.ts`**: tipos y catálogo en módulo separado para reutilización
+
+### Técnico
+
+- 🗄️ Nueva columna `event_id` en tabla `photos` para vincular fotos a eventos del historial
+- 🔧 `RecoveryPanel` acepta `preset` con valores iniciales del diagnóstico
+- 🔧 `ProblemModal` acepta `initialKind`, `initialCulprit`, `initialSeverity`
+
 ## [0.14.0] - 2026-09-23
 
 ### Añadido

@@ -124,7 +124,6 @@ export default function SymptomChecker({
         Elige el síntoma y responde unas preguntas para afinar la causa.
       </p>
 
-      {/* Lista de síntomas */}
       {!symptom && (
         <div className="flex flex-wrap gap-2">
           {SYMPTOMS.map(s => (
@@ -136,7 +135,6 @@ export default function SymptomChecker({
         </div>
       )}
 
-      {/* Preguntas */}
       {symptom && step < symptom.questions.length && (
         <div>
           <div className="mb-2 flex items-center justify-between">
@@ -162,7 +160,6 @@ export default function SymptomChecker({
         </div>
       )}
 
-      {/* Pregunta de gravedad */}
       {symptom && step === symptom.questions.length && (
         <div>
           <div className="mb-2 flex items-center justify-between">
@@ -185,7 +182,6 @@ export default function SymptomChecker({
         </div>
       )}
 
-      {/* Resultado */}
       {symptom && step > symptom.questions.length && (
         <div>
           <div className="mb-2 flex items-center justify-between">
@@ -246,13 +242,14 @@ export default function SymptomChecker({
                       <button
                         onClick={() => {
                           onStartRecovery(topCause.kind!, topCause.culprit ?? null, severity ?? "moderate")
-                          // Resetear el cuestionario
-                          setSel(null); setStep(0); setScores(baseScores); setSeverity(null); setNotes(""); setFile(null)
+                          setSel(null)
+                          setStep(0)
+                          setScores(baseScores)
+                          setSeverity(null)
+                          setNotes("")
+                          setFile(null)
                         }}
                         className="rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
-                        🩺 Iniciar seguimiento
-                      </button>
-                    )}
                         🩺 Iniciar seguimiento
                       </button>
                     )}
