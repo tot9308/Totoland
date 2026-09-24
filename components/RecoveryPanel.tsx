@@ -1,6 +1,6 @@
 ﻿"use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { type Plant } from "@/lib/plants"
 import {
@@ -8,15 +8,7 @@ import {
   type ProtocolKind, type Severity, type Culprit,
 } from "@/lib/protocols"
 import ProblemModal from "./ProblemModal"
-import { useEffect, useState } from "react"
 
-export default function RecoveryPanel({ plant, userId, onChanged }: {
-  plant: Plant
-  userId: string
-  onChanged: () => void
-}) {
-  const [showStart, setShowStart] = useState(false)
-  const inProgress = plant.recovery_started_at && plant.recovery_kind
 export default function RecoveryPanel({ plant, userId, onChanged, preset }: {
   plant: Plant
   userId: string
@@ -27,16 +19,6 @@ export default function RecoveryPanel({ plant, userId, onChanged, preset }: {
   useEffect(() => { if (preset) setShowStart(true) }, [preset])
   const inProgress = plant.recovery_started_at && plant.recovery_kind
 
-        {showStart && (
-          <ProblemModal
-            plant={plant}
-            onClose={() => setShowStart(false)}
-            onStarted={onChanged}
-            initialKind={preset?.kind}
-            initialCulprit={preset?.culprit ?? null}
-            initialSeverity={preset?.severity}
-          />
-        )}
   if (!inProgress) {
     return (
       <section className="mb-6 rounded-xl bg-[#faf7f0] p-4 shadow-sm dark:bg-stone-800">
@@ -49,7 +31,14 @@ export default function RecoveryPanel({ plant, userId, onChanged, preset }: {
           La app te irá guiando con pasos y chequeos.
         </p>
         {showStart && (
-          <ProblemModal plant={plant} onClose={() => setShowStart(false)} onStarted={onChanged} />
+          <ProblemModal
+            plant={plant}
+            onClose={() => setShowStart(false)}
+            onStarted={onChanged}
+            initialKind={preset?.kind}
+            initialCulprit={preset?.culprit ?? null}
+            initialSeverity={preset?.severity}
+          />
         )}
       </section>
     )

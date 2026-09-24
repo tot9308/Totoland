@@ -8,14 +8,17 @@ import {
   type ProtocolKind, type Severity, type Culprit,
 } from "@/lib/protocols"
 
-export default function ProblemModal({ plant, onClose, onStarted }: {
+export default function ProblemModal({ plant, onClose, onStarted, initialKind, initialCulprit, initialSeverity }: {
   plant: Plant
   onClose: () => void
   onStarted: () => void
+  initialKind?: ProtocolKind
+  initialCulprit?: Culprit | null
+  initialSeverity?: Severity
 }) {
-  const [kind, setKind] = useState<ProtocolKind>("pest")
-  const [culprit, setCulprit] = useState<Culprit>(null)
-  const [severity, setSeverity] = useState<Severity>("moderate")
+  const [kind, setKind] = useState<ProtocolKind>(initialKind ?? "pest")
+  const [culprit, setCulprit] = useState<Culprit>(initialCulprit ?? null)
+  const [severity, setSeverity] = useState<Severity>(initialSeverity ?? "moderate")
   const [busy, setBusy] = useState(false)
 
   const culprits = CULPRIT_BY_KIND[kind]
@@ -55,7 +58,7 @@ export default function ProblemModal({ plant, onClose, onStarted }: {
           </select>
         </label>
 
-        {culprits.length > 0 && (
+        {culprits && culprits.length > 0 && (
           <label className="mb-3 block text-sm text-stone-800 dark:text-stone-100">
             ¿Cuál crees que es el culpable?
             <select value={culprit ?? ""} onChange={e => setCulprit((e.target.value || null) as Culprit)}
