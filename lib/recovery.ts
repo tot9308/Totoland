@@ -156,3 +156,11 @@ export function plantCategory(card: SpeciesCard | undefined): string {
     return "Frutal"
   return "Planta de interior"
 }
+// Frecuencia recomendada según tipo de planta:
+// tropicales 3 d, epífitas/helechos 2 d, mediterráneas 7 d, suculentas nunca.
+export function recommendedMistingDays(type: string): number | null {
+  if (type === "tropical") return 3
+  if (type === "epiphyte") return 2
+  if (type === "mediterranean") return 7
+  return null
+}

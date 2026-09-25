@@ -28,6 +28,8 @@ export type Plant = {
   recovery_culprit: string | null
   death_cause: string | null
   crop_box: { x: number; y: number; width: number; height: number } | null
+  misting_frequency_days: number | null
+  last_misted_at: string | null
 }
 
 export const EVENT_LABELS: Record<string, string> = {
@@ -170,4 +172,22 @@ export function healthLevel(plant: Plant, ss: number, se: number): number {
   if (du !== null && du <= -4) return 2
   if (du !== null && du < 0) return 1
   return 0
+}
+// ---------- Pulverización ----------
+// En verano hay más humedad ambiental, así que se espacia (×2).
+// En invierno (calefacción, aire seco) se mantiene la frecuencia base.
+export function mistingFreqForSeason(p: Plant, summerStart: number, summerEnd: number): number | null {
+  if (!p.misting_enabled) return null
+  const base = p.misting_frequency_days
+  if (!base) return null
+  const month = new Date().getMonth() + 1
+  const inSummer = month >= summerStart && month <= summerEnd
+  return inSummer ? Math.round(base * 2) : base
+}
+
+export function mistingDue(p: Plant, summerStart: number, summerEnd: number): boolean {
+  const freq = mistingFreqForSeason(p, summerStart, summerEnd)
+  if (!freq) return false
+  if (!p.last_misted_at) return true
+  return daysSince(p.last_misted_at) >= freq
 }
