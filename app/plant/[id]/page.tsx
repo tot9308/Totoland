@@ -18,7 +18,7 @@ import { useConfirm } from "@/components/UiProvider"
 import HealthChart from "@/components/HealthChart"
 import { DEATH_CAUSES } from "@/lib/causes"
 import CropModal from "@/components/CropModal"
-import { EVENT_LABELS, waterAmount, daysSince, daysUntilDue, type Plant } from "@/lib/plants"
+import { EVENT_LABELS, waterAmount, daysSince, daysUntilDue, type Plant, mistingDue, mistingFreqForSeason } from "@/lib/plants"
 import ShareCard from "@/components/ShareCard"
 import SymptomChecker from "@/components/SymptomChecker"
 import type { ProtocolKind, Culprit, Severity } from "@/lib/protocols"
@@ -162,6 +162,16 @@ export default function PlantDetail() {
     if (error) return alert(error.message)
 
     await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", plant.id)
+    await reload()
+  }
+
+  async function quickMist() {
+    if (!plant || !userId) return
+    const { error } = await supabase.from("care_events").insert({
+      plant_id: plant.id, user_id: userId, type: "misting",
+    })
+    if (error) return alert(error.message)
+    await supabase.from("plants").update({ last_misted_at: new Date().toISOString() }).eq("id", plant.id)
     await reload()
   }
 
@@ -357,6 +367,18 @@ export default function PlantDetail() {
                 })()}
               </p>
             )}
+            {plant.misting_enabled && plant.last_misted_at && (
+              <p className="text-xs text-stone-500">
+                🌫️ Última pulverización: hace {daysSince(plant.last_misted_at)} días
+                {(() => {
+                  const f = mistingFreqForSeason(plant, summerStart, summerEnd)
+                  if (!f) return ""
+                  return mistingDue(plant, summerStart, summerEnd)
+                    ? " · ¡toca hoy!"
+                    : ` · próxima en ${f - daysSince(plant.last_misted_at)} días`
+                })()}
+              </p>
+            )}
           </div>
           <div className="relative">
             <button onClick={() => setShowMore(m => !m)}
@@ -412,9 +434,15 @@ export default function PlantDetail() {
             💧 Regar {waterAmt ? `(${waterAmt.min}–${waterAmt.max} ml)` : ""}
           </button>
           {plant.misting_enabled && (
-<button onClick={() => quickWater(true)}
+            <button onClick={() => quickMist()}
+              className="rounded-xl bg-[#7ba7bc] px-4 py-2.5 text-sm text-white hover:bg-[#5a8ca6]">
+              🌫️ Solo pulverizar
+            </button>
+          )}
+          {plant.misting_enabled && (
+            <button onClick={() => quickWater(true)}
               className="rounded-xl bg-[#5a8ca6] px-4 py-2.5 text-sm text-white hover:bg-[#497691]">
-              💧 + 🌫 Pulverizar
+              💧 + 🌫️ Ambas
             </button>
           )}
           <button onClick={() => setShowShare(true)}
