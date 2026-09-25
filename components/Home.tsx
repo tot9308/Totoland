@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, daysSince, daysUntilDue, effectiveFreq, isDue, type Plant } from "@/lib/plants"
+import { EVENT_LABELS, daysSince, daysUntilDue, effectiveFreq, isDue, type Plant, mistingDue } from "@/lib/plants"
 import { findSpecies } from "@/lib/species"
 import { plantType, severityFor, rehydrateTip, startRecovery } from "@/lib/recovery"
 import PlantCard from "./PlantCard"
@@ -133,6 +133,7 @@ export default function Home({ session }: { session: Session }) {
   const active = plants.filter(p => p.status !== "dead")
   const dead = plants.filter(p => p.status === "dead")
   const due = active.filter(p => isDue(p, summerStart, summerEnd))
+  const mistList = active.filter(p => mistingDue(p, summerStart, summerEnd))
   const inRecovery = active.filter(p => p.recovery_kind).length
   const stressed = active.filter(p => healthByPlant[p.id]?.health === "red").length
   const recoveryBadge = inRecovery + stressed
@@ -206,6 +207,19 @@ export default function Home({ session }: { session: Session }) {
     await reload()
     showToast(`Riego registrado (${list.length})`, batch, list.map(p => p.id))
     celebrateAchievements()
+  }
+
+  async function mistAll() {
+    if (!userId || mistList.length === 0) return
+    const batch = crypto.randomUUID()
+    const rows = mistList.map(p => ({ plant_id: p.id, user_id: userId, type: "misting", batch_id: batch }))
+    const { error } = await supabase.from("care_events").insert(rows)
+    if (error) return alert(error.message)
+    const nowIso = new Date().toISOString()
+    for (const p of mistList) {
+      await supabase.from("plants").update({ last_misted_at: nowIso }).eq("id", p.id)
+    }
+    reload()
   }
 
   async function quickEvent(p: Plant, type: string) {
@@ -351,6 +365,21 @@ export default function Home({ session }: { session: Session }) {
           <div className="text-sm text-stone-600">Ronda completa</div>
         </button>
       </section>
+
+      {mistList.length > 0 && (
+        <section className="mb-4 rounded-xl bg-[#dfe9ee] p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-stone-800">
+            🌫️ Pulverizar pendientes ({mistList.length})
+          </h2>
+          <p className="mb-2 text-xs text-stone-600">
+            Ambiente seco: toca humedad extra en el follaje. No mojes por la noche ni a pleno sol.
+          </p>
+          <button onClick={mistAll}
+            className="rounded bg-[#5a8ca6] px-3 py-2 text-sm text-white hover:bg-[#497691]">
+            🌫️ Pulverizar todas
+          </button>
+        </section>
+      )}
 
       <section className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-stone-800">
