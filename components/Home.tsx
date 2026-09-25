@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/UiProvider"
 import { detectNewAchievements } from "@/lib/achievements"
 import { currentRecoveryStep, CULPRIT_LABEL, answerCheck, KIND_LABEL, SEVERITY_LABEL, type ProtocolKind, type Severity } from "@/lib/protocols"
+import Link from "next/link"
 
 
 type Toast = { message: string; batch: string; plantIds: string[] }
@@ -300,7 +301,8 @@ export default function Home({ session }: { session: Session }) {
                 if (!rec) return null
                 const hasQ = !!rec.step.question && !!rec.step.options?.length
                 return (
-                  <div key={p.id} className="rounded-lg bg-white/70 p-3">
+                  <Link key={p.id} href={`/plant/${p.id}#seguimiento`}
+                    className="block rounded-lg bg-white/70 p-3 transition hover:bg-white/90 hover:shadow">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-semibold text-stone-800">
                         🪴 {p.name}
@@ -319,47 +321,17 @@ export default function Home({ session }: { session: Session }) {
                     </p>
                     <p className="text-xs text-stone-600">{rec.step.description}</p>
                     {rec.isDueToday && (
-                      <div className="mt-2">
-                        {hasQ && (
-                          <p className="mb-1 text-sm font-medium text-stone-800">❓ {rec.step.question}</p>
-                        )}
-                        <div className="flex flex-wrap gap-1">
-                          {hasQ ? (
-                            rec.step.options!.map((opt, i) => {
-                              const color = opt.result === "ok"
-                                ? "bg-[#5a7d4a] hover:bg-[#4a6a3a]"
-                                : opt.result === "topup"
-                                ? "bg-[#5a8ca6] hover:bg-[#497691]"
-                                : "bg-[#b5603d] hover:bg-[#9c4f31]"
-                              return (
-                                <button key={i}
-                                  onClick={async () => { await answerCheck(p, userId, opt.result); reload() }}
-                                  className={"rounded px-2 py-1 text-xs text-white " + color}>
-                                  {opt.label}
-                                </button>
-                              )
-                            })
-                          ) : (
-                            <>
-                              <button onClick={async () => { await answerCheck(p, userId, "ok"); reload() }}
-                                className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white hover:bg-[#4a6a3a]">✅ Recuperada</button>
-                              <button onClick={async () => { await answerCheck(p, userId, "topup"); reload() }}
-                                className="rounded bg-[#5a8ca6] px-2 py-1 text-xs text-white hover:bg-[#497691]">💧 Sigo el tratamiento</button>
-                              <button onClick={async () => { await answerCheck(p, userId, "still"); reload() }}
-                                className="rounded bg-[#b5603d] px-2 py-1 text-xs text-white hover:bg-[#9c4f31]">😟 Sin cambios</button>
-                            </>
-                          )}
-                        </div>
-                      </div>
+                      <p className="mt-2 text-xs font-medium text-[#b5603d]">
+                        → Pulsa para ver el chequeo completo
+                      </p>
                     )}
-                  </div>
+                  </Link>
                 )
               })}
             </div>
           </section>
         )
       })()}
-
       <section className="mb-6 grid gap-3 md:grid-cols-2">
         <button
           onClick={() => water(due, false)}

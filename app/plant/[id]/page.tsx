@@ -139,6 +139,19 @@ export default function PlantDetail() {
 
   useEffect(() => { reload() }, [reload])
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (window.location.hash === "#seguimiento") {
+      setTimeout(() => {
+        const el = document.getElementById("seguimiento") as HTMLDetailsElement | null
+        if (el) {
+          el.open = true
+          el.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+      }, 100)
+    }
+  }, [plant])
+
   async function quickWater(withMist: boolean) {
     if (!plant || !userId) return
     const batch = crypto.randomUUID()
@@ -436,6 +449,7 @@ export default function PlantDetail() {
 
           {/* Seguimiento */}
           <details
+            id="seguimiento"
             key={plant.recovery_kind ?? "none"}
             open={!!plant.recovery_kind || !!recoveryPreset}
             className="mt-4 rounded-lg bg-white/50 p-3"
