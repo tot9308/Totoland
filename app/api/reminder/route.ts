@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@supabase/supabase-js"
 import webpush from "web-push"
-import { daysUntilDue, healthLevel } from "@/lib/plants"
+import { daysUntilDue, healthLevel, mistingDue } from "@/lib/plants"
 import { currentRecoveryStep, CULPRIT_LABEL } from "@/lib/protocols"
 
 function initVapid() {
@@ -130,11 +130,22 @@ export async function POST(req: Request) {
       }
       reasons.push(`casa=${h.name} vac=${inVac} due=${due.length} checks=${checks.length}`)
       if (inVac) continue
-      if (due.length === 0 && checks.length === 0) continue
+      // Pulverización pendiente (ajustada por temporada)
+      const mist: string[] = []
+      for (const p of plants ?? []) {
+        if (mistingDue(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 9)) mist.push(p.name)
+      }
+      reasons.push(`mist=${mist.length}`)
+      if (due.length === 0 && checks.length === 0 && mist.length === 0) continue
 
       let title = `🌿 ${h.name}: toca regar`
-      if (due.length === 0 && checks.length > 0) title = `🩺 ${h.name}: chequeo de recuperación`
+      if (due.length === 0 && checks.length === 0 && mist.length > 0) title = `🌫️ ${h.name}: toca pulverizar`
+      else if (due.length > 0 && mist.length > 0) title = `💧+🌫️ ${h.name}: riego y pulverizado`
+      else if (due.length === 0 && mist.length === 0 && checks.length > 0) title = `🩺 ${h.name}: chequeo de recuperación`
       const dueTxt = due.slice(0, 5).join(", ") + (due.length > 5 ? "…" : "")
+      const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
+      const mistTxt = mist.length > 0 ? "🌫️ Pulverizar: " + mist.slice(0, 5).join(", ") + (mist.length > 5 ? "…" : "") : ""
+      const body = [dueTxt, checksTxt, mistTxt].filter(Boolean).join(" · ")
       const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
       const body = [dueTxt, checksTxt].filter(Boolean).join(" · ")
 
