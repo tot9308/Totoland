@@ -367,18 +367,20 @@ export default function PlantDetail() {
                 })()}
               </p>
             )}
-            {plant.misting_enabled && plant.last_misted_at && (
-              <p className="text-xs text-stone-500">
-                🌫️ Última pulverización: hace {daysSince(plant.last_misted_at)} días
-                {(() => {
-                  const f = mistingFreqForSeason(plant, summerStart, summerEnd)
-                  if (!f) return ""
-                  return mistingDue(plant, summerStart, summerEnd)
-                    ? " · ¡toca hoy!"
-                    : ` · próxima en ${f - daysSince(plant.last_misted_at)} días`
-                })()}
-              </p>
-            )}
+            {plant.misting_enabled && plant.last_misted_at && (() => {
+              const lastMisted = plant.last_misted_at!
+              const freq = mistingFreqForSeason(plant, summerStart, summerEnd)
+              if (!freq) return null
+              const days = daysSince(lastMisted)
+              if (days === null) return null
+              const isDue = mistingDue(plant, summerStart, summerEnd)
+              return (
+                <p className="text-xs text-stone-500">
+                  🌫️ Última pulverización: hace {days} días
+                  {isDue ? " · ¡toca hoy!" : ` · próxima en ${freq - days} días`}
+                </p>
+              )
+            })()}
           </div>
           <div className="relative">
             <button onClick={() => setShowMore(m => !m)}

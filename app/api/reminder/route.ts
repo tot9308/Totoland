@@ -146,8 +146,6 @@ export async function POST(req: Request) {
       const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
       const mistTxt = mist.length > 0 ? "🌫️ Pulverizar: " + mist.slice(0, 5).join(", ") + (mist.length > 5 ? "…" : "") : ""
       const body = [dueTxt, checksTxt, mistTxt].filter(Boolean).join(" · ")
-      const checksTxt = checks.length > 0 ? "🩺 Chequeos: " + checks.slice(0, 3).join(", ") : ""
-      const body = [dueTxt, checksTxt].filter(Boolean).join(" · ")
 
       const ok = await sendPush(admin, pr.id, {
         title, body, tag: `daily-${pr.id}-${h.id}`,

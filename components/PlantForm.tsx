@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase"
 import { waterAmountFor, type Plant } from "@/lib/plants"
 import { searchSpecies, LIGHT_LABELS, WATER_LABELS, findSpecies, type SpeciesCard } from "@/lib/species"
 import { careTemplate } from "@/lib/careTemplate"
+import { recommendedMistingDays, plantType } from "@/lib/recovery"
 
 export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   householdId: string
@@ -19,6 +20,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   const [freqSummer, setFreqSummer] = useState(plant?.watering_frequency_days?.toString() ?? "")
   const [freqWinter, setFreqWinter] = useState(plant?.watering_frequency_winter_days?.toString() ?? "")
   const [misting, setMisting] = useState(plant?.misting_enabled ?? false)
+  const [mistingFreq, setMistingFreq] = useState(plant?.misting_frequency_days?.toString() ?? "")
   const [tips, setTips] = useState(plant?.care_tips ?? "")
   const [acquiredAt, setAcquiredAt] = useState(plant?.acquired_at ? plant.acquired_at.slice(0, 10) : "")
   const [potDiameter, setPotDiameter] = useState(plant?.pot_diameter_cm?.toString() ?? "")
@@ -26,7 +28,8 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   const [busy, setBusy] = useState(false)
 
   const suggestions = searchSpecies(species)
-  const style = findSpecies(species)?.water ?? "B"
+  const speciesCard = findSpecies(species) ?? null
+  const style = speciesCard?.water ?? "B"
 
   function pick(s: SpeciesCard) {
     setSpecies(s.sci)
@@ -48,6 +51,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
       watering_frequency_days: freqSummer ? Number(freqSummer) : null,
       watering_frequency_winter_days: freqWinter ? Number(freqWinter) : null,
       misting_enabled: misting,
+      misting_frequency_days: mistingFreq ? Number(mistingFreq) : null,
       care_tips: tips.trim() || null,
       acquired_at: acquiredAt || null,
       pot_diameter_cm: potDiameter ? Number(potDiameter) : null,
@@ -143,6 +147,35 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
           <input type="checkbox" checked={misting} onChange={e => setMisting(e.target.checked)} />
           Le va bien la pulverización de hojas
         </label>
+        {misting && (
+          <label className="mb-3 block text-sm text-stone-800">
+            🌫️ Pulverizar cada (días en invierno)
+            <div className="mt-1 flex items-center gap-2">
+              <input type="number" min={1} max={30}
+                value={mistingFreq}
+                onChange={e => setMistingFreq(e.target.value)}
+                className="w-24 rounded border border-stone-300 px-3 py-2" />
+              <button type="button"
+                onClick={() => {
+  if (!speciesCard) return alert("Elige una especie para usar la recomendación")
+  const plantTypeValue = plant?.plant_type ?? null
+  const rec = recommendedMistingDays(plantType(speciesCard, plantTypeValue))
+  if (rec === null) {
+    alert("Esta especie no necesita pulverización habitual. Si aun así quieres, escríbelo a mano.")
+  } else {
+    setMistingFreq(String(rec))
+  }
+}}
+  
+                className="rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:bg-stone-100">
+                ✨ Recomendado
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-stone-500">
+              En verano se espacia solo (×2) porque hay más humedad ambiental.
+            </p>
+          </label>
+        )}
         <label className="mb-4 block text-sm text-stone-800">
           Cuidados clave (uno por línea)
           <textarea value={tips} onChange={e => setTips(e.target.value)} rows={3}

@@ -189,5 +189,7 @@ export function mistingDue(p: Plant, summerStart: number, summerEnd: number): bo
   const freq = mistingFreqForSeason(p, summerStart, summerEnd)
   if (!freq) return false
   if (!p.last_misted_at) return true
-  return daysSince(p.last_misted_at) >= freq
+  const days = daysSince(p.last_misted_at)
+  if (days === null) return true
+  return days >= freq
 }
