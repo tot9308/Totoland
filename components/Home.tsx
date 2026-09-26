@@ -445,8 +445,7 @@ export default function Home({ session }: { session: Session }) {
                   onWater={() => quickEvent(p, "watering")}
                   onWaterMist={() => water([p], true)}
                 />
-
-{nudge && (
+                {nudge && (
                   <div className="mt-1 rounded-lg bg-[#f5ece6] p-2 text-xs text-stone-700">
                     {hh!.health === "red" ? "🔴" : "🟡"} Lleva {days} días así. ¿Sigue igual?
                     <div className="mt-1 flex gap-2">
