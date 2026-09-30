@@ -85,13 +85,25 @@ export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }:
     const anchorIso = anchored.toISOString()
     try {
       for (const r of selRows) {
-        const keepLast = r.p.last_watered_at ?? anchorIso
-        const payload = r.mode === "mult"
+        // 1) Si la planta no tiene último riego, lo reconstruimos desde su historial real
+        let recovered: string | null = null
+        if (!r.p.last_watered_at) {
+          const { data: ev } = await supabase
+            .from("care_events")
+            .select("occurred_at")
+            .eq("plant_id", r.p.id).eq("type", "watering")
+            .order("occurred_at", { ascending: false })
+            .limit(1)
+          recovered = ev?.[0]?.occurred_at ?? anchorIso
+        }
+
+        // 2) El payload NUNCA incluye last_watered_at si la planta ya tenía uno:
+        //    así es imposible que el sync pise un dato real
+        const payload: Record<string, unknown> = r.mode === "mult"
           ? {
               watering_days: r.days.join(","),
               watering_week_interval: r.interval,
               watering_anchor: anchorIso,
-              last_watered_at: keepLast,
               watering_frequency_days: r.k * cycle,
             }
           : r.mode === "days"
@@ -99,15 +111,15 @@ export default function SyncModal({ plants, onClose, onSaved, onWaterTogether }:
                 watering_days: r.days.join(","),
                 watering_week_interval: 1,
                 watering_anchor: anchorIso,
-                last_watered_at: keepLast,
               }
             : {
                 watering_days: null,
                 watering_week_interval: null,
                 watering_anchor: null,
                 watering_frequency_days: r.k * cycle,
-                last_watered_at: keepLast,
               }
+        if (!r.p.last_watered_at) payload.last_watered_at = recovered
+
         const { error } = await supabase.from("plants").update(payload).eq("id", r.p.id)
         if (error) throw new Error(error.message)
       }
