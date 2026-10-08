@@ -74,6 +74,10 @@ export default function AppMenu({ email, cemeteryCount, recoveryCount, onOpenSet
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 📚 Guía
               </Link>
+<Link href="/species" onClick={() => setOpen(false)}
+  className="rounded px-3 py-2 text-left hover:bg-stone-100">
+  📖 Buscador de especies
+</Link>
               <button onClick={() => { setOpen(false); onOpenTutorial() }}
                 className="block w-full rounded px-3 py-2 text-left hover:bg-stone-100">
                 🎓 Tutorial
