@@ -1,9 +1,24 @@
-import Link from "next/link"
-import { findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS, SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel } from "@/lib/species"
+"use client"
 
-export default function SpeciesDetailPage({ params }: { params: { name: string } }) {
-  const s = findSpecies(decodeURIComponent(params.name))
-  if (!s) return <main className="p-8"><p>Especie no encontrada.</p></main>
+import { useParams } from "next/navigation"
+import Link from "next/link"
+import {
+  findSpecies, LIGHT_LABELS, WATER_LABELS, MIST_LABELS,
+  SUBSTRATE_LABELS, DIFF_LABELS, FLAG_LABELS, fertLabel,
+} from "@/lib/species"
+
+export default function SpeciesDetailPage() {
+  const params = useParams<{ name: string }>()
+  const s = findSpecies(decodeURIComponent(params.name ?? ""))
+
+  if (!s) {
+    return (
+      <main className="min-h-screen bg-stone-50 p-8">
+        <Link href="/species" className="text-sm text-stone-600 hover:underline">← Volver</Link>
+        <p className="mt-4 text-stone-700">Especie no encontrada.</p>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-stone-50 p-4 md:p-8">
