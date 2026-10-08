@@ -5,7 +5,7 @@ import Link from "next/link"
 import Logo from "./Logo"
 import HouseSwitcher from "./HouseSwitcher"
 
-export default function AppMenu({ email, cemeteryCount, recoveryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onChangePassword, onLogout }: {
+export default function AppMenu({ email, cemeteryCount, recoveryCount, onOpenSettings, onOpenSync, onOpenAchievements, onOpenHousehold, onOpenTutorial, onChangePassword, onLogout }: {
   email: string
   cemeteryCount: number
   recoveryCount: number
@@ -13,6 +13,7 @@ export default function AppMenu({ email, cemeteryCount, recoveryCount, onOpenSet
   onOpenSync: () => void
   onOpenAchievements: () => void
   onOpenHousehold: () => void
+  onOpenTutorial: () => void
   onChangePassword: () => void
   onLogout: () => void
 }) {
@@ -73,6 +74,10 @@ export default function AppMenu({ email, cemeteryCount, recoveryCount, onOpenSet
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 📚 Guía
               </Link>
+              <button onClick={() => { setOpen(false); onOpenTutorial() }}
+                className="block w-full rounded px-3 py-2 text-left hover:bg-stone-100">
+                🎓 Tutorial
+              </button>
               <Link href="/cemetery" onClick={() => setOpen(false)}
                 className="rounded px-3 py-2 text-left hover:bg-stone-100">
                 🪦 Cementerio{cemeteryCount > 0 ? ` (${cemeteryCount})` : ""}
