@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { daysSince, daysUntilDue, effectiveFreq, type Plant } from "@/lib/plants"
+import { useState } from "react"
 
 export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summerStart, summerEnd, health }: {
   plant: Plant
@@ -16,6 +17,8 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
   const due = daysUntilDue(plant, summerStart, summerEnd)
   const freq = effectiveFreq(plant, summerStart, summerEnd)
   const days = daysSince(plant.last_watered_at)
+  const [justWatered, setJustWatered] = useState(false)
+  const [justMisted, setJustMisted] = useState(false)
   const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
 
   const overdue = due !== null && due < 0
@@ -86,17 +89,35 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
       {/* Botones (no propagan el click de la tarjeta) */}
       <div className="flex gap-2">
         <button
-          onClick={(e) => { e.stopPropagation(); onWater() }}
-          className="flex-1 rounded-lg bg-[#5a7d4a] px-2 py-2 text-sm font-medium text-white transition hover:bg-[#4a6a3a]"
+          onClick={(e) => {
+            e.stopPropagation()
+            onWater()
+            setJustWatered(true)
+            setTimeout(() => setJustWatered(false), 2000)
+          }}
+          className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium text-white transition-all ${
+            justWatered
+              ? "scale-95 bg-[#3a5a2a]"
+              : "bg-[#5a7d4a] hover:bg-[#4a6a3a]"
+          }`}
         >
-          💧 Regar
+          {justWatered ? "✓ Regado" : "💧 Regar"}
         </button>
         {plant.misting_enabled && (
           <button
-            onClick={(e) => { e.stopPropagation(); onWaterMist() }}
-            className="flex-1 rounded-lg bg-[#5a8ca6] px-2 py-2 text-sm font-medium text-white transition hover:bg-[#497691]"
+            onClick={(e) => {
+              e.stopPropagation()
+              onWaterMist()
+              setJustMisted(true)
+              setTimeout(() => setJustMisted(false), 2000)
+            }}
+            className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium text-white transition-all ${
+              justMisted
+                ? "scale-95 bg-[#3a6a80]"
+                : "bg-[#5a8ca6] hover:bg-[#497691]"
+            }`}
           >
-            💧+🌫
+            {justMisted ? "✓ Hecho" : "💧+🌫"}
           </button>
         )}
       </div>
