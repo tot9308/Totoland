@@ -79,22 +79,27 @@ export async function POST(req: Request) {
     }
   }
 
-  // 3) Recordatorio diario POR USUARIO a su hora (todas las casas) + log de diagnóstico.
+  // 3) Recordatorio diario POR USUARIO a su hora (tolerante a retrasos del cron).
+  //    Envía una vez al día cuando ya ha pasado la hora configurada.
   const reasons: string[] = []
   const { data: profs } = await admin.from("profiles")
-    .select("id, reminder_time").not("reminder_time", "is", null)
+    .select("id, reminder_time, last_daily_sent_date")
   for (const pr of profs ?? []) {
     const hhmm = pr.reminder_time ?? "08:00"
     const [rh, rm] = hhmm.split(":").map(Number)
-    const match = (rh === currentHour && Math.floor(rm / 5) * 5 === currentMM)
-    reasons.push(`u=${pr.id.slice(0, 8)} rem=${hhmm} match=${match}`)
-    if (!match) continue
+    const targetMM = Math.floor(rm / 5) * 5
+    const dueNow = currentHour > rh || (currentHour === rh && currentMM >= targetMM)
+    const alreadySent = pr.last_daily_sent_date === todayMadrid
+    reasons.push(`u=${pr.id.slice(0, 8)} rem=${hhmm} dueNow=${dueNow} already=${alreadySent}`)
+    if (!dueNow || alreadySent) continue
     if (muted.has(pr.id)) { reasons.push("muted"); continue }
     const { data: subsRows } = await admin.from("push_subscriptions")
       .select("id").eq("user_id", pr.id)
     reasons.push(`subs=${(subsRows ?? []).length}`)
+    if ((subsRows ?? []).length === 0) continue
     const { data: memberships } = await admin.from("household_members")
       .select("household_id").eq("user_id", pr.id)
+    let userSent = false
     for (const mem of memberships ?? []) {
       const { data: h } = await admin.from("households")
         .select("id, name, summer_start_month, summer_end_month, vacation_start, vacation_end")
@@ -128,9 +133,8 @@ export async function POST(req: Request) {
           checks.push(`${p.name}${culpritTxt} (día ${rec.step.day})`)
         }
       }
-      reasons.push(`casa=${h.name} vac=${inVac} due=${due.length} checks=${checks.length}`)
+      reasons.push(`casa=${h.name} vac=${inVac ? "SALTADA" : "no"} due=${due.length} checks=${checks.length}`)
       if (inVac) continue
-      // Pulverización pendiente (ajustada por temporada)
       const mist: string[] = []
       for (const p of plants ?? []) {
         if (mistingDue(p as any, h.summer_start_month ?? 5, h.summer_end_month ?? 9)) mist.push(p.name)
@@ -157,9 +161,15 @@ export async function POST(req: Request) {
         data: { household_id: h.id },
       }, muted)
       reasons.push(`sent=${ok}`)
-      if (ok) sentCount++
+      if (ok) { sentCount++; userSent = true }
+    }
+    if (userSent) {
+      await admin.from("profiles")
+        .update({ last_daily_sent_date: todayMadrid })
+        .eq("id", pr.id)
     }
   }
+
 // 4) Snapshot diario de salud para las gráficas
   const { data: allHouses } = await admin
     .from("households").select("id, summer_start_month, summer_end_month")
