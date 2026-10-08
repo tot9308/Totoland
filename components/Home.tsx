@@ -20,6 +20,8 @@ import { useRouter } from "next/navigation"
 import { useConfirm } from "@/components/UiProvider"
 import { detectNewAchievements } from "@/lib/achievements"
 import { currentRecoveryStep, CULPRIT_LABEL, answerCheck, KIND_LABEL, SEVERITY_LABEL, type ProtocolKind, type Severity } from "@/lib/protocols"
+import OnboardingModal from "./OnboardingModal"
+import FirstStepsCard from "./FirstStepsCard"
 import Link from "next/link"
 
 
@@ -64,6 +66,7 @@ export default function Home({ session }: { session: Session }) {
   const [pwCurrent, setPwCurrent] = useState("")
   const [pwNew, setPwNew] = useState("")
   const [achMsg, setAchMsg] = useState<string | null>(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [healthByPlant, setHealthByPlant] = useState<Record<string, { health: string; occurred_at: string }>>({})
 
   function setSortBy(v: "due" | "name" | "location") {
@@ -129,6 +132,14 @@ export default function Home({ session }: { session: Session }) {
       await celebrateAchievements()
     })()
   }, [reload])
+
+  useEffect(() => {
+    (async () => {
+      const { data: prof } = await supabase
+        .from("profiles").select("onboarding_done").eq("id", userId).single()
+      if (prof && prof.onboarding_done === false) setShowOnboarding(true)
+    })()
+  }, [userId])
 
   const active = plants.filter(p => p.status !== "dead")
   const dead = plants.filter(p => p.status === "dead")
@@ -222,6 +233,11 @@ export default function Home({ session }: { session: Session }) {
     reload()
   }
 
+  async function finishOnboarding() {
+    setShowOnboarding(false)
+    await supabase.from("profiles").update({ onboarding_done: true }).eq("id", userId)
+  }
+
   async function quickEvent(p: Plant, type: string) {
     const batch = crypto.randomUUID()
     const { error } = await supabase.from("care_events").insert({
@@ -293,12 +309,22 @@ export default function Home({ session }: { session: Session }) {
           onOpenHousehold={() => setShowHousehold(true)}
           onChangePassword={changePassword}
           onLogout={() => supabase.auth.signOut()}
+          onOpenTutorial={() => setShowOnboarding(true)}
         />
         <Logo size={36} />
       </header>
 
       {householdId && (
         <TasksSection householdId={householdId} plants={plants} onChanged={reload} />
+      )}
+
+      {!showOnboarding && !loading && (
+        <FirstStepsCard
+          hasPlant={active.length > 0}
+          hasWatering={active.some(p => !!p.last_watered_at)}
+          hasHealth={Object.keys(healthByPlant).length > 0}
+          pushGranted={typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted"}
+        />
       )}
 
       {(() => {
@@ -503,6 +529,8 @@ export default function Home({ session }: { session: Session }) {
           onWaterTogether={list => water(list, false)}
         />
       )}
+
+      {showOnboarding && <OnboardingModal onDone={finishOnboarding} />}
 
       {showPw && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
