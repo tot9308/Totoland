@@ -132,7 +132,7 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return alert("No hay sesión iniciada.")
 
-      await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint)
+      await supabase.from("push_subscriptions").delete().eq("user_id", user.id)
 
       const { error } = await supabase.from("push_subscriptions").insert({
         user_id: user.id, endpoint: sub.endpoint, subscription: sub.toJSON(),
