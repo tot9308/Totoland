@@ -400,6 +400,9 @@ export default function Home({ session }: { session: Session }) {
           <p className="mb-2 text-xs text-stone-600">
             Ambiente seco: toca humedad extra en el follaje. No mojes por la noche ni a pleno sol.
           </p>
+          <div className="text-sm text-stone-700">
+            {mistList.map(p => p.name).join(" · ")}
+          </div>
           <button onClick={mistAll}
             className="rounded bg-[#5a8ca6] px-3 py-2 text-sm text-white hover:bg-[#497691]">
             🌫️ Pulverizar todas
