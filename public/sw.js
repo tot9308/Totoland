@@ -7,7 +7,7 @@ self.addEventListener("push", (event) => {
       icon: "/icon-192.png",
       badge: "/badge.png",
       tag: data.tag ?? undefined,
-      actions: data.actions ?? [],
+      actions: (data.actions ?? []).slice(0, 2),
       data: data.data ?? {},
       requireInteraction: false,
     })

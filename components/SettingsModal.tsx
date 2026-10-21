@@ -155,7 +155,11 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
     if (!("serviceWorker" in navigator)) return alert("Este navegador no soporta service workers.")
     if (!("PushManager" in window)) return alert("Este navegador no soporta push.")
     const perm = Notification.permission
-    if (perm !== "granted") return alert("Permiso de notificaciones: " + perm + ". Concédelo primero.")
+    if (perm !== "granted") {
+      if (perm === "default") return alert("Concédelo en: Configuración del navegador → Permisos → Notificaciones")
+      if (perm === "denied") return alert("Permiso denegado. Ve a Configuración del navegador → Notificaciones y activa el permiso.")
+      return alert("Permiso no reconocido: " + perm + ". ¿Olvidaste concederlo?")
+    }
     const reg = await Promise.race([
       navigator.serviceWorker.ready,
       new Promise<ServiceWorkerRegistration | null>(res => setTimeout(() => res(null), 3000)),

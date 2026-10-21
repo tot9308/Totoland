@@ -121,7 +121,7 @@ function speciesDerivedTasks(s: SpeciesCard, p: Plant, month: number): { type: s
 export async function ensureMonthlyTasks(householdId: string, plants: Plant[], month: number, year: number) {
   const { data: existing } = await supabase
     .from("tasks").select("id, plant_id, type, title")
-    .eq("household_id", householdId).eq("month", month).eq("year", year)
+    .eq("household_id", householdId).eq("month", month).eq("year", year).eq("status", "pending")
   if (existing && existing.length > 0) return
 
   const toInsert: object[] = []

@@ -44,6 +44,26 @@ Ver [`ROADMAP.md`](ROADMAP.md) para la lista completa de ideas pendientes.
 - **Notificaciones:** Web Push (VAPID)
 - **Backup:** Raspberry Pi + PostgreSQL + rclone
 
+
+## 🔔 Notificaciones push
+
+- Se envían a **todos los dispositivos activos** del usuario (móvil, PC, tablet).
+- Cada suscripción se guarda en `push_subscriptions` con su propio `endpoint` (servicio push).
+- El servidor (`api/reminder/route.ts`) recorre todas las suscripciones activas y las envía.
+- Si el usuario tiene varias aplicaciones abiertas o varios navegadores, recibirá la notificación en cada uno.
+
+### Variables de entorno requeridas en Vercel
+```
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+CRON_SECRET
+NEXT_PUBLIC_VAPID_PUBLIC_KEY
+VAPID_PRIVATE_KEY
+VAPID_SUBJECT
+```
+
+
 ## 📂 Estructura
 pp/ → Rutas (cada carpeta = una página)
 components/ → Piezas de interfaz reutilizables
