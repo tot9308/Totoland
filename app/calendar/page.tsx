@@ -32,39 +32,65 @@ export default function CalendarPage() {
   const [vacAffectedByDay, setVacAffectedByDay] = useState<Record<number, Plant[]>>({})
 
   const reload = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.replace("/"); return }
-    const household_id = await getActiveHouseholdId(user.id)
-    if (!household_id) { router.replace("/"); return }
-    const mem = { household_id }
-    const { data: pl } = await supabase.from("plants").select("*")
-      .eq("household_id", mem.household_id).neq("status", "dead").order("name")
-    setPlants((pl as Plant[]) ?? [])
-    const { data: hh } = await supabase.from("households")
-      .select("summer_start_month, summer_end_month, vacation_start, vacation_end").eq("id", mem.household_id).single()
-    if (hh) {
-      setSummerStart(hh.summer_start_month ?? 5)
-      setSummerEnd(hh.summer_end_month ?? 9)
-      setVacStart(hh.vacation_start ?? null)
-      setVacEnd(hh.vacation_end ?? null)
-    }
+    setLoading(true)
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        console.error("Auth error:", authError)
+        router.replace("/")
+        return
+      }
+      const household_id = await getActiveHouseholdId(user.id)
+      if (!household_id) {
+        console.error("No active household found for user", user.id)
+        router.replace("/")
+        return
+      }
+      const mem = { household_id }
+      const { data: pl, error: plantsError } = await supabase.from("plants").select("*")
+        .eq("household_id", mem.household_id).neq("status", "dead").order("name")
+      if (plantsError) {
+        console.error("Plants error:", plantsError)
+      }
+      setPlants((pl as Plant[]) ?? [])
+      const { data: hh, error: hhError } = await supabase.from("households")
+        .select("summer_start_month, summer_end_month, vacation_start, vacation_end").eq("id", mem.household_id).single()
+      if (hhError) {
+        console.error("Household error:", hhError)
+      }
+      if (hh) {
+        setSummerStart(hh.summer_start_month ?? 5)
+        setSummerEnd(hh.summer_end_month ?? 9)
+        setVacStart(hh.vacation_start ?? null)
+        setVacEnd(hh.vacation_end ?? null)
+      }
 
-    const start = new Date(year, month, 1).toISOString()
-    const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
-    const ids = ((pl as Plant[]) ?? []).map(p => p.id)
-    if (ids.length) {
-      const { data: ev } = await supabase.from("care_events")
-        .select("id, plant_id, type, occurred_at, notes")
-        .in("plant_id", ids)
-        .gte("occurred_at", start).lte("occurred_at", end)
-      setEvents((ev as EventRow[]) ?? [])
-    } else setEvents([])
-    const { data: tk } = await supabase.from("tasks")
-      .select("id, title, plant_id, type")
-      .eq("household_id", mem.household_id)
-      .eq("month", month + 1).eq("year", year)
-    setTasks((tk as TaskRow[]) ?? [])
-    setLoading(false)
+      const start = new Date(year, month, 1).toISOString()
+      const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
+      const ids = ((pl as Plant[]) ?? []).map(p => p.id)
+      if (ids.length) {
+        const { data: ev, error: eventsError } = await supabase.from("care_events")
+          .select("id, plant_id, type, occurred_at, notes")
+          .in("plant_id", ids)
+          .gte("occurred_at", start).lte("occurred_at", end)
+        if (eventsError) {
+          console.error("Events error:", eventsError)
+        }
+        setEvents((ev as EventRow[]) ?? [])
+      } else setEvents([])
+      const { data: tk, error: tasksError } = await supabase.from("tasks")
+        .select("id, title, plant_id, type")
+        .eq("household_id", mem.household_id)
+        .eq("month", month + 1).eq("year", year)
+      if (tasksError) {
+        console.error("Tasks error:", tasksError)
+      }
+      setTasks((tk as TaskRow[]) ?? [])
+    } catch (err) {
+      console.error("Reload error:", err)
+    } finally {
+      setLoading(false)
+    }
   }, [router, year, month])
 
   useEffect(() => { setLoading(true); reload() }, [reload])
