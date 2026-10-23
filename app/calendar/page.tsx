@@ -114,7 +114,6 @@ export default function CalendarPage() {
   }
 
   // Próximos riegos previstos (solo desde hoy en adelante)
-  const todayMid = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
   try {
     for (const p of plants ?? []) {
       try {
