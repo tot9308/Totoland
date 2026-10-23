@@ -114,28 +114,37 @@ export default function CalendarPage() {
   }
 
   // Próximos riegos previstos (solo desde hoy en adelante)
-  for (const p of plants) {
-    const set = wateringDaySet(p)
-    if (set) {
-      for (const date of dueDatesInRange(p, new Date(year, month, 1), new Date(year, month, daysInMonth), summerStart, summerEnd)) {
-        const d = date.getDate()
-        if (date >= todayMid && byDay[d]) byDay[d].due.push(p)
+  const todayMid = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate())
+  try {
+    for (const p of plants ?? []) {
+      try {
+        const set = wateringDaySet(p)
+        if (set) {
+          for (const date of dueDatesInRange(p, new Date(year, month, 1), new Date(year, month, daysInMonth), summerStart, summerEnd)) {
+            const d = date.getDate()
+            if (date >= todayMid && byDay[d]) byDay[d].due.push(p)
+          }
+          continue
+        }
+        const inSummer = (month + 1) >= summerStart && (month + 1) <= summerEnd
+        const f = inSummer
+          ? Number(p.watering_frequency_days)
+          : Number(p.watering_frequency_winter_days ?? p.watering_frequency_days)
+        if (!f) continue
+        const last = p.last_watered_at ? new Date(p.last_watered_at) : null
+        let next = last ? new Date(last.getTime() + f * 86400000) : new Date(year, month, 1)
+        while (next < new Date(year, month, 1)) next = new Date(next.getTime() + f * 86400000)
+        while (next <= monthEnd) {
+          const d = next.getDate()
+          if (next >= todayMid && byDay[d]) byDay[d].due.push(p)
+          next = new Date(next.getTime() + f * 86400000)
+        }
+      } catch (e) {
+        console.error("Error calculando riego para planta", p.id, p.name, e)
       }
-      continue
     }
-    const inSummer = (month + 1) >= summerStart && (month + 1) <= summerEnd
-    const f = inSummer
-      ? Number(p.watering_frequency_days)
-      : Number(p.watering_frequency_winter_days ?? p.watering_frequency_days)
-    if (!f) continue
-    const last = p.last_watered_at ? new Date(p.last_watered_at) : null
-    let next = last ? new Date(last.getTime() + f * 86400000) : new Date(year, month, 1)
-    while (next < new Date(year, month, 1)) next = new Date(next.getTime() + f * 86400000)
-    while (next <= monthEnd) {
-      const d = next.getDate()
-      if (next >= todayMid && byDay[d]) byDay[d].due.push(p)
-      next = new Date(next.getTime() + f * 86400000)
-    }
+  } catch (e) {
+    console.error("Error en bucle de riegos del calendario:", e)
   }
 
   const selectedData = selDay ? byDay[selDay] : null
