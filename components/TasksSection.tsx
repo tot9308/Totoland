@@ -36,7 +36,7 @@ export default function TasksSection({ householdId, plants, onChanged }: {
     await load()
   }
 
-  const pending = tasks.filter(t => t.status === "pending")
+  const pending = tasks.filter(t => t.status === "pending" && !t.suggested)
   if (loading || pending.length === 0) return null
 
   return (

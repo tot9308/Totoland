@@ -2,6 +2,18 @@
 
 Registro de cambios de Totoland. Formato inspirado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
 
+
+## [1.1.0] - 2026-10-21
+
+### AÃ±adido
+
+- ðŸ”§ Panel de pulverizar pendientes en la home ahora muestra la lista de plantas concretas que necesitan pulverizar (ej. "Falso Rosa · San Pedro"), junto al contador y el botÃ³n "Pulverizar todas".
+
+### Cambiado
+
+- Exclusivo 1.1.0: la secciÃ³n de pulverizar pendientes en la home ahora incluye la lista de plantas sensilla y clara.
+
+
 ## [Unreleased]
 
 ### En desarrollo

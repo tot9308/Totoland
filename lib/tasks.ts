@@ -12,6 +12,7 @@ export type Task = {
   month: number
   year: number
   status: "pending" | "done" | "dismissed"
+  suggested?: boolean
   created_at: string
   completed_at: string | null
 }
@@ -134,7 +135,7 @@ export async function ensureMonthlyTasks(householdId: string, plants: Plant[], m
   for (const t of MONTHLY_TASKS.filter(m => m.month === month)) {
     const key = `${t.type}|${t.title}`
     if (insertedKeys.has(key)) continue
-    toInsert.push({ household_id: householdId, plant_id: null, type: t.type, title: t.title, description: t.description, month, year })
+    toInsert.push({ household_id: householdId, plant_id: null, type: t.type, title: t.title, description: t.description, month, year, suggested: true })
     insertedKeys.add(key)
   }
 
@@ -161,7 +162,7 @@ export async function ensureMonthlyTasks(householdId: string, plants: Plant[], m
       for (const t of derived) {
         const key = `${t.type}|${t.title}|${p.id}`
         if (insertedKeys.has(key)) continue
-        toInsert.push({ household_id: householdId, plant_id: p.id, type: t.type, title: `${p.name}: ${t.title}`, description: t.description, month, year })
+        toInsert.push({ household_id: householdId, plant_id: p.id, type: t.type, title: `${p.name}: ${t.title}`, description: t.description, month, year, suggested: true })
         insertedKeys.add(key)
       }
     }
