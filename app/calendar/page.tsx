@@ -140,7 +140,7 @@ export default function CalendarPage() {
 
   const selectedData = selDay ? byDay[selDay] : null
   const selectedIsVacation = selDay ? vacDays.has(selDay) : false
-  const selectedVacAffected = selectedIsVacation ? (vacAffectedByDay[selDay] ?? []) : []
+  const selectedVacAffected = selectedIsVacation && selDay !== null ? (vacAffectedByDay[selDay] ?? []) : []
 
   return (
     <main className="min-h-screen bg-stone-50 p-4 md:p-8">
@@ -249,7 +249,7 @@ export default function CalendarPage() {
                     <div>
                       <h3 className="mb-1 text-xs font-semibold uppercase text-[#854d0e]">🏖️ Día de vacaciones - plantas con riego pendiente</h3>
                       <ul className="space-y-1">
-                        {selectedVacAffected.map(p => (
+                        {selectedVacAffected.map((p: Plant) => (
                           <li key={p.id} className="text-sm text-stone-700">
                             💧 <Link href={`/plant/${p.id}`} className="font-medium hover:underline">{p.name}</Link>
                           </li>

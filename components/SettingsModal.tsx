@@ -128,6 +128,7 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   }
 
   async function vacJustHide() {
+    if (!vacPending) return
     await doSaveVac(vacPending.start, vacPending.end)
     setVacConfirm(false)
     setVacAffected([])
