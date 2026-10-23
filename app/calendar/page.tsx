@@ -227,7 +227,7 @@ export default function CalendarPage() {
                     ${isVacation ? "ring-1 ring-[#eab308]" : ""}`}
                 >
                   <div className={`text-xs font-semibold ${isToday ? "text-[#5a7d4a]" : isVacation ? "text-[#854d0e]" : "text-stone-700"}`}>{d}</div>
-                  {hasItems || vacAffected.length > 0 && (
+                  {(hasItems || vacAffected.length > 0) && (
                     <div className="mt-1 flex flex-wrap gap-0.5">
                       {data.events.some(e => e.type === "watering") && <span className="text-[10px]">💧</span>}
                       {data.events.some(e => e.type !== "watering") && <span className="text-[10px]">📝</span>}
