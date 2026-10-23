@@ -39,6 +39,7 @@ create table if not exists public.household_members (
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   display_name text,
+  onboarding_done boolean not null default false,
   created_at timestamptz not null default now()
 );
 
