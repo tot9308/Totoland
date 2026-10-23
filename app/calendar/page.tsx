@@ -33,30 +33,35 @@ export default function CalendarPage() {
 
   const reload = useCallback(async () => {
     setLoading(true)
+    console.log("[Calendar] reload started, year=", year, "month=", month)
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser()
       if (authError || !user) {
-        console.error("Auth error:", authError)
+        console.error("[Calendar] Auth error:", authError)
         router.replace("/")
         return
       }
+      console.log("[Calendar] User:", user.id)
       const household_id = await getActiveHouseholdId(user.id)
       if (!household_id) {
-        console.error("No active household found for user", user.id)
+        console.error("[Calendar] No active household found for user", user.id)
         router.replace("/")
         return
       }
+      console.log("[Calendar] Household:", household_id)
       const mem = { household_id }
       const { data: pl, error: plantsError } = await supabase.from("plants").select("*")
         .eq("household_id", mem.household_id).neq("status", "dead").order("name")
       if (plantsError) {
-        console.error("Plants error:", plantsError)
+        console.error("[Calendar] Plants error:", plantsError)
       }
-      setPlants((pl as Plant[]) ?? [])
+      const plantsArr = (pl as Plant[]) ?? []
+      console.log("[Calendar] Plants loaded:", plantsArr.length, plantsArr.map(p => p.name))
+      setPlants(plantsArr)
       const { data: hh, error: hhError } = await supabase.from("households")
         .select("summer_start_month, summer_end_month, vacation_start, vacation_end").eq("id", mem.household_id).single()
       if (hhError) {
-        console.error("Household error:", hhError)
+        console.error("[Calendar] Household error:", hhError)
       }
       if (hh) {
         setSummerStart(hh.summer_start_month ?? 5)
@@ -67,14 +72,15 @@ export default function CalendarPage() {
 
       const start = new Date(year, month, 1).toISOString()
       const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
-      const ids = ((pl as Plant[]) ?? []).map(p => p.id)
+      const ids = plantsArr.map(p => p.id)
+      console.log("[Calendar] Plant IDs:", ids)
       if (ids.length) {
         const { data: ev, error: eventsError } = await supabase.from("care_events")
           .select("id, plant_id, type, occurred_at, notes")
           .in("plant_id", ids)
           .gte("occurred_at", start).lte("occurred_at", end)
         if (eventsError) {
-          console.error("Events error:", eventsError)
+          console.error("[Calendar] Events error:", eventsError)
         }
         setEvents((ev as EventRow[]) ?? [])
       } else setEvents([])
@@ -83,11 +89,12 @@ export default function CalendarPage() {
         .eq("household_id", mem.household_id)
         .eq("month", month + 1).eq("year", year)
       if (tasksError) {
-        console.error("Tasks error:", tasksError)
+        console.error("[Calendar] Tasks error:", tasksError)
       }
       setTasks((tk as TaskRow[]) ?? [])
+      console.log("[Calendar] reload completed OK")
     } catch (err) {
-      console.error("Reload error:", err)
+      console.error("[Calendar] Reload error:", err)
     } finally {
       setLoading(false)
     }
