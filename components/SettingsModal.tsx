@@ -1,8 +1,9 @@
 ﻿"use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import ThemeToggle from "./ThemeToggle"
+import { dueDatesInRange, type Plant } from "@/lib/plants"
 
 const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]
 
@@ -23,6 +24,9 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   const [vacStart, setVacStart] = useState("")
   const [vacEnd, setVacEnd] = useState("")
   const [subsCount, setSubsCount] = useState(0)
+  const [vacConfirm, setVacConfirm] = useState(false)
+  const [vacAffected, setVacAffected] = useState<Plant[]>([])
+  const [vacPending, setVacPending] = useState<{ start: string; end: string } | null>(null)
 
   useEffect(() => {
     (async () => {
@@ -53,11 +57,82 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
   }, [userId])
 
   async function saveVac() {
+    if (!vacStart || !vacEnd) return alert("Selecciona fechas de inicio y fin.")
+    const start = new Date(vacStart)
+    const end = new Date(vacEnd)
+    if (end < start) return alert("La fecha de fin debe ser posterior a la de inicio.")
+
+    // Cargar plantas activas de la casa para calcular riegos pendientes durante vacaciones
+    const { data: pl } = await supabase
+      .from("plants")
+      .select("*")
+      .eq("household_id", householdId)
+      .neq("status", "dead")
+    const plants = (pl as Plant[]) ?? []
+
+    // Cargar meses verano/invierno de la casa
+    const { data: hh } = await supabase
+      .from("households")
+      .select("summer_start_month, summer_end_month")
+      .eq("id", householdId)
+      .single()
+    const ss = hh?.summer_start_month ?? 5
+    const se = hh?.summer_end_month ?? 9
+
+    // Qué plantas están "due" en algún día del rango vacacional
+    const affected: Plant[] = []
+    for (const p of plants) {
+      const dueDates = dueDatesInRange(p, start, end, ss, se)
+      if (dueDates.length > 0) affected.push(p)
+    }
+
+    if (affected.length === 0) {
+      // No hay riegos pendientes durante vacaciones: guardar directamente
+      await doSaveVac(vacStart, vacEnd)
+      return
+    }
+
+    // Hay plantas afectadas: guardar pending y mostrar confirmación
+    setVacPending({ start: vacStart, end: vacEnd })
+    setVacAffected(affected)
+    setVacConfirm(true)
+  }
+
+  async function doSaveVac(start: string, end: string) {
     const { error } = await supabase.from("households")
-      .update({ vacation_start: vacStart || null, vacation_end: vacEnd || null })
+      .update({ vacation_start: start || null, vacation_end: end || null })
       .eq("id", householdId)
     if (error) return alert("Error: " + error.message)
+    setVacStart(start)
+    setVacEnd(end)
     alert("Vacaciones guardadas ✅")
+  }
+
+  async function vacAdvanceWatering() {
+    if (!vacPending) return
+    const start = new Date(vacPending.start)
+    const dayBefore = new Date(start)
+    dayBefore.setDate(dayBefore.getDate() - 1)
+    const iso = dayBefore.toISOString().slice(0, 10)
+
+    const { error } = await supabase.from("plants")
+      .update({ last_watered_at: iso })
+      .in("id", vacAffected.map(p => p.id))
+    if (error) return alert("Error: " + error.message)
+
+    await doSaveVac(vacPending.start, vacPending.end)
+    setVacConfirm(false)
+    setVacAffected([])
+    setVacPending(null)
+    alert(`Riegos adelantados al ${dayBefore.toLocaleDateString("es-ES")} para ${vacAffected.length} planta(s). ✅`)
+  }
+
+  async function vacJustHide() {
+    await doSaveVac(vacPending.start, vacPending.end)
+    setVacConfirm(false)
+    setVacAffected([])
+    setVacPending(null)
+    alert("Vacaciones guardadas. Los avisos de riego estarán ocultos durante esas fechas. ✅")
   }
 
   async function saveSeason() {
@@ -229,6 +304,36 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
         <button onClick={saveVac} className="mb-4 rounded bg-[#5a8ca6] px-3 py-1.5 text-sm text-white hover:bg-[#497691]">
           Guardar vacaciones
         </button>
+
+        {vacConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="w-full max-w-md rounded-xl bg-[#faf7f0] p-5 shadow-xl dark:bg-stone-700">
+              <h3 className="mb-3 text-lg font-semibold text-stone-800 dark:text-white">🏖️ Riegos durante vacaciones</h3>
+              <p className="mb-3 text-sm text-stone-600 dark:text-stone-300">
+                Estas plantas necesitan riego durante tus vacaciones ({vacAffected.length}):
+              </p>
+              <ul className="mb-4 space-y-1 text-sm text-stone-700 dark:text-stone-200">
+                {vacAffected.map(p => (
+                  <li key={p.id} className="flex justify-between">
+                    <span>💧 {p.name}</span>
+                    <span className="text-xs text-[#c97b5e]">due en vacaciones</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex gap-2">
+                <button onClick={vacAdvanceWatering} className="flex-1 rounded bg-[#5a7d4a] px-3 py-1.5 text-sm text-white hover:bg-[#4a6a3a]">
+                  Adelantar riegos al día antes
+                </button>
+                <button onClick={vacJustHide} className="flex-1 rounded border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-100">
+                  Solo ocultar avisos
+                </button>
+                <button onClick={() => setVacConfirm(false)} className="rounded px-3 py-1.5 text-sm text-stone-500 hover:bg-stone-100">
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mb-4">
           <div className="mb-2 flex items-center justify-between">

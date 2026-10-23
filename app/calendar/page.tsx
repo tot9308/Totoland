@@ -26,6 +26,10 @@ export default function CalendarPage() {
   const [selDay, setSelDay] = useState<number | null>(null)
   const [summerStart, setSummerStart] = useState(5)
   const [summerEnd, setSummerEnd] = useState(9)
+  const [vacStart, setVacStart] = useState<string | null>(null)
+  const [vacEnd, setVacEnd] = useState<string | null>(null)
+  const [vacDays, setVacDays] = useState<Set<number>>(new Set())
+  const [vacAffectedByDay, setVacAffectedByDay] = useState<Record<number, Plant[]>>({})
 
   const reload = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -37,8 +41,13 @@ export default function CalendarPage() {
       .eq("household_id", mem.household_id).neq("status", "dead").order("name")
     setPlants((pl as Plant[]) ?? [])
     const { data: hh } = await supabase.from("households")
-      .select("summer_start_month, summer_end_month").eq("id", mem.household_id).single()
-    if (hh) { setSummerStart(hh.summer_start_month ?? 5); setSummerEnd(hh.summer_end_month ?? 9) }
+      .select("summer_start_month, summer_end_month, vacation_start, vacation_end").eq("id", mem.household_id).single()
+    if (hh) {
+      setSummerStart(hh.summer_start_month ?? 5)
+      setSummerEnd(hh.summer_end_month ?? 9)
+      setVacStart(hh.vacation_start ?? null)
+      setVacEnd(hh.vacation_end ?? null)
+    }
 
     const start = new Date(year, month, 1).toISOString()
     const end = new Date(year, month + 1, 0, 23, 59, 59).toISOString()
@@ -59,6 +68,34 @@ export default function CalendarPage() {
   }, [router, year, month])
 
   useEffect(() => { setLoading(true); reload() }, [reload])
+
+  useEffect(() => {
+    if (!vacStart || !vacEnd) {
+      setVacDays(new Set())
+      setVacAffectedByDay({})
+      return
+    }
+    const vs = new Date(vacStart)
+    const ve = new Date(vacEnd)
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const vacSet = new Set<number>()
+    const affectedByDay: Record<number, Plant[]> = {}
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayDate = new Date(year, month, d)
+      if (dayDate >= vs && dayDate <= ve) {
+        vacSet.add(d)
+        const affected: Plant[] = []
+        for (const p of plants) {
+          const dueDates = dueDatesInRange(p, dayDate, dayDate, summerStart, summerEnd)
+          if (dueDates.length > 0) affected.push(p)
+        }
+        affectedByDay[d] = affected
+      }
+    }
+    setVacDays(vacSet)
+    setVacAffectedByDay(affectedByDay)
+  }, [plants, vacStart, vacEnd, year, month, summerStart, summerEnd])
 
   const firstDay = new Date(year, month, 1).getDay()
   const offset = (firstDay + 6) % 7
@@ -102,6 +139,8 @@ export default function CalendarPage() {
   }
 
   const selectedData = selDay ? byDay[selDay] : null
+  const selectedIsVacation = selDay ? vacDays.has(selDay) : false
+  const selectedVacAffected = selectedIsVacation ? (vacAffectedByDay[selDay] ?? []) : []
 
   return (
     <main className="min-h-screen bg-stone-50 p-4 md:p-8">
@@ -133,24 +172,27 @@ export default function CalendarPage() {
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const d = i + 1
               const data = byDay[d]
+              const isVacation = vacDays.has(d)
               const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
               const hasItems = data.events.length + data.tasks.length + data.due.length > 0
+              const vacAffected = isVacation ? (vacAffectedByDay[d] ?? []) : []
               return (
                 <button
                   key={d}
                   onClick={() => setSelDay(selDay === d ? null : d)}
                   className={`min-h-[60px] rounded-lg border p-1.5 text-left transition
-                    ${selDay === d ? "border-[#c97b5e] bg-[#c97b5e]/10" : "border-stone-200 bg-[#faf7f0] hover:bg-stone-100"}
+                    ${selDay === d ? "border-[#c97b5e] bg-[#c97b5e]/10" : isVacation ? "border-[#eab308] bg-[#fef3c7]/30" : "border-stone-200 bg-[#faf7f0] hover:bg-stone-100"}
                     ${isToday ? "ring-2 ring-[#5a7d4a]" : ""}
-                  `}
+                    ${isVacation ? "ring-1 ring-[#eab308]" : ""}`}
                 >
-                  <div className={`text-xs font-semibold ${isToday ? "text-[#5a7d4a]" : "text-stone-700"}`}>{d}</div>
-                  {hasItems && (
+                  <div className={`text-xs font-semibold ${isToday ? "text-[#5a7d4a]" : isVacation ? "text-[#854d0e]" : "text-stone-700"}`}>{d}</div>
+                  {hasItems || vacAffected.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-0.5">
                       {data.events.some(e => e.type === "watering") && <span className="text-[10px]">💧</span>}
                       {data.events.some(e => e.type !== "watering") && <span className="text-[10px]">📝</span>}
                       {data.due.length > 0 && <span className="text-[10px] text-[#c97b5e]">⏰{data.due.length}</span>}
                       {data.tasks.length > 0 && <span className="text-[10px]">📋</span>}
+                      {isVacation && vacAffected.length > 0 && <span className="text-[10px] text-[#854d0e]">🏖️{vacAffected.length}</span>}
                     </div>
                   )}
                 </button>
@@ -203,6 +245,21 @@ export default function CalendarPage() {
                       </ul>
                     </div>
                   )}
+                  {selectedIsVacation && selectedVacAffected.length > 0 && (
+                    <div>
+                      <h3 className="mb-1 text-xs font-semibold uppercase text-[#854d0e]">🏖️ Día de vacaciones - plantas con riego pendiente</h3>
+                      <ul className="space-y-1">
+                        {selectedVacAffected.map(p => (
+                          <li key={p.id} className="text-sm text-stone-700">
+                            💧 <Link href={`/plant/${p.id}`} className="font-medium hover:underline">{p.name}</Link>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-1 text-xs text-stone-500">
+                        Los avisos de riego están ocultos durante las vacaciones. Usa "Adelantar riegos" en Ajustes si quieres regar antes de salir.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -213,6 +270,7 @@ export default function CalendarPage() {
             <span>📝 otro evento</span>
             <span className="text-[#c97b5e]">⏰ riego previsto</span>
             <span>📋 tareas del mes</span>
+            <span className="text-[#854d0e]">🏖️ día de vacaciones</span>
           </div>
         </>
       )}
