@@ -136,6 +136,16 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
     alert("Vacaciones guardadas. Los avisos de riego estarán ocultos durante esas fechas. ✅")
   }
 
+  async function clearVacations() {
+    const { error } = await supabase.from("households")
+      .update({ vacation_start: null, vacation_end: null })
+      .eq("id", householdId)
+    if (error) return alert("Error: " + error.message)
+    setVacStart("")
+    setVacEnd("")
+    alert("Vacaciones borradas ✅")
+  }
+
   async function saveSeason() {
     setBusy(true)
     const { error } = await supabase.from("households")
@@ -305,6 +315,11 @@ export default function SettingsModal({ householdId, userId, summerStart, summer
         <button onClick={saveVac} className="mb-4 rounded bg-[#5a8ca6] px-3 py-1.5 text-sm text-white hover:bg-[#497691]">
           Guardar vacaciones
         </button>
+        {(vacStart || vacEnd) && (
+          <button onClick={clearVacations} className="mb-4 rounded border border-stone-300 px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-100">
+            Borrar vacaciones
+          </button>
+        )}
 
         {vacConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
