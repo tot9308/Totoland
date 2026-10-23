@@ -120,34 +120,49 @@ function speciesDerivedTasks(s: SpeciesCard, p: Plant, month: number): { type: s
 
 export async function ensureMonthlyTasks(householdId: string, plants: Plant[], month: number, year: number) {
   const { data: existing } = await supabase
-    .from("tasks").select("id, plant_id, type, title")
-    .eq("household_id", householdId).eq("month", month).eq("year", year)
+    .from("tasks")
+    .select("id, type, title")
+    .eq("household_id", householdId)
+    .eq("month", month)
+    .eq("year", year)
   if (existing && existing.length > 0) return
 
   const toInsert: object[] = []
+  const insertedKeys = new Set<string>()
 
-  // Tareas generales de la casa
-  for (const t of MONTHLY_TASKS.filter(m => m.month === month))
+  // Tareas generales de la casa (una por tipo, no por planta)
+  for (const t of MONTHLY_TASKS.filter(m => m.month === month)) {
+    const key = `${t.type}|${t.title}`
+    if (insertedKeys.has(key)) continue
     toInsert.push({ household_id: householdId, plant_id: null, type: t.type, title: t.title, description: t.description, month, year })
+    insertedKeys.add(key)
+  }
 
-  // Tareas por planta
+  // Tareas por planta (agrupadas por tipo para evitar duplicados de la misma categoría)
   for (const p of plants) {
     if (p.status === "dead" || !p.species) continue
     const species = findSpecies(p.species)
+    if (!species) continue
 
     // Catálogo manual (si existe, tiene prioridad y evita duplicar)
     const manualTasks = (SPECIES_MONTHLY_TASKS[p.species] ?? []).filter(s => s.month === month)
     const manualKeys = new Set(manualTasks.map(t => `${t.type}|${t.title}`))
 
-    for (const t of manualTasks)
+    for (const t of manualTasks) {
+      const key = `${t.type}|${t.title}`
+      if (insertedKeys.has(key)) continue
       toInsert.push({ household_id: householdId, plant_id: p.id, type: t.type, title: `${p.name}: ${t.title}`, description: t.description, month, year })
+      insertedKeys.add(key)
+    }
 
-    // Tareas derivadas de la ficha (evitando duplicados con el manual)
+    // Tareas derivadas de la ficha (agrupadas por tipo)
     if (species) {
-      for (const t of speciesDerivedTasks(species, p, month)) {
-        const key = `${t.type}|${t.title}`
-        if (manualKeys.has(key)) continue
+      const derived = speciesDerivedTasks(species, p, month)
+      for (const t of derived) {
+        const key = `${t.type}|${t.title}|${p.id}`
+        if (insertedKeys.has(key)) continue
         toInsert.push({ household_id: householdId, plant_id: p.id, type: t.type, title: `${p.name}: ${t.title}`, description: t.description, month, year })
+        insertedKeys.add(key)
       }
     }
   }
