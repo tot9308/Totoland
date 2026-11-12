@@ -1,7 +1,7 @@
 ﻿"use client"
 
 import { useRouter } from "next/navigation"
-import { daysSince, daysUntilDue, effectiveFreq, type Plant } from "@/lib/plants"
+import { daysSince, daysUntilDue, effectiveFreq, type Plant, waterAmount } from "@/lib/plants"
 import { useState } from "react"
 
 export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summerStart, summerEnd, health }: {
@@ -17,6 +17,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
   const due = daysUntilDue(plant, summerStart, summerEnd)
   const freq = effectiveFreq(plant, summerStart, summerEnd)
   const days = daysSince(plant.last_watered_at)
+  const amount = waterAmount(plant)
   const [justWatered, setJustWatered] = useState(false)
   const [justMisted, setJustMisted] = useState(false)
   const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
@@ -84,6 +85,9 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
           </span>
         )}
         {freq && <span className="block text-[10px] opacity-70">cada {freq} d</span>}
+        {amount && (
+          <span className="block text-[10px] opacity-70">💧 {amount.min}–{amount.max} ml</span>
+        )}
       </div>
 
       {/* Botones (no propagan el click de la tarjeta) */}
