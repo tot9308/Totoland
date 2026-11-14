@@ -141,23 +141,30 @@ export function isDue(plant: Plant, summerStart: number, summerEnd: number): boo
   return du !== null && du <= 0
 }
 
-const REF: [number, number, number][] = [
-  [8, 40, 80], [10, 50, 100], [12, 70, 120], [14, 90, 140], [16, 150, 250],
-  [18, 220, 350], [20, 320, 480], [24, 500, 750], [28, 750, 1100],
-  [30, 1000, 1500], [35, 1400, 2100], [40, 1800, 2700],
-]
+export function waterAmountFor(diameterCm: number, style: string): { min: number; max: number } {
+  // Modelo físico: volumen de sustrato en un macetero troncocónico.
+  // D = diámetro boca, R = radio boca, r = radio base (~75% boca), h = altura proporcional al Ø
+  // cm³ = ml
+  const D = Math.max(4, diameterCm)
+  const R = D / 2
+  const r = R * 0.75
+  const h = D * 0.9
+  const volumeMl = (Math.PI * h / 3) * (R * R + R * r + r * r)
 
-export function waterAmountFor(diam: number, style: string): { min: number; max: number } {
-  const d = Math.max(REF[0][0], Math.min(REF[REF.length - 1][0], diam))
-  let i = 0
-  while (i < REF.length - 2 && REF[i + 1][0] < d) i++
-  const [d0, mn0, mx0] = REF[i]
-  const [d1, mn1, mx1] = REF[i + 1]
-  const t = d1 === d0 ? 0 : (d - d0) / (d1 - d0)
-  const mult = style === "A" ? 0.7 : style === "C" ? 1.2 : 1
+  // Fracción de recarga por tipo de planta / sustrato (orientativo; el check del sustrato manda)
+  const fraction: { min: number; max: number } =
+    style === "A" ? { min: 0.10, max: 0.15 } // suculentas/cactus
+    : style === "B" ? { min: 0.12, max: 0.18 } // riego escaso
+    : style === "C" ? { min: 0.15, max: 0.22 } // medio
+    : style === "D" ? { min: 0.18, max: 0.25 } // riego frecuente
+    : style === "E" ? { min: 0.20, max: 0.30 } // helechos/tropicales
+    : { min: 0.15, max: 0.22 } // desconocido → C
+
+  const round5 = (x: number) => Math.round(x / 5) * 5
+
   return {
-    min: Math.round(((mn0 + (mn1 - mn0) * t) * mult) / 5) * 5,
-    max: Math.round(((mx0 + (mx1 - mx0) * t) * mult) / 5) * 5,
+    min: round5(volumeMl * fraction.min),
+    max: round5(volumeMl * fraction.max),
   }
 }
 
