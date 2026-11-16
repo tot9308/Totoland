@@ -154,11 +154,11 @@ export function waterAmountFor(diameterCm: number, style: string): { min: number
   // Fracción de recarga por tipo de planta / sustrato (orientativo; el check del sustrato manda)
   const fraction: { min: number; max: number } =
     style === "A" ? { min: 0.10, max: 0.15 } // suculentas/cactus
-    : style === "B" ? { min: 0.12, max: 0.18 } // riego escaso
-    : style === "C" ? { min: 0.15, max: 0.22 } // medio
-    : style === "D" ? { min: 0.18, max: 0.25 } // riego frecuente
-    : style === "E" ? { min: 0.20, max: 0.30 } // helechos/tropicales
-    : { min: 0.15, max: 0.22 } // desconocido → C
+    : style === "B" ? { min: 0.06, max: 0.10 } // riego escaso
+    : style === "C" ? { min: 0.08, max: 0.12 } // medio
+    : style === "D" ? { min: 0.10, max: 0.14 } // riego frecuente
+    : style === "E" ? { min: 0.12, max: 0.16 } // helechos/tropicales
+    : { min: 0.08, max: 0.12 } // desconocido → C
 
   const round5 = (x: number) => Math.round(x / 5) * 5
 
@@ -200,3 +200,4 @@ export function mistingDue(p: Plant, summerStart: number, summerEnd: number): bo
   if (days === null) return true
   return days >= freq
 }
+
