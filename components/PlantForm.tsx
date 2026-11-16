@@ -25,7 +25,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   const [acquiredAt, setAcquiredAt] = useState(plant?.acquired_at ? plant.acquired_at.slice(0, 10) : "")
   const [potDiameter, setPotDiameter] = useState(plant?.pot_diameter_cm?.toString() ?? "")
   const [hasSaucer, setHasSaucer] = useState(plant?.has_saucer ?? false)
-  const [busy, setBusy] = useState(false)
+  const [drainage, setDrainage] = useState(plant?.drainage ?? null)
 
   const suggestions = searchSpecies(species)
   const speciesCard = findSpecies(species) ?? null
@@ -56,6 +56,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
       acquired_at: acquiredAt || null,
       pot_diameter_cm: potDiameter ? Number(potDiameter) : null,
       has_saucer: hasSaucer,
+      drainage: drainage
     }
     const { error } = plant
       ? await supabase.from("plants").update(payload).eq("id", plant.id)
@@ -137,6 +138,14 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
             Tiene plato
           </label>
         </div>
+        <label className="mb-3 block text-sm text-stone-800">
+          ¿Maceta con drenaje?
+          <select value={drainage ?? ""} onChange={e => setDrainage(e.target.value === "true")} className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
+            <option value="">Sin configurar</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </select>
+        </label>
         {potDiameter && (
           <p className="mb-3 rounded bg-[#eaf1ee] p-2 text-xs text-stone-700">
             💦 Con esa maceta: ≈ {waterAmountFor(Number(potDiameter), style).min}–{waterAmountFor(Number(potDiameter), style).max} ml por riego.
@@ -195,3 +204,30 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
     </div>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

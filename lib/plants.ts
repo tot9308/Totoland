@@ -1,4 +1,4 @@
-export type Plant = {
+﻿export type Plant = {
   id: string
   household_id: string
   name: string
@@ -30,8 +30,8 @@ export type Plant = {
   crop_box: { x: number; y: number; width: number; height: number } | null
   misting_frequency_days: number | null
   last_misted_at: string | null
-}
-
+  drainage: boolean | null
+  last_deep_watering_at: string | null
 export const EVENT_LABELS: Record<string, string> = {
   watering: "Riego",
   misting: "Pulverizado",
@@ -40,10 +40,10 @@ export const EVENT_LABELS: Record<string, string> = {
   pruning: "Poda",
   repotting: "Trasplante",
   treatment: "Tratamiento",
-  observation: "Observación",
+  observation: "ObservaciÃ³n",
   pest_detection: "Plaga detectada",
   disease_detection: "Enfermedad detectada",
-  location_change: "Cambio de ubicación",
+  location_change: "Cambio de ubicaciÃ³n",
 }
 
 export function daysSince(iso: string | null): number | null {
@@ -142,23 +142,23 @@ export function isDue(plant: Plant, summerStart: number, summerEnd: number): boo
 }
 
 export function waterAmountFor(diameterCm: number, style: string): { min: number; max: number } {
-  // Modelo físico: volumen de sustrato en un macetero troncocónico.
-  // D = diámetro boca, R = radio boca, r = radio base (~75% boca), h = altura proporcional al Ø
-  // cm³ = ml
+  // Modelo fÃ­sico: volumen de sustrato en un macetero troncocÃ³nico.
+  // D = diÃ¡metro boca, R = radio boca, r = radio base (~75% boca), h = altura proporcional al Ã˜
+  // cmÂ³ = ml
   const D = Math.max(4, diameterCm)
   const R = D / 2
   const r = R * 0.75
   const h = D * 0.9
   const volumeMl = (Math.PI * h / 3) * (R * R + R * r + r * r)
 
-  // Fracción de recarga por tipo de planta / sustrato (orientativo; el check del sustrato manda)
+  // FracciÃ³n de recarga por tipo de planta / sustrato (orientativo; el check del sustrato manda)
   const fraction: { min: number; max: number } =
     style === "A" ? { min: 0.10, max: 0.15 } // suculentas/cactus
     : style === "B" ? { min: 0.06, max: 0.10 } // riego escaso
     : style === "C" ? { min: 0.08, max: 0.12 } // medio
     : style === "D" ? { min: 0.10, max: 0.14 } // riego frecuente
     : style === "E" ? { min: 0.12, max: 0.16 } // helechos/tropicales
-    : { min: 0.08, max: 0.12 } // desconocido → C
+    : { min: 0.08, max: 0.12 } // desconocido â†’ C
 
   const round5 = (x: number) => Math.round(x / 5) * 5
 
@@ -180,9 +180,9 @@ export function healthLevel(plant: Plant, ss: number, se: number): number {
   if (du !== null && du < 0) return 1
   return 0
 }
-// ---------- Pulverización ----------
-// En verano hay más humedad ambiental, así que se espacia (×2).
-// En invierno (calefacción, aire seco) se mantiene la frecuencia base.
+// ---------- PulverizaciÃ³n ----------
+// En verano hay mÃ¡s humedad ambiental, asÃ­ que se espacia (Ã—2).
+// En invierno (calefacciÃ³n, aire seco) se mantiene la frecuencia base.
 export function mistingFreqForSeason(p: Plant, summerStart: number, summerEnd: number): number | null {
   if (!p.misting_enabled) return null
   const base = p.misting_frequency_days
@@ -199,5 +199,111 @@ export function mistingDue(p: Plant, summerStart: number, summerEnd: number): bo
   const days = daysSince(p.last_misted_at)
   if (days === null) return true
   return days >= freq
+}
+
+
+// ---------- Riego automático: ligero por defecto + profundo cada X tiempo ----------
+export const LIGHT_FRACTION: Record<string, [number, number]> = {
+  A: [0.05, 0.08], // suculentas/cactus
+  B: [0.06, 0.10], // riego escaso
+  C: [0.08, 0.12], // medio
+  D: [0.10, 0.14], // riego frecuente
+  E: [0.12, 0.16], // helechos/tropicales
+}
+
+export const DEEP_FRACTION: Record<string, [number, number] | null> = {
+  A: null, // suculentas nunca riego profundo
+  B: [0.18, 0.22], // cada 2 meses
+  C: [0.20, 0.25], // primer riego del mes
+  D: [0.22, 0.28], // primer riego del mes
+  E: [0.25, 0.30], // primer riego del mes
+}
+
+export type WateringAdvice = {
+  min: number
+  max: number
+  kind: "light" | "deep"
+  instruction: string
+}
+
+export function calculateWatering(plant: Plant, today: Date): WateringAdvice | null {
+  // Sin drenaje configurado → null (la UI mostrará aviso)
+  if (plant.drainage == null) return null
+
+  const volume = plant.pot_diameter_cm ? plantVolume(plant) : null
+  if (!volume) return null
+
+  const style = (plant.watering_style ?? "B") as keyof typeof LIGHT_FRACTION
+  const light = LIGHT_FRACTION[style] ?? LIGHT_FRACTION.B
+  const deepFraction = DEEP_FRACTION[style] ?? null
+
+  const due = isDue(plant, 5, 9) // verano 5-9
+  const deep = due && shouldDeepWater(plant, today)
+
+  let fraction: [number, number] = deep && deepFraction ? deepFraction : light
+
+  // Cap sin drenaje: nunca más de 10% del sustrato
+  if (!plant.drainage) {
+    fraction = [Math.min(fraction[0], 0.10), Math.min(fraction[1], 0.10)]
+  }
+
+  const min = round5(volume * fraction[0])
+  const max = round5(volume * fraction[1])
+
+  return {
+    min,
+    max,
+    kind: deep ? "deep" : "light",
+    instruction: deep
+      ? "Riega hasta que drene por el fondo y vacía el plato"
+      : plant.drainage
+        ? "Riega con aproximadamente " + min + "-" + max + " ml"
+        : "Riega poco, sin encharcar (" + min + "-" + max + " ml)",
+  }
+}
+
+export function shouldDeepWater(plant: Plant, today: Date): boolean {
+  // Sin drenaje → nunca profundo
+  if (!plant.drainage) return false
+  // Suculentas/cactus → nunca profundo
+  if (plant.watering_style === "A") return false
+
+  const reference = plant.last_deep_watering_at ?? plant.created_at
+  if (!reference) return false
+
+  if (plant.watering_style === "B") {
+    const monthsDiff = monthsBetween(reference, today)
+    return monthsDiff >= 2
+  }
+
+  // C, D, E: primer riego del mes
+  const lastMonth = new Date(reference).getMonth()
+  const lastYear = new Date(reference).getFullYear()
+  const curMonth = today.getMonth()
+  const curYear = today.getFullYear()
+  return !(lastMonth === curMonth && lastYear === curYear)
+}
+
+function monthsBetween(date1: string, date2: Date): number {
+  const d1 = new Date(date1)
+  const y1 = d1.getFullYear()
+  const m1 = d1.getMonth()
+  const y2 = date2.getFullYear()
+  const m2 = date2.getMonth()
+  return (y2 - y1) * 12 + (m2 - m1)
+}
+
+/** Volumen aproximado de sustrato en un troncocónico (cm³ = ml) */
+function plantVolume(plant: Plant): number | null {
+  if (!plant.pot_diameter_cm) return null
+  const D = Math.max(4, plant.pot_diameter_cm)
+  const R = D / 2
+  const r = R * 0.75
+  const h = D * 0.9
+  return (Math.PI * h / 3) * (R * R + R * r + r * r)
+}
+
+function round5(x: number): number {
+  return Math.round(x / 5) * 5
 }
 
