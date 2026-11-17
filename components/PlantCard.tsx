@@ -142,3 +142,5 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
 
 
 
+
+
