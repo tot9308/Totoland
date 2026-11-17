@@ -1,4 +1,4 @@
-﻿export type Plant = {
+export type Plant = {
   id: string
   household_id: string
   name: string
