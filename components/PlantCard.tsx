@@ -63,13 +63,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
       </div>
 
       {/* Próximo riego */}
-      <div className={`mb-3 rounded-lg px-2.5 py-1.5 text-xs ${` +
-        overdue
-          ? "bg-[#c97b5e]/15 text-[#8a3a1a]"
-          : dueSoon
-            ? "bg-[#efe3c8] text-stone-700"
-            : "bg-stone-100 text-stone-600"
-      }`}>
+      <div className={`mb-3 rounded-lg px-2.5 py-1.5 text-xs ${overdue ? "bg-[#c97b5e]/15 text-[#8a3a1a]" : dueSoon ? "bg-[#efe3c8] text-stone-700]" : "bg-stone-100 text-stone-600]"}`}>
         {due === null ? (
           <span>Sin riegos registrados</span>
         ) : overdue ? (
@@ -108,11 +102,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
             setJustWatered(true)
             setTimeout(() => setJustWatered(false), 2000)
           }}
-          className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium text-white transition-all ${` +
-            justWatered
-              ? "scale-95 bg-[#3a5a2a]"
-              : "bg-[#5a7d4a] hover:bg-[#4a6a3a]"
-          }`}
+          className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium text-white transition-all ${justWatered ? "scale-95 bg-[#3a5a2a]" : "bg-[#5a7d4a] hover:bg-[#4a6a3a]"}`}
         >
           {justWatered ? "✓ Regado" : "💧 Regar"}
         </button>
@@ -124,11 +114,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
               setJustMisted(true)
               setTimeout(() => setJustMisted(false), 2000)
             }}
-            className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium text-white transition-all ${` +
-              justMisted
-                ? "scale-95 bg-[#3a6a80]"
-                : "bg-[#5a8ca6] hover:bg-[#497691]"
-            }`}
+            className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium text-white transition-all ${justMisted ? "scale-95 bg-[#3a6a80]" : "bg-[#5a8ca6] hover:bg-[#497691]"}`}
           >
             {justMisted ? "✓ Hecho" : "💧+🌫"}
           </button>
@@ -137,10 +123,3 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
     </div>
   )
 }
-
-
-
-
-
-
-
