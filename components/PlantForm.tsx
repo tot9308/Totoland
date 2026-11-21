@@ -26,6 +26,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
   const [potDiameter, setPotDiameter] = useState(plant?.pot_diameter_cm?.toString() ?? "")
   const [hasSaucer, setHasSaucer] = useState(plant?.has_saucer ?? false)
   const [drainage, setDrainage] = useState(plant?.drainage ?? null)
+  const [busy, setBusy] = useState(false)
 
   const suggestions = searchSpecies(species)
   const speciesCard = findSpecies(species) ?? null
@@ -140,7 +141,7 @@ export default function PlantForm({ householdId, plant, onClose, onSaved }: {
         </div>
         <label className="mb-3 block text-sm text-stone-800">
           ¿Maceta con drenaje?
-          <select value={drainage ?? ""} onChange={e => setDrainage(e.target.value === "true")} className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
+          <select value={String(drainage ?? "")} onChange={e => setDrainage(e.target.value === "true")} className="mt-1 w-full rounded border border-stone-300 px-3 py-2">
             <option value="">Sin configurar</option>
             <option value="true">Sí</option>
             <option value="false">No</option>

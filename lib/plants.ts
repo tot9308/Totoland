@@ -32,6 +32,8 @@ export type Plant = {
   last_misted_at: string | null
   drainage: boolean | null
   last_deep_watering_at: string | null
+  watering_style: string | null
+  created_at: string | null
 }
 
 export const EVENT_LABELS: Record<string, string> = {
