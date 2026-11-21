@@ -40,10 +40,10 @@ export const EVENT_LABELS: Record<string, string> = {
   pruning: "Poda",
   repotting: "Trasplante",
   treatment: "Tratamiento",
-  observation: "ObservaciÃ³n",
+  observation: "Observacin",
   pest_detection: "Plaga detectada",
   disease_detection: "Enfermedad detectada",
-  location_change: "Cambio de ubicaciÃ³n",
+  location_change: "Cambio de ubicacin",
 }
 
 export function daysSince(iso: string | null): number | null {
@@ -142,23 +142,23 @@ export function isDue(plant: Plant, summerStart: number, summerEnd: number): boo
 }
 
 export function waterAmountFor(diameterCm: number, style: string): { min: number; max: number } {
-  // Modelo fÃ­sico: volumen de sustrato en un macetero troncocÃ³nico.
-  // D = diÃ¡metro boca, R = radio boca, r = radio base (~75% boca), h = altura proporcional al Ã˜
-  // cmÂ³ = ml
+  // Modelo fsico: volumen de sustrato en un macetero troncocnico.
+  // D = dimetro boca, R = radio boca, r = radio base (~75% boca), h = altura proporcional al 
+  // cm = ml
   const D = Math.max(4, diameterCm)
   const R = D / 2
   const r = R * 0.75
   const h = D * 0.9
   const volumeMl = (Math.PI * h / 3) * (R * R + R * r + r * r)
 
-  // FracciÃ³n de recarga por tipo de planta / sustrato (orientativo; el check del sustrato manda)
+  // Fraccin de recarga por tipo de planta / sustrato (orientativo; el check del sustrato manda)
   const fraction: { min: number; max: number } =
     style === "A" ? { min: 0.10, max: 0.15 } // suculentas/cactus
     : style === "B" ? { min: 0.06, max: 0.10 } // riego escaso
     : style === "C" ? { min: 0.08, max: 0.12 } // medio
     : style === "D" ? { min: 0.10, max: 0.14 } // riego frecuente
     : style === "E" ? { min: 0.12, max: 0.16 } // helechos/tropicales
-    : { min: 0.08, max: 0.12 } // desconocido â†’ C
+    : { min: 0.08, max: 0.12 } // desconocido  C
 
   const round5 = (x: number) => Math.round(x / 5) * 5
 
@@ -180,9 +180,9 @@ export function healthLevel(plant: Plant, ss: number, se: number): number {
   if (du !== null && du < 0) return 1
   return 0
 }
-// ---------- PulverizaciÃ³n ----------
-// En verano hay mÃ¡s humedad ambiental, asÃ­ que se espacia (Ã—2).
-// En invierno (calefacciÃ³n, aire seco) se mantiene la frecuencia base.
+// ---------- Pulverizacin ----------
+// En verano hay ms humedad ambiental, as que se espacia (2).
+// En invierno (calefaccin, aire seco) se mantiene la frecuencia base.
 export function mistingFreqForSeason(p: Plant, summerStart: number, summerEnd: number): number | null {
   if (!p.misting_enabled) return null
   const base = p.misting_frequency_days
@@ -202,7 +202,7 @@ export function mistingDue(p: Plant, summerStart: number, summerEnd: number): bo
 }
 
 
-// ---------- Riego automático: ligero por defecto + profundo cada X tiempo ----------
+// ---------- Riego automtico: ligero por defecto + profundo cada X tiempo ----------
 export const LIGHT_FRACTION: Record<string, [number, number]> = {
   A: [0.05, 0.08], // suculentas/cactus
   B: [0.06, 0.10], // riego escaso
@@ -227,7 +227,7 @@ export type WateringAdvice = {
 }
 
 export function calculateWatering(plant: Plant, today: Date): WateringAdvice | null {
-  // Sin drenaje configurado → null (la UI mostrará aviso)
+  // Sin drenaje configurado  null (la UI mostrar aviso)
   if (plant.drainage == null) return null
 
   const volume = plant.pot_diameter_cm ? plantVolume(plant) : null
@@ -242,7 +242,7 @@ export function calculateWatering(plant: Plant, today: Date): WateringAdvice | n
 
   let fraction: [number, number] = deep && deepFraction ? deepFraction : light
 
-  // Cap sin drenaje: nunca más de 10% del sustrato
+  // Cap sin drenaje: nunca ms de 10% del sustrato
   if (!plant.drainage) {
     fraction = [Math.min(fraction[0], 0.10), Math.min(fraction[1], 0.10)]
   }
@@ -255,7 +255,7 @@ export function calculateWatering(plant: Plant, today: Date): WateringAdvice | n
     max,
     kind: deep ? "deep" : "light",
     instruction: deep
-      ? "Riega hasta que drene por el fondo y vacía el plato"
+      ? "Riega hasta que drene por el fondo y vaca el plato"
       : plant.drainage
         ? "Riega con aproximadamente " + min + "-" + max + " ml"
         : "Riega poco, sin encharcar (" + min + "-" + max + " ml)",
@@ -263,9 +263,9 @@ export function calculateWatering(plant: Plant, today: Date): WateringAdvice | n
 }
 
 export function shouldDeepWater(plant: Plant, today: Date): boolean {
-  // Sin drenaje → nunca profundo
+  // Sin drenaje  nunca profundo
   if (!plant.drainage) return false
-  // Suculentas/cactus → nunca profundo
+  // Suculentas/cactus  nunca profundo
   if (plant.watering_style === "A") return false
 
   const reference = plant.last_deep_watering_at ?? plant.created_at
@@ -293,7 +293,7 @@ function monthsBetween(date1: string, date2: Date): number {
   return (y2 - y1) * 12 + (m2 - m1)
 }
 
-/** Volumen aproximado de sustrato en un troncocónico (cm³ = ml) */
+/** Volumen aproximado de sustrato en un troncocnico (cm = ml) */
 function plantVolume(plant: Plant): number | null {
   if (!plant.pot_diameter_cm) return null
   const D = Math.max(4, plant.pot_diameter_cm)
