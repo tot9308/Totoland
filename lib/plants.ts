@@ -223,3 +223,56 @@ function plantVolume(plant: Plant): number | null {
 function round5(x: number): number {
   return Math.round(x / 5) * 5
 }
+
+export function dueDatesInRange(plant: Plant, start: Date, end: Date, ss: number, se: number): Date[] {
+  const out: Date[] = []
+  if (!wateringDaySet(plant)) return out
+  const d = mid(start); const e = mid(end)
+  while (d <= e) {
+    if (isDueDay(plant, d, ss, se)) out.push(new Date(d))
+    d.setDate(d.getDate() + 1)
+  }
+  return out
+}
+
+export function isDue(plant: Plant, summerStart: number, summerEnd: number): boolean {
+  const du = daysUntilDue(plant, summerStart, summerEnd)
+  return du !== null && du <= 0
+}
+
+export function waterAmountFor(diameterCm: number, style: string): { min: number; max: number } {
+  const D = Math.max(4, diameterCm)
+  const R = D / 2
+  const r = R * 0.75
+  const h = D * 0.9
+  const volumeMl = (Math.PI * h / 3) * (R * R + R * r + r * r)
+
+  const fraction: { min: number; max: number } =
+    style === "A" ? { min: 0.05, max: 0.08 }
+    : style === "B" ? { min: 0.06, max: 0.10 }
+    : style === "C" ? { min: 0.08, max: 0.12 }
+    : style === "D" ? { min: 0.10, max: 0.14 }
+    : style === "E" ? { min: 0.12, max: 0.16 }
+    : { min: 0.08, max: 0.12 }
+
+  const round5 = (x: number) => Math.round(x / 5) * 5
+
+  return {
+    min: round5(volumeMl * fraction.min),
+    max: round5(volumeMl * fraction.max),
+  }
+}
+
+export function waterAmount(plant: Plant): { min: number; max: number } | null {
+  if (!plant.pot_diameter_cm) return null
+  return waterAmountFor(plant.pot_diameter_cm, "B")
+}
+
+export function healthLevel(plant: Plant, ss: number, se: number): number {
+  if (plant.status === "dead") return 2
+  if ((plant.recovery_step ?? 0) > 0) return 2
+  const du = daysUntilDue(plant, ss, se)
+  if (du !== null && du <= -4) return 2
+  if (du !== null && du < 0) return 1
+  return 0
+}
