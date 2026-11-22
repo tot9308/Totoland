@@ -15,9 +15,13 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [householdCount, setHouseholdCount] = useState(0)
 
   useEffect(() => {
     ;(async () => {
+      const { data: mems } = await supabase
+        .from("household_members").select("household_id").eq("user_id", userId)
+      setHouseholdCount((mems ?? []).length)
       const { data: mem } = await supabase
         .from("household_members").select("household_id")
         .eq("user_id", userId).limit(1).single()
@@ -97,7 +101,9 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
                   Guardar
                 </button>
                 <button onClick={() => setShowDeleteConfirm(true)}
-                  className="rounded bg-[#8a3a1a] px-2 py-1 text-xs text-white hover:bg-[#6f2e14]">
+                  disabled={householdCount <= 1}
+                  className={`rounded px-2 py-1 text-xs ${householdCount <= 1 ? "bg-stone-300 text-stone-500 cursor-not-allowed" : "bg-[#8a3a1a] text-white hover:bg-[#6f2e14]"}`}
+                >
                   Eliminar casa
                 </button>
               </div>
