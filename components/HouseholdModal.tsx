@@ -1,7 +1,8 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
+import { deleteHousehold } from "@/lib/household"
 
 export default function HouseholdModal({ userId, onClose, onJoined }: {
   userId: string
@@ -13,9 +14,10 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
   const [code, setCode] = useState("")
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState("")
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       const { data: mem } = await supabase
         .from("household_members").select("household_id")
         .eq("user_id", userId).limit(1).single()
@@ -63,6 +65,18 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
     onClose()
   }
 
+  async function deleteHouse() {
+    if (!household) return
+    setBusy(true)
+    try {
+      await deleteHousehold(household.id)
+      onClose()
+    } catch (err: any) {
+      setBusy(false)
+      setMsg("Error: " + err.message)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-sm rounded-xl bg-[#faf7f0] p-5 shadow-xl">
@@ -70,18 +84,24 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
 
         {household && (
           <div className="mb-4 rounded bg-stone-50 p-3 text-sm text-stone-800">
-            <label className="mb-1 block text-xs text-stone-600">Nombre de la casa</label>
-            <div className="flex items-center gap-2">
-              <input
-                value={nameDraft}
-                onChange={e => setNameDraft(e.target.value)}
-                className="flex-1 rounded border border-stone-300 px-2 py-1 text-sm"
-              />
-              <button onClick={saveName}
-                className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white hover:bg-[#4a6a3a]">
-                Guardar
-              </button>
-            </div>
+            <label className="mb-1 block text-xs text-stone-600">
+              Nombre de la casa
+              <div className="flex items-center gap-2">
+                <input
+                  value={nameDraft}
+                  onChange={e => setNameDraft(e.target.value)}
+                  className="flex-1 rounded border border-stone-300 px-2 py-1 text-sm"
+                />
+                <button onClick={saveName}
+                  className="rounded bg-[#5a7d4a] px-2 py-1 text-xs text-white hover:bg-[#4a6a3a]">
+                  Guardar
+                </button>
+                <button onClick={() => setShowDeleteConfirm(true)}
+                  className="rounded bg-[#8a3a1a] px-2 py-1 text-xs text-white hover:bg-[#6f2e14]">
+                  Eliminar casa
+                </button>
+              </div>
+            </label>
             <p className="mt-2">
               Código de invitación: <b className="tracking-widest">{household.invite_code ?? "—"}</b>{" "}
               <button onClick={copy}
@@ -119,5 +139,29 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
         </form>
       </div>
     </div>
+
+    {showDeleteConfirm && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="w-full max-w-sm rounded-xl bg-[#faf7f0] p-5 shadow-2xl">
+          <h3 className="mb-2 text-lg font-semibold text-[#8a3a1a]">
+            ¿Eliminar esta casa?
+          </h3>
+          <p className="mb-4 text-sm text-stone-700">
+            Esta acción borrará permanentemente todas las plantas, eventos y fotos de esta casa. No se puede deshacer.
+          </p>
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setShowDeleteConfirm(false)}
+              className="rounded px-3 py-2 text-stone-700 hover:bg-stone-100">
+              Cancelar
+            </button>
+            <button onClick={deleteHouse}
+              disabled={busy}
+              className="rounded bg-[#8a3a1a] px-4 py-2 text-white hover:bg-[#6f2e14] disabled:opacity-40">
+              {busy ? "Eliminando…" : "Sí, eliminar casa"}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
   )
 }
