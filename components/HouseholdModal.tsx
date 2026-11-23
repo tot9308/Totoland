@@ -21,14 +21,21 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
     ;(async () => {
       const { data: mems } = await supabase
         .from("household_members").select("household_id").eq("user_id", userId)
-      setHouseholdCount((mems ?? []).length)
-      const { data: mem } = await supabase
-        .from("household_members").select("household_id")
-        .eq("user_id", userId).limit(1).single()
-      if (!mem) return
+      const hhIds = (mems ?? []).map((m: any) => m.household_id as string)
+      setHouseholdCount(hhIds.length)
+
+      // Usar la casa ACTIVA del perfil (no la primera que aparezca)
+      const { data: prof } = await supabase
+        .from("profiles").select("active_household_id").eq("id", userId).single()
+      let activeId = prof?.active_household_id as string | null
+      if (!activeId || !hhIds.includes(activeId)) {
+        activeId = hhIds[0] ?? null
+      }
+      if (!activeId) return
+
       const { data: hh } = await supabase
         .from("households").select("id, name, invite_code")
-        .eq("id", mem.household_id).single()
+        .eq("id", activeId).single()
       setHousehold(hh)
       if (hh) setNameDraft(hh.name)
     })()
@@ -74,7 +81,15 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
     setBusy(true)
     try {
       await deleteHousehold(household.id)
+      // Reasignar casa activa a otra casa del usuario (si queda alguna)
+      const { data: mems } = await supabase
+        .from("household_members").select("household_id").eq("user_id", userId)
+      const next = (mems ?? [])[0]?.household_id as string | undefined
+      if (next) {
+        await supabase.from("profiles").update({ active_household_id: next }).eq("id", userId)
+      }
       onClose()
+      onJoined()
     } catch (err: any) {
       setBusy(false)
       setMsg("Error: " + err.message)
@@ -119,6 +134,11 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
             <p className="mt-2 text-xs text-stone-500">
               Compártelo para que otras personas se unan a esta casa.
             </p>
+            {householdCount <= 1 && (
+              <p className="mt-2 rounded bg-[#efe3c8] p-2 text-xs text-stone-700">
+                ℹ️ No puedes eliminar tu única casa. Crea o únete a otra primero.
+              </p>
+            )}
           </div>
         )}
 
@@ -151,7 +171,7 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
         <div className="w-full max-w-sm rounded-xl bg-[#faf7f0] p-5 shadow-2xl">
           <h3 className="mb-2 text-lg font-semibold text-[#8a3a1a]">
-            ¿Eliminar esta casa?
+            ¿Eliminar la casa "{household?.name}"?
           </h3>
           <p className="mb-4 text-sm text-stone-700">
             Esta acción borrará permanentemente todas las plantas, eventos y fotos de esta casa. No se puede deshacer.
