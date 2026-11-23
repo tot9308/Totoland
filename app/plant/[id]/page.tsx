@@ -363,6 +363,12 @@ export default function PlantDetail() {
                 {plant.has_saucer && " · vacía el plato a los 10-15 min"}
               </p>
             )}
+            {(plant.drainage === null || plant.drainage === undefined) && (
+              <p className="text-xs text-[#8a3a1a]">
+                💦 Configura si la maceta tiene drenaje (Editar planta) para calcular el riego
+              </p>
+            )}
+
             {plant.drainage && plant.watering_style !== "A" && (
               <p className="text-xs text-stone-500">
                 🚿 Riego profundo:{" "}
