@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { Session } from "@supabase/supabase-js"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, daysSince, daysUntilDue, effectiveFreq, isDue, type Plant, mistingDue } from "@/lib/plants"
+import { EVENT_LABELS, daysSince, daysUntilDue, effectiveFreq, isDue, type Plant, mistingDue, deepWateringPatch } from "@/lib/plants"
 import { findSpecies } from "@/lib/species"
 import { plantType, severityFor, rehydrateTip, startRecovery } from "@/lib/recovery"
 import PlantCard from "./PlantCard"
@@ -209,7 +209,7 @@ export default function Home({ session }: { session: Session }) {
     if (error) return alert("Error al registrar: " + error.message)
     const now = new Date().toISOString()
     for (const p of list)
-      await supabase.from("plants").update({ last_watered_at: now }).eq("id", p.id)
+      await supabase.from("plants").update({ last_watered_at: now, ...deepWateringPatch(p, new Date(now), summerStart, summerEnd) }).eq("id", p.id)
     for (const x of late) {
       const t = plantType(findSpecies(x.p.species ?? ""), x.p.plant_type)
       const sev = severityFor(x.d ?? 0, x.f ?? 7, t)
@@ -245,7 +245,7 @@ export default function Home({ session }: { session: Session }) {
     })
     if (error) return alert("Error: " + error.message)
     if (type === "watering")
-      await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", p.id)
+      await supabase.from("plants").update({ last_watered_at: new Date().toISOString(), ...deepWateringPatch(p, new Date(), summerStart, summerEnd) }).eq("id", p.id)
     await reload()
     showToast(`${EVENT_LABELS[type]} · ${p.name}`, batch, [p.id])
   }

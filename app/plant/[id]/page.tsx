@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useCallback, useEffect, useState } from "react"
 import { useParams } from "next/navigation"
@@ -18,7 +18,7 @@ import { useConfirm } from "@/components/UiProvider"
 import HealthChart from "@/components/HealthChart"
 import { DEATH_CAUSES } from "@/lib/causes"
 import CropModal from "@/components/CropModal"
-import { EVENT_LABELS, waterAmount, daysSince, daysUntilDue, type Plant, mistingDue, mistingFreqForSeason } from "@/lib/plants"
+import { EVENT_LABELS, calculateWatering, nextDeepWateringDate, deepWateringPatch, daysSince, daysUntilDue, type Plant, mistingDue, mistingFreqForSeason } from "@/lib/plants"
 import ShareCard from "@/components/ShareCard"
 import SymptomChecker from "@/components/SymptomChecker"
 import type { ProtocolKind, Culprit, Severity } from "@/lib/protocols"
@@ -64,6 +64,11 @@ function fmt(iso: string) {
     day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
   })
 }
+function fmtDate(d: Date) {
+  return d.toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })
+}
+
+
 
 export const dynamic = "force-dynamic"
 
@@ -161,7 +166,7 @@ export default function PlantDetail() {
     const { error } = await supabase.from("care_events").insert(rows)
     if (error) return alert(error.message)
 
-    await supabase.from("plants").update({ last_watered_at: new Date().toISOString() }).eq("id", plant.id)
+    await supabase.from("plants").update({ last_watered_at: new Date().toISOString(), ...deepWateringPatch(plant, new Date(), summerStart, summerEnd) }).eq("id", plant.id)
     await reload()
   }
 
@@ -339,7 +344,8 @@ export default function PlantDetail() {
   const yearStart = new Date(new Date().getFullYear(), 0, 1).toISOString()
   const speciesCard = findSpecies(plant.species ?? "")
   const mainPhoto = photos.find(ph => ph.storage_path === plant.main_photo_path)
-  const waterAmt = waterAmount(plant)
+  const watering = calculateWatering(plant, new Date(), summerStart, summerEnd)
+  const nextDeep = nextDeepWateringDate(plant, new Date(), summerStart, summerEnd)
 
   return (
     <main className="min-h-screen bg-stone-50 p-4 md:p-8">
@@ -351,12 +357,23 @@ export default function PlantDetail() {
             <p className="text-sm text-stone-600">
               {plant.species ?? "—"} · {plant.location ?? "sin ubicación"}
             </p>
-            {waterAmt && (
+            {watering && (
               <p className="text-xs text-stone-500">
-                💦 Riego: ≈ {waterAmt.min}–{waterAmt.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
+                💦 Riego: ≈ {watering.min}–{watering.max} ml por vez (maceta de {plant.pot_diameter_cm} cm)
                 {plant.has_saucer && " · vacía el plato a los 10-15 min"}
               </p>
             )}
+            {plant.drainage && plant.watering_style !== "A" && (
+              <p className="text-xs text-stone-500">
+                🚿 Riego profundo:{" "}
+                {plant.last_deep_watering_at
+                  ? `último hace ${daysSince(plant.last_deep_watering_at)} días`
+                  : "aún no registrado"}
+                {nextDeep ? ` · próximo el ${fmtDate(nextDeep)}` : ""}
+                {watering?.kind === "deep" && <b className="text-[#2f5a6a]"> · ¡toca ahora!</b>}
+              </p>
+            )}
+
             {plant.last_watered_at && (
               <p className="text-xs text-stone-500">
                 💧 Último riego: hace {daysSince(plant.last_watered_at)} días
@@ -431,9 +448,9 @@ export default function PlantDetail() {
           )
         })()}
         <div className="mt-4 flex flex-wrap gap-2">
-<button onClick={() => quickWater(false)}
+          <button onClick={() => quickWater(false)}
             className="rounded-xl bg-[#5a7d4a] px-4 py-2.5 text-sm text-white hover:bg-[#4a6a3a]">
-            💧 Regar {waterAmt ? `(${waterAmt.min}–${waterAmt.max} ml)` : ""}
+            💧 Regar {watering ? `(${watering.min}–${watering.max} ml)` : ""}
           </button>
           {plant.misting_enabled && (
             <button onClick={() => quickMist()}

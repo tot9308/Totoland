@@ -62,6 +62,9 @@ create table if not exists public.plants (
   died_at date,
   pot_diameter_cm integer,
   has_saucer boolean not null default false,
+  drainage boolean,
+  last_deep_watering_at timestamptz,
+
   recovery_check_at timestamptz,
   recovery_step integer not null default 0,
   recovery_severity text,

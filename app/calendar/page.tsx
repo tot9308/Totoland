@@ -1,10 +1,10 @@
-﻿"use client"
+"use client"
 
 import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
-import { dueDatesInRange, wateringDaySet, type Plant } from "@/lib/plants"
+import { dueDatesInRange, wateringDaySet, nextDeepWateringDate, type Plant } from "@/lib/plants"
 import { getActiveHouseholdId } from "@/lib/household"
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
@@ -179,6 +179,14 @@ export default function CalendarPage() {
     console.error("Error en bucle de riegos del calendario:", e)
   }
 
+  // Riegos profundos previstos en el mes visible (clave dia-plantId)
+  const deepDueKeys = new Set<string>()
+  for (const p of plants ?? []) {
+    const nd = nextDeepWateringDate(p, todayMid, summerStart, summerEnd)
+    if (nd && nd.getFullYear() === year && nd.getMonth() === month) deepDueKeys.add(nd.getDate() + "-" + p.id)
+  }
+
+
   const selectedData = selDay ? byDay[selDay] : null
   const selectedIsVacation = selDay ? vacDays.has(selDay) : false
   const selectedVacAffected = selectedIsVacation && selDay !== null ? (vacAffectedByDay[selDay] ?? []) : []
@@ -232,6 +240,8 @@ export default function CalendarPage() {
                       {data.events.some(e => e.type === "watering") && <span className="text-[10px]">💧</span>}
                       {data.events.some(e => e.type !== "watering") && <span className="text-[10px]">📝</span>}
                       {data.due.length > 0 && <span className="text-[10px] text-[#c97b5e]">⏰{data.due.length}</span>}
+                      {data.due.some(p => deepDueKeys.has(d + "-" + p.id)) && <span className="text-[10px] text-[#2f5a6a]">🚿</span>}
+
                       {data.tasks.length > 0 && <span className="text-[10px]">📋</span>}
                       {isVacation && vacAffected.length > 0 && <span className="text-[10px] text-[#854d0e]">🏖️{vacAffected.length}</span>}
                     </div>
@@ -270,7 +280,7 @@ export default function CalendarPage() {
                       <ul className="space-y-1">
                         {selectedData.due.map(p => (
                           <li key={p.id} className="text-sm text-stone-700">
-                            💧 <Link href={`/plant/${p.id}`} className="font-medium hover:underline">{p.name}</Link>
+                            {deepDueKeys.has((selDay ?? 0) + "-" + p.id) ? "🚿" : "💧"} <Link href={`/plant/${p.id}`} className="font-medium hover:underline">{p.name}</Link>{deepDueKeys.has((selDay ?? 0) + "-" + p.id) && <span className="ml-1 text-[10px] font-semibold text-[#2f5a6a]">riego profundo</span>}
                           </li>
                         ))}
                       </ul>
@@ -310,6 +320,8 @@ export default function CalendarPage() {
             <span>💧 riego hecho</span>
             <span>📝 otro evento</span>
             <span className="text-[#c97b5e]">⏰ riego previsto</span>
+            <span className="text-[#2f5a6a]">🚿 riego profundo</span>
+
             <span>📋 tareas del mes</span>
             <span className="text-[#854d0e]">🏖️ día de vacaciones</span>
           </div>

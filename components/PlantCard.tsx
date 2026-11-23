@@ -1,7 +1,7 @@
-﻿"use client"
+"use client"
 
 import { useRouter } from "next/navigation"
-import { daysSince, daysUntilDue, effectiveFreq, type Plant, waterAmount, calculateWatering } from "@/lib/plants"
+import { daysUntilDue, effectiveFreq, type Plant, calculateWatering } from "@/lib/plants"
 import { useState } from "react"
 
 export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summerStart, summerEnd, health }: {
@@ -16,8 +16,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
   const router = useRouter()
   const due = daysUntilDue(plant, summerStart, summerEnd)
   const freq = effectiveFreq(plant, summerStart, summerEnd)
-  const days = daysSince(plant.last_watered_at)
-  const amount = calculateWatering(plant, new Date())
+  const amount = calculateWatering(plant, new Date(), summerStart, summerEnd)
   const [justWatered, setJustWatered] = useState(false)
   const [justMisted, setJustMisted] = useState(false)
   const DIA_NOMBRE = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"]
@@ -63,7 +62,7 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
       </div>
 
       {/* Próximo riego */}
-      <div className={`mb-3 rounded-lg px-2.5 py-1.5 text-xs ${overdue ? "bg-[#c97b5e]/15 text-[#8a3a1a]" : dueSoon ? "bg-[#efe3c8] text-stone-700]" : "bg-stone-100 text-stone-600]"}`}>
+      <div className={`mb-3 rounded-lg px-2.5 py-1.5 text-xs ${overdue ? "bg-[#c97b5e]/15 text-[#8a3a1a]" : dueSoon ? "bg-[#efe3c8] text-stone-700" : "bg-stone-100 text-stone-600"}`}>
         {due === null ? (
           <span>Sin riegos registrados</span>
         ) : overdue ? (
@@ -80,16 +79,12 @@ export default function PlantCard({ plant, onWater, onWaterMist, photoUrl, summe
         )}
         {freq && <span className="block text-[10px] opacity-70">cada {freq} d</span>}
         {amount && amount.kind === "deep" && (
-          <span className="block font-semibold text-[#8a3a1a]">💧 Riego profundo: lavar sales</span>
-        )}
-        {amount && amount.kind === "light" && !plant.drainage && (
-          <span className="block text-[10px] opacity-70">🚫 Sin drenaje: riega poco</span>
+          <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-[#3f6f8a]/15 px-2 py-0.5 text-[10px] font-semibold text-[#2f5a6a]">
+            🚿 Riego profundo: deja que drene
+          </span>
         )}
         {amount && amount.kind === "light" && (
           <span className="block text-[10px] opacity-70">💧 {amount.min}–{amount.max} ml</span>
-        )}
-        {amount && amount.instruction && (
-          <span className="block text-[10px] opacity-70">{amount.instruction}</span>
         )}
       </div>
 

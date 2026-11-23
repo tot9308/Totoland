@@ -177,15 +177,23 @@ export type WateringAdvice = {
   instruction: string
 }
 
-export function calculateWatering(plant: Plant, today: Date): WateringAdvice | null {
+export const DEFAULT_SUMMER_START = 5
+export const DEFAULT_SUMMER_END = 9
+
+export function calculateWatering(
+  plant: Plant,
+  today: Date,
+  summerStart: number = DEFAULT_SUMMER_START,
+  summerEnd: number = DEFAULT_SUMMER_END,
+): WateringAdvice | null {
   if (plant.drainage == null) return null
   const volume = plant.pot_diameter_cm ? plantVolume(plant) : null
   if (!volume) return null
   const style = (plant.watering_style ?? "B") as keyof typeof LIGHT_FRACTION
   const light = LIGHT_FRACTION[style] ?? LIGHT_FRACTION.B
   const deepFraction = DEEP_FRACTION[style] ?? null
-  const due = isWateringDue(plant, 5, 9)
-  const deep = due !== null && shouldDeepWater(plant, today)
+  const due = isWateringDue(plant, summerStart, summerEnd)
+  const deep = due !== null && shouldDeepWater(plant, today, summerStart, summerEnd)
   let fraction: [number, number] = deep && deepFraction ? deepFraction : light
   if (!plant.drainage) {
     fraction = [Math.min(fraction[0], 0.10), Math.min(fraction[1], 0.10)]
@@ -204,20 +212,62 @@ export function calculateWatering(plant: Plant, today: Date): WateringAdvice | n
   }
 }
 
-export function shouldDeepWater(plant: Plant, today: Date): boolean {
+// El riego profundo (lavado de sales) se hace cada mes en verano y cada dos
+// meses en invierno. Las suculentas (A) y las macetas sin drenaje nunca lo hacen.
+export function deepWateringIntervalMonths(month: number, summerStart: number = DEFAULT_SUMMER_START, summerEnd: number = DEFAULT_SUMMER_END): number {
+  const inSummer = summerStart <= summerEnd
+    ? month >= summerStart && month <= summerEnd
+    : month >= summerStart || month <= summerEnd
+  return inSummer ? 1 : 2
+}
+
+export function shouldDeepWater(
+  plant: Plant,
+  today: Date,
+  summerStart: number = DEFAULT_SUMMER_START,
+  summerEnd: number = DEFAULT_SUMMER_END,
+): boolean {
   if (!plant.drainage) return false
   if (plant.watering_style === "A") return false
   const reference = plant.last_deep_watering_at ?? plant.created_at
   if (!reference) return false
-  if (plant.watering_style === "B") {
-    const monthsDiff = monthsBetween(reference, today)
-    return monthsDiff >= 2
+  const monthsDiff = monthsBetween(reference, today)
+  const interval = deepWateringIntervalMonths(today.getMonth() + 1, summerStart, summerEnd)
+  return monthsDiff >= interval
+}
+
+export function deepWateringPatch(plant: Plant, when: Date = new Date(), summerStart: number = DEFAULT_SUMMER_START, summerEnd: number = DEFAULT_SUMMER_END): { last_deep_watering_at?: string } {
+  const advice = calculateWatering(plant, when, summerStart, summerEnd)
+  return advice?.kind === "deep" ? { last_deep_watering_at: when.toISOString() } : {}
+}
+
+export function nextDeepWateringDate(
+  plant: Plant,
+  today: Date,
+  summerStart: number = DEFAULT_SUMMER_START,
+  summerEnd: number = DEFAULT_SUMMER_END,
+): Date | null {
+  if (!plant.drainage) return null
+  if (plant.watering_style === "A") return null
+  const reference = plant.last_deep_watering_at ?? plant.created_at
+  if (!reference) return null
+  const ref = new Date(reference)
+  for (let i = 1; i <= 24; i++) {
+    const candidate = addMonths(ref, i)
+    const interval = deepWateringIntervalMonths(candidate.getMonth() + 1, summerStart, summerEnd)
+    if (i >= interval) return candidate
   }
-  const lastMonth = new Date(reference).getMonth()
-  const lastYear = new Date(reference).getFullYear()
-  const curMonth = today.getMonth()
-  const curYear = today.getFullYear()
-  return !(lastMonth === curMonth && lastYear === curYear)
+  return null
+}
+
+function addMonths(date: Date, months: number): Date {
+  const out = new Date(date)
+  const day = out.getDate()
+  out.setDate(1)
+  out.setMonth(out.getMonth() + months)
+  const daysInMonth = new Date(out.getFullYear(), out.getMonth() + 1, 0).getDate()
+  out.setDate(Math.min(day, daysInMonth))
+  return out
 }
 
 function monthsBetween(date1: string, date2: Date): number {

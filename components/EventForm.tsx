@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
-import { EVENT_LABELS, type Plant } from "@/lib/plants"
+import { EVENT_LABELS, deepWateringPatch, type Plant } from "@/lib/plants"
 
 const PESTS = ["Cochinilla", "Araña roja", "Mosca blanca", "Pulgón", "Trips", "Mosquito del sustrato", "Otro"]
 const DISEASES = ["Hongo (manchas foliares)", "Podredumbre de raíz", "Oídio", "Mildiu", "Otro"]
@@ -70,7 +70,7 @@ export default function EventForm({ plant, userId, onClose, onSaved }: {
     })
     if (error) { setBusy(false); return alert("Error: " + error.message) }
     if (type === "watering")
-      await supabase.from("plants").update({ last_watered_at: when }).eq("id", plant.id)
+      await supabase.from("plants").update({ last_watered_at: when, ...deepWateringPatch(plant, new Date(when)) }).eq("id", plant.id)
     setBusy(false)
     await onSaved()
     onClose()
