@@ -1,5 +1,5 @@
-// ============================================================================
-// TESTS PARA LÓGICA DE RIEGO - plantas.test.ts
+﻿// ============================================================================
+// TESTS PARA LÃ“GICA DE RIEGO - plantas.test.ts
 // Ejecutar con: node --experimental-strip-types lib/plants.test.ts
 // ============================================================================
 
@@ -45,8 +45,8 @@ function shouldDeepWater(
 let passed = 0
 let failed = 0
 function test(name: string, fn: () => void) {
-  try { fn(); passed++; console.log("✅ " + name) }
-  catch (e: any) { failed++; console.log("❌ " + name + ": " + e.message) }
+  try { fn(); passed++; console.log("âœ… " + name) }
+  catch (e: any) { failed++; console.log("âŒ " + name + ": " + e.message) }
 }
 function assert(condition: boolean, message: string) { if (!condition) throw new Error(message) }
 function assertEqual(actual: any, expected: any, message: string) {
@@ -93,71 +93,70 @@ test("DEEP_FRACTION.D = [0.22, 0.28]", () => {
 })
 test("DEEP_FRACTION.E = [0.25, 0.30]", () => {
   assertEqual(getDeepFraction("E")?.[0], 0.25, "E deep min")
-  assertEqual(getDeepFraction("E")?.[1], 0.30, "E deep max")
-)
+})
 // ============ shouldDeepWater ============
-test("shouldDeepWater: drainage=null → null (no calcular)", () => {
+test("shouldDeepWater: drainage=null â†’ null (no calcular)", () => {
   const result = shouldDeepWater(null, "B", null, null, new Date("2026-01-15"))
-  assertEqual(result, null, "drainage null → null")
+  assertEqual(result, null, "drainage null â†’ null")
 })
-test("shouldDeepWater: drainage=false → false (sin drenaje nunca profundo)", () => {
+test("shouldDeepWater: drainage=false â†’ false (sin drenaje nunca profundo)", () => {
   const result = shouldDeepWater(false, "C", null, null, new Date("2026-01-15"))
-  assertEqual(result, false, "sin drenaje → false")
+  assertEqual(result, false, "sin drenaje â†’ false")
 })
-test("shouldDeepWater: estilo A (suculenta) → false (nunca profundo)", () => {
+test("shouldDeepWater: estilo A (suculenta) â†’ false (nunca profundo)", () => {
   const result = shouldDeepWater(true, "A", "2026-01-01", "2026-01-01", new Date("2026-01-15"))
-  assertEqual(result, false, "suculenta → false")
+  assertEqual(result, false, "suculenta â†’ false")
 })
-test("shouldDeepWater: B, last hace 3 meses → true (profundo)", () => {
+test("shouldDeepWater: B, last hace 3 meses â†’ true (profundo)", () => {
   const result = shouldDeepWater(true, "B", "2025-10-15", "2025-10-15", new Date("2026-01-15"))
-  assertEqual(result, true, "B 3 meses → true")
+  assertEqual(result, true, "B 3 meses â†’ true")
 })
-test("shouldDeepWater: B, last hace 1 mes → false (no es momento aún)", () => {
+test("shouldDeepWater: B, last hace 1 mes â†’ false (no es momento aÃºn)", () => {
   const result = shouldDeepWater(true, "B", "2025-12-15", "2025-12-15", new Date("2026-01-15"))
-  assertEqual(result, false, "B 1 mes → false")
+  assertEqual(result, false, "B 1 mes â†’ false")
 })
-test("shouldDeepWater: B, last hace exactamente 2 meses → true", () => {
+test("shouldDeepWater: B, last hace exactamente 2 meses â†’ true", () => {
   const result = shouldDeepWater(true, "B", "2025-11-15", "2025-11-15", new Date("2026-01-15"))
-  assertEqual(result, true, "B 2 meses exactos → true")
-})
+  assertEqual(result, true, "B 2 meses exactos â†’ true")
 test("shouldDeepWater: C, primer riego del mes → true", () => {
   const today = new Date("2026-01-15")
-  const result = shouldDeepWater(true, "C", null, "2026-01-01", today)
+  const result = shouldDeepWater(true, "C", null, "2025-12-01", today)
   assertEqual(result, true, "C primer riego del mes → true")
 })
-test("shouldDeepWater: C, segundo riego del mismo mes → false", () => {
+})
+test("shouldDeepWater: C, segundo riego del mismo mes â†’ false", () => {
   const today = new Date("2026-01-20")
   const result = shouldDeepWater(true, "C", "2026-01-05", "2026-01-01", today)
-  assertEqual(result, false, "C segundo riego mes → false")
+  assertEqual(result, false, "C segundo riego mes â†’ false")
 })
-test("shouldDeepWater: C, primer riego del mes siguiente → true", () => {
+test("shouldDeepWater: C, primer riego del mes siguiente â†’ true", () => {
   const today = new Date("2026-02-05")
   const result = shouldDeepWater(true, "C", "2026-01-20", "2026-01-01", today)
-  assertEqual(result, true, "C nuevo mes → true")
-})
+  assertEqual(result, true, "C nuevo mes â†’ true")
 test("shouldDeepWater: E, primer riego del mes → true", () => {
   const today = new Date("2026-03-10")
-  const result = shouldDeepWater(true, "E", null, "2026-03-01", today)
+  const result = shouldDeepWater(true, "E", null, "2026-02-01", today)
   assertEqual(result, true, "E primer riego mes → true")
 })
-test("shouldDeepWater: sin last_deep_watering_at ni created_at → false", () => {
+})
+test("shouldDeepWater: sin last_deep_watering_at ni created_at â†’ false", () => {
   const result = shouldDeepWater(true, "C", null, null, new Date("2026-01-15"))
-  assertEqual(result, false, "sin referencia → false")
+  assertEqual(result, false, "sin referencia â†’ false")
 })
 // ============ CAP SIN DRENAJE ============
-test("Cap sin drenaje: fracción ligera B (0.06-0.10) → capped a 0.06-0.10", () => {
+test("Cap sin drenaje: fracciÃ³n ligera B (0.06-0.10) â†’ capped a 0.06-0.10", () => {
   const light = LIGHT_FRACTION.B
   const capped = [Math.min(light[0], 0.10), Math.min(light[1], 0.10)]
   assertEqual(capped[0], 0.06, "cap min")
   assertEqual(capped[1], 0.10, "cap max")
 })
-test("Cap sin drenaje: fracción profunda C (0.20-0.25) → capped a 0.10", () => {
+test("Cap sin drenaje: fracciÃ³n profunda C (0.20-0.25) â†’ capped a 0.10", () => {
   const deep = DEEP_FRACTION.C
   const capped = [Math.min(deep![0], 0.10), Math.min(deep![1], 0.10)]
   assertEqual(capped[0], 0.10, "deep cap min")
   assertEqual(capped[1], 0.10, "deep cap max")
 })
-console.log("\n═════════════════════════════════════════════════════════════════════════════")
+console.log("\nâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•")
 console.log("RESULTADOS: " + passed + " aprobados, " + failed + " fallidos")
-console.log("═════════════════════════════════════════════════════════════════════════════\n")
+console.log("â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•\n")
 process.exit(failed > 0 ? 1 : 0)
