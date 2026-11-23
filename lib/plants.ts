@@ -44,10 +44,10 @@ export const EVENT_LABELS: Record<string, string> = {
   pruning: "Poda",
   repotting: "Trasplante",
   treatment: "Tratamiento",
-  observation: "Observacion",
+  observation: "Observación",
   pest_detection: "Plaga detectada",
   disease_detection: "Enfermedad detectada",
-  location_change: "Cambio de ubicacion",
+  location_change: "Cambio de ubicación",
 }
 
 export function daysSince(iso: string | null): number | null {
@@ -97,11 +97,7 @@ export function isDueDay(plant: Plant, date: Date, ss: number, se: number): bool
   const interval = (plant.watering_week_interval || 1) * seasonMultiplier(plant, mid(date), ss, se)
   const anchor = plant.watering_anchor ? mid(new Date(plant.watering_anchor)) : null
   if (!anchor) return true
-  const last = mid(new Date(plant.last_watered_at ?? date))
-  const anchorMid = mid(anchor)
-  if (anchorMid.getTime() >= last.getTime()) return false
-  const daysDiff = Math.round((last.getTime() - anchorMid.getTime()) / 86400000)
-  return daysDiff % interval === 0
+  return weekParity(mid(date), anchor, interval)
 }
 
 export function isWateringDue(plant: Plant, summerStart: number, summerEnd: number): number | null {
@@ -111,13 +107,33 @@ export function isWateringDue(plant: Plant, summerStart: number, summerEnd: numb
 }
 
 export function daysUntilDue(plant: Plant, summerStart: number, summerEnd: number): number | null {
-  const freq = effectiveFreq(plant, summerStart, summerEnd)
-  if (!freq) return null
-  const last = plant.last_watered_at
-  if (!last) return 0
-  const daysDiff = daysSince(last)
-  if (daysDiff === null) return null
-  return freq - daysDiff
+  const set = wateringDaySet(plant)
+  if (set) {
+    const span = 7 * (plant.watering_week_interval || 1)
+    const today = mid(new Date())
+    const last = plant.last_watered_at ? mid(new Date(plant.last_watered_at)) : null
+    for (let i = 0; i <= span; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i)
+      if (!isDueDay(plant, d, summerStart, summerEnd)) continue
+      if (last && last.getTime() >= d.getTime()) {
+        for (let j = 1; j <= span + 7; j++) {
+          const f = new Date(last); f.setDate(f.getDate() + j)
+          if (isDueDay(plant, f, summerStart, summerEnd)) return Math.round((f.getTime() - today.getTime()) / 86400000)
+        }
+        return null
+      }
+      return -i
+    }
+    return null
+  }
+  const f = effectiveFreq(plant, summerStart, summerEnd)
+  if (f == null) return null
+  if (!plant.last_watered_at) return 0
+  const dExact = (Date.now() - new Date(plant.last_watered_at).getTime()) / 86400000
+  const dueExact = f - dExact
+  if (dueExact <= 0) return Math.floor(dueExact)
+  if (dueExact < 1) return 0
+  return Math.ceil(dueExact)
 }
 
 export function mistingFreqForSeason(p: Plant, summerStart: number, summerEnd: number): number | null {
@@ -181,7 +197,7 @@ export function calculateWatering(plant: Plant, today: Date): WateringAdvice | n
     max,
     kind: deep ? "deep" : "light",
     instruction: deep
-      ? "Riega hasta que drene por el fondo y vacia el plato"
+      ? "Riega hasta que drene por el fondo y vacía el plato"
       : plant.drainage
         ? "Riega con aproximadamente " + min + "-" + max + " ml"
         : "Riega poco, sin encharcar (" + min + "-" + max + " ml)",

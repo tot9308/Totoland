@@ -82,6 +82,7 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
   }
 
   return (
+    <>
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4">
       <div className="w-full max-w-sm rounded-xl bg-[#faf7f0] p-5 shadow-xl">
         <h2 className="mb-3 text-lg font-semibold text-stone-800">🏠 Mi casa</h2>
@@ -169,5 +170,6 @@ export default function HouseholdModal({ userId, onClose, onJoined }: {
         </div>
       </div>
     )}
+    </>
   )
 }
