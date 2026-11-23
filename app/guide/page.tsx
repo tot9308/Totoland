@@ -1,4 +1,4 @@
-﻿import Link from "next/link"
+import Link from "next/link"
 import GuideProtocols from "@/components/GuideProtocols"
 import ExpandAll from "@/components/ExpandAll"
 import SymptomChecker from "@/components/SymptomChecker"
@@ -33,21 +33,31 @@ export default function GuidePage() {
 
       {/* ---------- Lo esencial, siempre visible ---------- */}
 
-      <S title="💧 Riego: estilos A/B/C y cuánta agua">
-        <p><b>A · Siempre húmedo:</b> no dejar secar nunca (helechos, calatheas, fittonia). Comprueba cada 2-3 días.</p>
-        <p><b>B · Secar 1-2 cm superficial:</b> mete el dedo; si solo está seca la capa de arriba, aún no. Si seca hasta la 2ª falange, riega.</p>
-        <p><b>C · Secar completamente:</b> la maceta se nota <b>ligera</b> al levantarla y la tierra está seca del todo (cactus, crasas, sansevieria).</p>
-        <p>🫗 <b>¿Cuánta agua?</b> La fija la maceta, no el calendario. Riega hasta que <b>salga por el agujero de drenaje</b>. Como referencia, entre un 8% y un 18% del volumen del sustrato:</p>
+      <S title="💧 Riego: estilos A-E y cuánta agua">
+        <p><b>A · Suculentas y cactus:</b> riego muy escaso. Deja secar el sustrato del todo entre riegos y comprueba que la maceta pese poco.</p>
+        <p><b>B · Escaso:</b> deja secar 1-2 cm de la capa superficial. Mete el dedo: si todavía está húmedo por debajo, espera.</p>
+        <p><b>C · Medio:</b> deja secar la mitad superior del sustrato antes de volver a regar.</p>
+        <p><b>D · Frecuente:</b> le gusta el sustrato ligeramente húmedo, sin encharcar nunca.</p>
+        <p><b>E · Tropicales:</b> amantes de la humedad (helechos, calatheas, fittonia). No dejar secar del todo; comprueba cada 2-3 días.</p>
+        <p>🫗 <b>¿Cuánta agua?</b> La fija el tamaño real de la maceta, no el calendario. La app usa como referencia un porcentaje del volumen del sustrato:</p>
         <ul className="list-disc pl-5">
-          <li>Maceta de 10 cm ≈ <b>50–100 ml</b> (un chupito de café)</li>
-          <li>Maceta de 14 cm ≈ <b>90–140 ml</b> (un vasito)</li>
-          <li>Maceta de 20 cm ≈ <b>320–480 ml</b> (una lata de refresco pequeña)</li>
-          <li>Maceta de 30 cm ≈ <b>1–1,5 L</b></li>
+          <li><b>Riego habitual (ligero):</b> entre el <b>5 % y el 16 %</b> del sustrato, según la categoría (A la menos, E la más).</li>
+          <li><b>Riego profundo:</b> entre el <b>18 % y el 30 %</b> (ver sección siguiente).</li>
         </ul>
-        <p>La app te calcula el rango exacto en cada ficha si pones el diámetro de la maceta.</p>
+        <p>Ejemplos orientativos de riego ligero: maceta de 10 cm ≈ 30-60 ml · 14 cm ≈ 60-120 ml · 20 cm ≈ 150-300 ml · 30 cm ≈ 500-800 ml. Son estimaciones: la app te da el rango exacto en cada ficha si indicas el diámetro de la maceta.</p>
         <p>🍽️ <b>El plato:</b> no cambia la cantidad. Vacíalo a los 10-15 min de regar (agua estancada = raíces podridas). Excepción: carnívoras, que viven con plato de agua destilada.</p>
         <p>⏰ <b>Con retraso:</b> NO eches más agua de la cuenta por compensar. Misma cantidad, pero en <b>dos tandas</b> (riegas, esperas 10 min, repites) o <b>remojo</b> de la maceta 10-15 min en un cubo. Y no abones hasta que se recupere.</p>
         <p>🌧️ <b>Agua del grifo:</b> déjala reposar unas horas en una jarra abierta para que se vaya el cloro. Calatheas, azaleas y carnívoras prefieren agua sin cal o destilada.</p>
+      </S>
+
+      <S title="🚿 Riego profundo: qué es y cuándo toca">
+        <p><b>Qué es:</b> un riego más abundante que moja todo el cepellón y deja que el agua salga por el fondo, arrastrando las sales que se acumulan del abono y del agua del grifo.</p>
+        <p><b>Por qué hace falta:</b> si siempre riegas poco, las raíces profundas se secan, el sustrato acumula sales y puede volverse hidrófobo (el agua resbala sin empapar).</p>
+        <p><b>Cuándo lo programa la app:</b> <b>cada mes en verano</b> y <b>cada 2 meses en invierno</b>, según los meses de verano que tengas configurados en ⚙️ Ajustes.</p>
+        <p><b>Quién no lo hace nunca:</b> las <b>suculentas y cactus</b> (categoría A) y las <b>macetas sin drenaje</b>. En estas últimas la app limita el agua al 10 % del sustrato y no marca nunca riego profundo.</p>
+        <p><b>Cómo regar:</b> echa el agua despacio hasta que <b>drene por el fondo</b> y vacía el plato a los 10-15 min. Si el sustrato está muy seco y el agua resbala, riega en dos tandas con 10 min de espera.</p>
+        <p><b>Dónde lo ves:</b> el badge <b>🚿 Riego profundo</b> aparece en la home y en el calendario. En la ficha de cada planta se muestra el <b>último</b> riego profundo y el <b>próximo</b> previsto.</p>
+        <p>🪴 <b>Importante:</b> indica en cada planta si su maceta tiene <b>drenaje</b> (Sí/No). Sin ese dato la app no calcula el agua. Si acabas de trasplantar, deja pasar unas semanas antes del primer riego profundo.</p>
       </S>
 
       <S title="☀️ Luz: los 4 niveles en tu casa">
@@ -61,6 +71,8 @@ export default function GuidePage() {
 
       <S title="🔣 Símbolos y cómo piensa la app">
         <p>💧 Regar · 💧+🌫 Regar y pulverizar · ⋮ Más acciones (editar, evento, PDF, tareas, cementerio) · ⭐ Foto principal · 🔄 Sincronizar · ✏️ Editar · 🖨 PDF.</p>
+        <p>🚿 <b>Riego profundo:</b> lavado de sales; la app lo marca en la home y en el calendario (cada mes en verano, cada 2 meses en invierno).</p>
+        <p>🪴 <b>Drenaje:</b> indica en cada planta si su maceta tiene agujero. Sin drenaje el riego se limita al 10 % del sustrato y nunca es profundo.</p>
         <p><b>"Le toca"</b> sale cuando han pasado más días que su frecuencia desde el último riego (o si nunca se regó).</p>
         <p><b>Verano/invierno:</b> cada planta tiene dos frecuencias; la app usa la de la temporada que marques en ⚙️ Ajustes.</p>
         <p><b>🔄 Sincronizar:</b> ajusta frecuencias a múltiplos de un ciclo común (p. ej. 7 días) dentro de tu tolerancia, para regar en tandas el mismo día. También permite varias veces por ronda (p. ej. una planta de 4 días se convierte en "2 riegos por semana").</p>
