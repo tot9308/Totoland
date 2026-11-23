@@ -29,6 +29,6 @@ export async function listHouseholds(userId: string): Promise<{ id: string; name
 }
 
 export async function deleteHousehold(householdId: string): Promise<void> {
-  const { error } = await supabase.rpc("delete_household", { household_id: householdId })
+  const { error } = await supabase.rpc("delete_household", { p_household_id: householdId })
   if (error) throw error
 }
